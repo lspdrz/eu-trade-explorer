@@ -33,6 +33,10 @@ export function FertilizerImportsView({
   const { selection, setPartnerCodes, setYearRange, setProduct, isProductPending } =
     useChartSelection(bounds);
 
+  // The `product` server prop is authoritative for the selector's value: during
+  // a product change the URL (hence `selection.product`) can lag one render
+  // behind `router.push`, but the RSC has already refetched for the new product.
+
   const series = useMemo(
     () =>
       selectGroupedSeries(yearlyTotals, {
