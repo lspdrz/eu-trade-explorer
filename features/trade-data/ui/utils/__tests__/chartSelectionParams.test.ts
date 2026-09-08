@@ -56,11 +56,24 @@ describe("parseChartSelection", () => {
     ).toBe("Urea");
   });
 
-  it("drops unknown country codes and dedupes, preserving order", () => {
+  it("drops malformed country codes and dedupes, preserving order", () => {
     expect(
-      parseChartSelection(new URLSearchParams("countries=US,ZZ,EG,US"), bounds)
+      parseChartSelection(new URLSearchParams("countries=US,1,x,USA,EG,us"), bounds)
         .partnerCodes,
     ).toEqual(["US", "EG"]);
+  });
+
+  it("keeps a well-formed code with no data for the current product (renders as a zero bar)", () => {
+    // "MA" isn't in this product's partner list but is a valid 2-letter code.
+    expect(
+      parseChartSelection(new URLSearchParams("countries=MA,US"), bounds).partnerCodes,
+    ).toEqual(["MA", "US"]);
+  });
+
+  it("upper-cases country codes", () => {
+    expect(
+      parseChartSelection(new URLSearchParams("countries=eg,us"), bounds).partnerCodes,
+    ).toEqual(["EG", "US"]);
   });
 
   it("truncates to MAX_COUNTRIES", () => {

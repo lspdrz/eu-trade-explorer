@@ -56,10 +56,17 @@ function parseYear(
   return Math.min(Math.max(Math.trunc(n), minYear), maxYear);
 }
 
+const WELL_FORMED_CODE = /^[A-Z]{2}$/;
+
 /**
  * Parse raw URL params into a valid ChartSelection. Never throws: an unknown
- * product becomes the default, unknown/excess country codes are dropped,
- * years are clamped to the data's span and swapped if crossed.
+ * product becomes the default, years are clamped to the data's span and
+ * swapped if crossed.
+ *
+ * Country codes are kept if they're a partner with data for the current
+ * product OR a well-formed 2-letter code that simply has no rows for it — the
+ * latter still renders as an explicit zero bar (the spec's "the absence is
+ * shown, never silent"), rather than being dropped like true garbage.
  */
 export function parseChartSelection(
   params: URLSearchParams,
@@ -74,11 +81,12 @@ export function parseChartSelection(
   const validCodes = new Set(bounds.partners.map((p) => p.code));
   const seen = new Set<string>();
   const partnerCodes: string[] = [];
-  for (const code of (params.get("countries") ?? "").split(",")) {
-    const trimmed = code.trim();
-    if (!trimmed || seen.has(trimmed) || !validCodes.has(trimmed)) continue;
-    seen.add(trimmed);
-    partnerCodes.push(trimmed);
+  for (const raw of (params.get("countries") ?? "").split(",")) {
+    const code = raw.trim().toUpperCase();
+    if (!code || seen.has(code)) continue;
+    if (!validCodes.has(code) && !WELL_FORMED_CODE.test(code)) continue;
+    seen.add(code);
+    partnerCodes.push(code);
     if (partnerCodes.length === MAX_COUNTRIES) break;
   }
 
