@@ -1,0 +1,21 @@
+CREATE TABLE "taxud_weekly_rows" (
+	"id" serial PRIMARY KEY,
+	"sector" text NOT NULL,
+	"marketing_year" text NOT NULL,
+	"week" integer NOT NULL,
+	"member_state_code" text NOT NULL,
+	"member_state_name" text NOT NULL,
+	"partner_code" text NOT NULL,
+	"partner" text NOT NULL,
+	"product" text NOT NULL,
+	"cn8_product_code" text NOT NULL,
+	"taric10_product_code" text NOT NULL,
+	"procedure" integer NOT NULL,
+	"preference" integer NOT NULL,
+	"euro_value" numeric NOT NULL,
+	"unit_value" numeric NOT NULL,
+	"kg" numeric NOT NULL,
+	"kg_equivalent" numeric NOT NULL,
+	"coefficient" numeric NOT NULL,
+	"synced_at" timestamp with time zone DEFAULT now() NOT NULL
+);
