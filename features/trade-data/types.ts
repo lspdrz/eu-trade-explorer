@@ -38,3 +38,24 @@ export interface YearlyPartnerTotal {
   /** Total trade weight for the year, converted from kg to tonnes. */
   tonnes: number;
 }
+
+/**
+ * One bar in the grouped chart: a single partner country's imported tonnes
+ * for a single year. `tonnes` is 0 when that country had no imports that year.
+ */
+export interface GroupedSeriesPoint {
+  partnerCode: string;
+  year: number;
+  tonnes: number;
+}
+
+/**
+ * The chart's full input for the current selection. `years` is every year in
+ * the selected inclusive range (so the x-axis has a slot even for gap years).
+ * `points` is the full partnerCode × year grid, ordered by the
+ * selected-country order then by year, zero-filled.
+ */
+export interface GroupedSeries {
+  years: number[];
+  points: GroupedSeriesPoint[];
+}
