@@ -29,7 +29,7 @@ describe("ImportsBarChart", () => {
     const html = renderToStaticMarkup(
       <ImportsBarChart series={{ years: [2020], points: [] }} countries={[]} width={800} />,
     );
-    expect(html).toContain("Search for up to 3 countries");
+    expect(html).toContain("Choose up to three partner countries");
     expect(countBars(html)).toBe(0);
   });
 
@@ -52,10 +52,11 @@ describe("ImportsBarChart", () => {
     expect((html.match(/data-partial="true"/g) ?? []).length).toBe(2);
   });
 
-  it("renders a screen-reader table with a row per country and a cell per year", () => {
+  it("renders the data table with a row per country and a cell per year", () => {
     const html = renderToStaticMarkup(
       <ImportsBarChart series={series} countries={countries} width={800} />,
     );
+    expect(html).toContain("Show the numbers");
     expect((html.match(/<tr/g) ?? []).length).toBe(3); // header + 2 country rows
     expect(html).toContain("United States");
     expect(html).toContain("Egypt");

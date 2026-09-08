@@ -24,7 +24,7 @@ export function ProductListbox({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs font-medium text-muted">Product</label>
+      <label className="text-[0.8125rem] font-medium text-muted">Product</label>
       <Listbox value={value} onChange={onChange} disabled={pending}>
         <ListboxButton
           className="min-w-56 rounded-md border border-border bg-surface px-3 py-2 text-left text-sm data-disabled:opacity-50"

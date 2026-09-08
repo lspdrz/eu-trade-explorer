@@ -26,7 +26,7 @@ export function CountryCombobox({
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs font-medium text-muted">
+      <label className="text-[0.8125rem] font-medium text-muted">
         Countries ({value.length}/{MAX_COUNTRIES})
       </label>
 

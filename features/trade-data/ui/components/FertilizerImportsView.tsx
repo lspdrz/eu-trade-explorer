@@ -71,15 +71,18 @@ export function FertilizerImportsView({
   const partialYear = bounds.years.length ? maxYear : undefined;
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">EU fertilizer imports</h1>
-        <p className="text-sm text-muted">
-          Yearly import totals by partner country, in tonnes.
+    <main className="mx-auto max-w-4xl px-6 py-10">
+      <header className="max-w-[34rem]">
+        <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.01em]">
+          Where the EU&rsquo;s nitrogen fertilizer comes from
+        </h1>
+        <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
+          Customs-recorded import volumes by partner country. Choose a product and
+          up to three partners to compare across the years on record.
         </p>
       </header>
 
-      <div className="flex flex-wrap items-end gap-4 rounded-lg border border-border bg-surface p-4">
+      <div className="mt-8 flex flex-wrap items-end gap-x-8 gap-y-4 border-b border-border pb-5">
         <ProductListbox
           products={bounds.products}
           value={product}
@@ -102,11 +105,13 @@ export function FertilizerImportsView({
         )}
       </div>
 
-      <ImportsBarChart
-        series={series}
-        countries={selectedCountries}
-        partialYear={partialYear}
-      />
+      <div className="mt-8">
+        <ImportsBarChart
+          series={series}
+          countries={selectedCountries}
+          partialYear={partialYear}
+        />
+      </div>
     </main>
   );
 }

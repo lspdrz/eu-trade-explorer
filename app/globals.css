@@ -16,8 +16,7 @@
    The three slots are the only ordering that clears CVD separation all-pairs
    in both modes; a darker green fails that gate (ΔE ~3 vs orange). */
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
 
   --color-background: #f9f9f7; /* page plane */
   --color-surface: #fcfcfb; /* cards, chart surface */

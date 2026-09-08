@@ -33,7 +33,7 @@ export function YearRangeSlider({
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs font-medium text-muted">
+      <label className="text-[0.8125rem] font-medium text-muted">
         Years: <span className="tabular-nums">{local[0]}–{local[1]}</span>
       </label>
       <Slider.Root

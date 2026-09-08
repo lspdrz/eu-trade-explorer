@@ -69,9 +69,9 @@ export function ImportsBarChart({
     return (
       <div
         ref={wrapRef}
-        className="flex h-[420px] items-center justify-center rounded-lg border border-dashed border-border text-muted"
+        className="flex h-[420px] items-center justify-center border border-dashed border-border px-6 text-center text-sm text-muted"
       >
-        Search for up to 3 countries to compare
+        Choose up to three partner countries to see the comparison.
       </div>
     );
   }
@@ -94,14 +94,14 @@ export function ImportsBarChart({
   const y = scaleLinear().domain([0, yMax || 1]).nice().range([innerHeight, 0]);
 
   const yTicks = y.ticks(5);
-  const labelStep = xAxisLabelStep(series.years.length);
+  const labelStep = xAxisLabelStep(series.years.length, innerWidth);
   const lastYearIndex = series.years.length - 1;
   const summary = `EU imports in tonnes per year for ${countries
     .map((c) => c.name)
     .join(", ")}`;
 
   return (
-    <div ref={wrapRef} className="relative w-full">
+    <div ref={wrapRef} className="relative w-full overflow-x-clip">
       <figure className="m-0">
         <svg
           viewBox={`0 0 ${width} ${height}`}
@@ -110,7 +110,7 @@ export function ImportsBarChart({
           preserveAspectRatio="xMidYMid meet"
           role="img"
           aria-label={summary}
-          className="overflow-visible"
+          className="block max-w-full"
         >
           <defs>
             <pattern
@@ -169,7 +169,7 @@ export function ImportsBarChart({
               return (
                 <g key={`${p.partnerCode}-${p.year}`}>
                   <rect
-                    className="chart-bar transition-all duration-300"
+                    className="chart-bar transition-all duration-300 motion-reduce:transition-none"
                     x={barX}
                     y={barY}
                     width={barW}
@@ -223,17 +223,17 @@ export function ImportsBarChart({
 
         {partialYear !== undefined && series.years.includes(partialYear) && (
           <figcaption className="mt-1 text-[11px] text-muted">
-            * {partialYear} is still in progress — its totals are incomplete.
+            * {partialYear} is still being recorded — its total is incomplete.
           </figcaption>
         )}
       </figure>
 
       {/* legend */}
-      <ul className="mt-3 flex flex-wrap gap-4 text-sm">
+      <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
         {countries.map((c) => (
           <li key={c.code} className="flex items-center gap-1.5">
             <span
-              className="inline-block h-3 w-3 rounded-sm"
+              className="inline-block h-2.5 w-2.5 rounded-full"
               style={{ backgroundColor: c.color }}
             />
             {c.name}
@@ -241,33 +241,52 @@ export function ImportsBarChart({
         ))}
       </ul>
 
-      {/* screen-reader / no-JS data table — the same numbers, tabular */}
-      <table className="sr-only">
-        <caption>EU imports in tonnes per year</caption>
-        <thead>
-          <tr>
-            <th scope="col">Country</th>
-            {series.years.map((year) => (
-              <th key={year} scope="col">
-                {year}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {countries.map((c) => (
-            <tr key={c.code}>
-              <th scope="row">{c.name}</th>
-              {series.years.map((year) => {
-                const point = series.points.find(
-                  (p) => p.partnerCode === c.code && p.year === year,
-                );
-                return <td key={year}>{formatInt(Math.round(point?.tonnes ?? 0))}</td>;
-              })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* the numbers behind the chart — visible on demand, works with no JS,
+          and the accessible representation of the same data */}
+      <details className="mt-5 text-sm">
+        <summary className="cursor-pointer text-muted select-none marker:text-border hover:text-foreground">
+          Show the numbers
+        </summary>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full border-collapse text-[0.8125rem] tabular-nums">
+            <caption className="sr-only">
+              Imported tonnes per year by partner country
+            </caption>
+            <thead>
+              <tr className="border-b border-border text-left text-muted">
+                <th scope="col" className="py-1.5 pr-4 font-medium">
+                  Country
+                </th>
+                {series.years.map((year) => (
+                  <th key={year} scope="col" className="px-2 py-1.5 text-right font-medium">
+                    {year}
+                    {year === partialYear ? "*" : ""}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {countries.map((c) => (
+                <tr key={c.code} className="border-b border-border/60">
+                  <th scope="row" className="py-1.5 pr-4 text-left font-normal">
+                    {c.name}
+                  </th>
+                  {series.years.map((year) => {
+                    const point = series.points.find(
+                      (p) => p.partnerCode === c.code && p.year === year,
+                    );
+                    return (
+                      <td key={year} className="px-2 py-1.5 text-right">
+                        {formatInt(Math.round(point?.tonnes ?? 0))}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
 
       {hovered && (
         <ChartTooltip
