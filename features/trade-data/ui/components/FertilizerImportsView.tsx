@@ -78,7 +78,7 @@ export function FertilizerImportsView({
     <main className="mx-auto max-w-4xl px-6 py-10">
       <header className="max-w-[34rem]">
         <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.01em]">
-          Where the EU&rsquo;s nitrogen fertilizer comes from
+          Where the EU&rsquo;s fertilizer comes from
         </h1>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
           Import volumes by partner country. Choose a source and product, and up
