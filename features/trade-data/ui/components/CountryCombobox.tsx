@@ -10,24 +10,34 @@ import { useState } from "react";
 import { MAX_COUNTRIES } from "../utils/chartSelectionParams";
 import { filterCountries } from "../utils/filterCountries";
 
+/**
+ * Typeahead multi-select for partner countries. `max` caps the selection
+ * (default 3 for the compare-countries tab; 1 when reused as the single
+ * partner picker on the compare-products tab, with `label="Partner"`).
+ */
 export function CountryCombobox({
   partners,
   value,
   onChange,
+  max = MAX_COUNTRIES,
+  label = "Countries",
 }: {
   partners: { code: string; name: string }[];
   value: string[];
   onChange: (codes: string[]) => void;
+  max?: number;
+  label?: string;
 }) {
   const [query, setQuery] = useState("");
-  const atMax = value.length >= MAX_COUNTRIES;
+  const atMax = value.length >= max;
   const nameByCode = new Map(partners.map((p) => [p.code, p.name]));
   const matches = filterCountries(partners, query).slice(0, 50);
 
   return (
     <div className="flex flex-col gap-1">
       <label className="text-[0.8125rem] font-medium text-muted">
-        Countries ({value.length}/{MAX_COUNTRIES})
+        {label}
+        {max > 1 ? ` (${value.length}/${max})` : ""}
       </label>
 
       {value.length > 0 && (
@@ -56,14 +66,20 @@ export function CountryCombobox({
         immediate
         value={value}
         onChange={(codes: string[]) => {
-          onChange(codes.slice(0, MAX_COUNTRIES));
+          onChange(codes.slice(0, max));
           setQuery("");
         }}
         onClose={() => setQuery("")}
       >
         <ComboboxInput
           className="min-w-56 rounded-md border border-border bg-surface px-3 py-2 text-sm"
-          placeholder={atMax ? "Remove one to add another" : "Search countries…"}
+          placeholder={
+            atMax
+              ? max === 1
+                ? "Remove to change"
+                : "Remove one to add another"
+              : "Search countries…"
+          }
           onChange={(e) => setQuery(e.target.value)}
           displayValue={() => ""}
         />
