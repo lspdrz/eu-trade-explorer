@@ -1,10 +1,7 @@
-import { sql } from "drizzle-orm";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
 import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
 import { getSyncedProducts } from "../getSyncedProducts";
-
-const TEST_PREFIX = "__test_products__";
 
 function rawRow(product: string) {
   return {
@@ -30,22 +27,15 @@ function rawRow(product: string) {
 }
 
 describe("getSyncedProducts", () => {
-  afterEach(async () => {
+  it("returns distinct product values, sorted, with no duplicates", async () => {
     await db
-      .delete(rawTaxudWeeklyRows)
-      .where(sql`${rawTaxudWeeklyRows.product} LIKE ${TEST_PREFIX + "%"}`);
+      .insert(rawTaxudWeeklyRows)
+      .values([rawRow("Urea"), rawRow("Urea"), rawRow("Ammonia")]);
+
+    expect(await getSyncedProducts()).toEqual(["Ammonia", "Urea"]);
   });
 
-  it("returns distinct product values, sorted, with no duplicates", async () => {
-    await db.insert(rawTaxudWeeklyRows).values([
-      rawRow(`${TEST_PREFIX}_b`),
-      rawRow(`${TEST_PREFIX}_b`),
-      rawRow(`${TEST_PREFIX}_a`),
-    ]);
-
-    const products = await getSyncedProducts();
-
-    const testOnly = products.filter((p) => p.startsWith(TEST_PREFIX));
-    expect(testOnly).toEqual([`${TEST_PREFIX}_a`, `${TEST_PREFIX}_b`]);
+  it("returns [] when nothing is synced", async () => {
+    expect(await getSyncedProducts()).toEqual([]);
   });
 });
