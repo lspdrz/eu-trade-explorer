@@ -35,5 +35,13 @@ export async function contactComextAPI(searchParams?: URLSearchParams) {
   const url = new URL(BASE_URL);
   if (searchParams) url.search = searchParams.toString();
 
-  return fetch(url, { dispatcher: httpAgent });
+  // `Accept-Encoding: identity` — the endpoint's gzip response and undici's
+  // decompression don't line up (the body arrives still-compressed with no
+  // Content-Encoding header), so ask for it uncompressed. Payloads here top
+  // out under ~1 MB; the transfer cost is nothing against the ~40 s the
+  // server takes to produce the data.
+  return fetch(url, {
+    headers: { "accept-encoding": "identity" },
+    dispatcher: httpAgent,
+  });
 }

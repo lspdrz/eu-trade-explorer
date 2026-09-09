@@ -20,6 +20,7 @@ describe("contactComextAPI", () => {
     const [url, init] = vi.mocked(fetch).mock.calls[0];
     expect(String(url)).toBe(`${BASE}?format=csvdata`);
     expect(init?.method ?? "GET").toBe("GET");
+    expect((init?.headers as Record<string, string>)["accept-encoding"]).toBe("identity");
   });
 
   it("works without params", async () => {
