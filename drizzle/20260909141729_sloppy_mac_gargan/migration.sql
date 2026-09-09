@@ -1,0 +1,1 @@
+ALTER TABLE "raw_comext_imports" DROP COLUMN "partner";

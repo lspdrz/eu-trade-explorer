@@ -8,12 +8,12 @@ import { numeric, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 // No business key / no upsert (same rationale as raw_taxud_weekly_rows):
 // the writer replaces a whole (heading, periods) slice wholesale per run.
 // `quantity_100kg` is COMEXT's unit — hundredweight, not kg. Both measures
-// are nullable: a cell may carry only one indicator.
+// are nullable: a cell may carry only one indicator. No partner name — the
+// SDMX 3.0 CSV feed is code-only; a read path maps codes to names once.
 export const rawComextImports = pgTable("raw_comext_imports", {
   id: serial().primaryKey(),
   cn8ProductCode: text("cn8_product_code").notNull(),
   partnerCode: text("partner_code").notNull(),
-  partner: text().notNull(),
   period: text().notNull(), // "YYYY-MM"
   quantity100kg: numeric("quantity_100kg"),
   valueEuros: numeric("value_euros"),
