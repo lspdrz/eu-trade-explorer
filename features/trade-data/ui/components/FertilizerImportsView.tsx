@@ -30,7 +30,7 @@ export function FertilizerImportsView({
     () => ({ products, ...deriveBounds(yearlyTotals) }),
     [products, yearlyTotals],
   );
-  const { selection, setPartnerCodes, setYearRange, setProduct, isProductPending } =
+  const { selection, setPartnerCodes, setYearRange, setProduct, isPending } =
     useChartSelection(bounds);
 
   // The `product` server prop is authoritative for the selector's value: during
@@ -87,7 +87,7 @@ export function FertilizerImportsView({
           products={bounds.products}
           value={product}
           onChange={setProduct}
-          pending={isProductPending}
+          pending={isPending}
         />
         <CountryCombobox
           partners={bounds.partners}
