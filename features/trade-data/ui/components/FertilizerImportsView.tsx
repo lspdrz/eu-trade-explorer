@@ -3,14 +3,20 @@
 import { useMemo, useState } from "react";
 import type { TradeSource, YearlyPartnerTotal } from "../../types";
 import { assignColorSlots } from "../utils/assignColorSlots";
-import { MAX_COUNTRIES, deriveBounds } from "../utils/chartSelectionParams";
+import {
+  MAX_COUNTRIES,
+  MAX_PRODUCTS,
+  deriveBounds,
+} from "../utils/chartSelectionParams";
 import { selectGroupedSeries } from "../utils/selectGroupedSeries";
 import { useChartSelection } from "../hooks/useChartSelection";
 import { ChartEmptyState } from "./ChartEmptyState";
+import { ChartTabs } from "./ChartTabs";
 import { CountryCombobox } from "./CountryCombobox";
 import { ImportsBarChart } from "./ImportsBarChart";
 import { ImportsDataTable } from "./ImportsDataTable";
 import { ProductListbox } from "./ProductListbox";
+import { ProductMultiSelect } from "./ProductMultiSelect";
 import { SourceToggle } from "./SourceToggle";
 import { YearRangeSlider } from "./YearRangeSlider";
 
@@ -20,66 +26,111 @@ const SERIES_COLORS = [
   "var(--color-series-3)",
 ];
 
-export function FertilizerImportsView({
-  source,
-  products,
-  product,
-  yearlyTotals,
-}: {
+type CommonProps = {
   source: TradeSource;
-  products: string[];
-  product: string;
-  yearlyTotals: YearlyPartnerTotal[];
-}) {
+  availableProducts: string[];
+  availablePartners: { code: string; name: string }[];
+};
+
+type Props = CommonProps &
+  (
+    | {
+        view: "countries";
+        /** Authoritative selector value during a refetch. */
+        product: string;
+        totals: YearlyPartnerTotal[];
+      }
+    | {
+        view: "products";
+        /** Authoritative selector value during a refetch ("" = none). */
+        partner: string;
+        totalsByProduct: { product: string; totals: YearlyPartnerTotal[] }[];
+      }
+  );
+
+export function FertilizerImportsView(props: Props) {
+  const { source, availableProducts, availablePartners, view } = props;
+
+  const fetchedTotals =
+    view === "countries"
+      ? props.totals
+      : props.totalsByProduct.flatMap((t) => t.totals);
+
   const bounds = useMemo(
-    () => ({ products, ...deriveBounds(yearlyTotals) }),
-    [products, yearlyTotals],
+    () => ({
+      products: availableProducts,
+      partners: availablePartners,
+      years: deriveBounds(fetchedTotals).years,
+    }),
+    [availableProducts, availablePartners, fetchedTotals],
   );
-  const { selection, setPartnerCodes, setYearRange, setProduct, setSource, isPending } =
-    useChartSelection(bounds);
 
-  // The `source` and `product` server props are authoritative for the
-  // selectors' values: during a change the URL (hence `selection.*`) can lag
-  // one render behind `router.push`, but the RSC has already refetched for
-  // the new source/product.
+  const {
+    selection,
+    setPartnerCodes,
+    setYearRange,
+    setProduct,
+    setSource,
+    setView,
+    setPartner,
+    setProducts,
+    isPending,
+  } = useChartSelection(bounds);
 
-  const rows = useMemo(
-    () =>
-      yearlyTotals.map((t) => ({
-        seriesKey: t.partnerCode,
-        year: Number(t.year),
-        tonnes: t.tonnes,
-      })),
-    [yearlyTotals],
-  );
+  const partnerName = (code: string) =>
+    availablePartners.find((p) => p.code === code)?.name ?? code;
+
+  // Per-view: the flat rows to plot, which series to show, and the labels.
+  const { rows, seriesKeys, seriesLabel, colorMax } =
+    view === "countries"
+      ? {
+          rows: props.totals.map((t) => ({
+            seriesKey: t.partnerCode,
+            year: Number(t.year),
+            tonnes: t.tonnes,
+          })),
+          seriesKeys: selection.partnerCodes,
+          seriesLabel: "Country" as const,
+          colorMax: MAX_COUNTRIES,
+        }
+      : {
+          rows: props.totalsByProduct.flatMap(({ product, totals }) =>
+            totals.map((t) => ({
+              seriesKey: product,
+              year: Number(t.year),
+              tonnes: t.tonnes,
+            })),
+          ),
+          seriesKeys: selection.products,
+          seriesLabel: "Product" as const,
+          colorMax: MAX_PRODUCTS,
+        };
+
   const series = useMemo(
     () =>
       selectGroupedSeries(rows, {
-        seriesKeys: selection.partnerCodes,
+        seriesKeys,
         fromYear: selection.fromYear,
         toYear: selection.toYear,
       }),
-    [rows, selection.partnerCodes, selection.fromYear, selection.toYear],
+    [rows, seriesKeys, selection.fromYear, selection.toYear],
   );
 
-  // Stable colour slots: a country keeps its colour while selected. Recompute
-  // during render (not in an effect) when the selected set changes, feeding
-  // the last assignment back in as the "previous" — React's "adjust state
-  // during render" pattern.
-  const codesKey = selection.partnerCodes.join(",");
+  // Stable colour slots: a series keeps its colour while selected. Recompute
+  // during render (not in an effect) when the set changes — React's "adjust
+  // state during render" pattern.
+  const keyStr = seriesKeys.join(",");
   const [slotsKey, setSlotsKey] = useState("");
   const [colorSlots, setColorSlots] = useState<Record<string, number>>({});
-  if (codesKey !== slotsKey) {
-    setSlotsKey(codesKey);
-    setColorSlots((prev) =>
-      assignColorSlots(selection.partnerCodes, prev, MAX_COUNTRIES),
-    );
+  if (keyStr !== slotsKey) {
+    setSlotsKey(keyStr);
+    setColorSlots((prev) => assignColorSlots(seriesKeys, prev, colorMax));
   }
 
-  const seriesMeta = selection.partnerCodes.map((code) => ({
-    key: code,
-    name: bounds.partners.find((p) => p.code === code)?.name ?? code,
-    color: SERIES_COLORS[colorSlots[code] ?? 0],
+  const seriesMeta = seriesKeys.map((key) => ({
+    key,
+    name: view === "countries" ? partnerName(key) : key,
+    color: SERIES_COLORS[colorSlots[key] ?? 0],
   }));
 
   const [minYear, maxYear] = bounds.years.length
@@ -87,9 +138,18 @@ export function FertilizerImportsView({
     : [0, 0];
   const partialYear = bounds.years.length ? maxYear : undefined;
 
-  const ariaLabel = `EU imports in tonnes per year for ${seriesMeta
-    .map((s) => s.name)
-    .join(", ")}`;
+  const names = seriesMeta.map((s) => s.name).join(", ");
+  const ariaLabel =
+    view === "products" && props.partner
+      ? `${partnerName(props.partner)}'s EU imports in tonnes per year for ${names}`
+      : `EU imports in tonnes per year for ${names}`;
+
+  const emptyMessage =
+    view === "countries"
+      ? "Choose up to three partner countries to see the comparison."
+      : props.partner
+        ? "Choose one or more products to compare."
+        : "Choose a partner country to compare products.";
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
@@ -98,24 +158,60 @@ export function FertilizerImportsView({
           Where the EU&rsquo;s fertilizer comes from
         </h1>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
-          Import volumes by partner country. Choose a source and product, and up
-          to three partners to compare across the years on record.
+          EU fertilizer import volumes, by partner country or by product,
+          across the years on record.
         </p>
       </header>
 
-      <div className="mt-8 flex flex-wrap items-end gap-x-8 gap-y-4 border-b border-border pb-5">
+      <div className="mt-8">
         <SourceToggle value={source} onChange={setSource} pending={isPending} />
-        <ProductListbox
-          products={bounds.products}
-          value={product}
-          onChange={setProduct}
-          pending={isPending}
-        />
-        <CountryCombobox
-          partners={bounds.partners}
-          value={selection.partnerCodes}
-          onChange={setPartnerCodes}
-        />
+      </div>
+
+      <div className="mt-6">
+        <ChartTabs view={view} onChange={setView} pending={isPending} />
+      </div>
+
+      {view === "products" && (
+        <p className="mt-3 text-[0.9375rem] text-muted">
+          {props.partner
+            ? `Imports to the EU from ${partnerName(props.partner)}`
+            : "Choose a partner country to compare products."}
+        </p>
+      )}
+
+      <div className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-4 border-b border-border pb-5">
+        {view === "countries" ? (
+          <>
+            <ProductListbox
+              products={bounds.products}
+              value={props.product}
+              onChange={setProduct}
+              pending={isPending}
+            />
+            <CountryCombobox
+              partners={bounds.partners}
+              value={selection.partnerCodes}
+              onChange={setPartnerCodes}
+            />
+          </>
+        ) : (
+          <>
+            <CountryCombobox
+              partners={bounds.partners}
+              value={props.partner ? [props.partner] : []}
+              onChange={(codes) => setPartner(codes[0] ?? "")}
+              max={1}
+              label="Partner"
+            />
+            <ProductMultiSelect
+              products={bounds.products}
+              value={selection.products}
+              onChange={setProducts}
+              max={MAX_PRODUCTS}
+              pending={isPending}
+            />
+          </>
+        )}
         {bounds.years.length > 1 && (
           <YearRangeSlider
             minYear={minYear}
@@ -129,7 +225,7 @@ export function FertilizerImportsView({
 
       <div className="mt-8">
         {seriesMeta.length === 0 ? (
-          <ChartEmptyState message="Choose up to three partner countries to see the comparison." />
+          <ChartEmptyState message={emptyMessage} />
         ) : (
           <>
             <ImportsBarChart
@@ -141,7 +237,7 @@ export function FertilizerImportsView({
             <ImportsDataTable
               series={series}
               seriesMeta={seriesMeta}
-              seriesLabel="Country"
+              seriesLabel={seriesLabel}
               partialYear={partialYear}
             />
           </>

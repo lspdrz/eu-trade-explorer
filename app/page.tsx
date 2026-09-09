@@ -9,14 +9,16 @@ export const dynamic = "force-dynamic";
 export default async function Home({ searchParams }: PageProps<"/">) {
   const params = await searchParams;
   // Each value is string | string[] (a param can repeat); take the single value.
-  const source = Array.isArray(params.source) ? params.source[0] : params.source;
-  const product = Array.isArray(params.product)
-    ? params.product[0]
-    : params.product;
+  const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
   return (
     <Suspense fallback={<div className="p-6 text-muted">Loading…</div>}>
-      <FertilizerImports source={source} product={product} />
+      <FertilizerImports
+        source={one(params.source)}
+        view={one(params.view)}
+        product={one(params.product)}
+        partner={one(params.partner)}
+      />
     </Suspense>
   );
 }
