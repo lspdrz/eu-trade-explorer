@@ -1,0 +1,24 @@
+/**
+ * The COMEXT source's product options and the HS heading each maps to.
+ *
+ * A CN8 product code's first four digits ARE its HS heading (definitional),
+ * so the read query filters by prefix (`cn8_product_code LIKE '<heading>%'`)
+ * — there's no CN8 list to keep and nothing to import from sync-comext
+ * (features don't import each other). These are the same two groupings the
+ * agridata.ec.europa.eu fertiliser dashboard uses, so totals are verifiable
+ * against it.
+ */
+export const COMEXT_PRODUCT_HEADINGS = {
+  Ammonia: "2814",
+  "Nitrogenous fertilisers": "3102",
+} as const;
+
+export type ComextProduct = keyof typeof COMEXT_PRODUCT_HEADINGS;
+
+/**
+ * Selector options, in display order. `Ammonia` is shared with the
+ * surveillance product list, so `DEFAULT_PRODUCT` stays valid here.
+ */
+export const COMEXT_PRODUCTS: ComextProduct[] = Object.keys(
+  COMEXT_PRODUCT_HEADINGS,
+) as ComextProduct[];

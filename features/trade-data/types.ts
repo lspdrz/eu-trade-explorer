@@ -59,3 +59,11 @@ export interface GroupedSeries {
   years: number[];
   points: GroupedSeriesPoint[];
 }
+
+/**
+ * The two upstream datasets the chart can read. "comext" is Eurostat's
+ * validated monthly statistics (raw_comext_imports); "surveillance" is the
+ * near-real-time customs feed (raw_taxud_weekly_rows). See
+ * architecture-decisions.md.
+ */
+export type TradeSource = "comext" | "surveillance";
