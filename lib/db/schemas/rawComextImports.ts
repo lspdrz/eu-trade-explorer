@@ -1,0 +1,21 @@
+import { numeric, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+
+// A faithful, unaggregated snapshot of Eurostat COMEXT monthly import cells
+// (dataset DS-045409, reporter=EU27_2020, flow=import) for HS headings 2814
+// and 3102 — see features/sync-comext/ for what populates it.
+//
+// One row = one (cn8ProductCode, partnerCode, period) observation.
+// No business key / no upsert (same rationale as raw_taxud_weekly_rows):
+// the writer replaces a whole (heading, periods) slice wholesale per run.
+// `quantity_100kg` is COMEXT's unit — hundredweight, not kg. Both measures
+// are nullable: a cell may carry only one indicator.
+export const rawComextImports = pgTable("raw_comext_imports", {
+  id: serial().primaryKey(),
+  cn8ProductCode: text("cn8_product_code").notNull(),
+  partnerCode: text("partner_code").notNull(),
+  partner: text().notNull(),
+  period: text().notNull(), // "YYYY-MM"
+  quantity100kg: numeric("quantity_100kg"),
+  valueEuros: numeric("value_euros"),
+  syncedAt: timestamp("synced_at", { withTimezone: true }).notNull().defaultNow(),
+});
