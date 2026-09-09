@@ -2,7 +2,8 @@ import { integer, numeric, pgTable, serial, text, timestamp } from "drizzle-orm/
 
 // A faithful, unaggregated snapshot of EU API weekly trade rows — see
 // features/sync-eu-agrifood/db/mutations/replaceProductData.ts for what
-// populates this table.
+// populates this table. The `raw_` prefix marks it as an untouched
+// upstream copy (cf. the incoming raw_comext_imports).
 //
 // No composite business key: even a 7-column one (taric10ProductCode,
 // partnerCode, memberStateCode, marketingYear, week, procedure,
@@ -11,7 +12,7 @@ import { integer, numeric, pgTable, serial, text, timestamp } from "drizzle-orm/
 // field). replaceProductData.ts instead replaces a whole (product,
 // marketingYear) slice wholesale on every run — a plain surrogate `id`
 // is enough, and true duplicates are simply stored as two rows.
-export const taxudWeeklyRows = pgTable("taxud_weekly_rows", {
+export const rawTaxudWeeklyRows = pgTable("raw_taxud_weekly_rows", {
   id: serial().primaryKey(),
   sector: text().notNull(),
   marketingYear: text("marketing_year").notNull(),

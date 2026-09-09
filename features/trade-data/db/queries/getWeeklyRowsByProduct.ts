@@ -1,7 +1,7 @@
 import "server-only";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import { taxudWeeklyRows } from "@/lib/db/schemas/taxudWeeklyRows";
+import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
 import type { TaxudWeekRow } from "../../types";
 
 /**
@@ -12,8 +12,8 @@ import type { TaxudWeekRow } from "../../types";
 export async function getWeeklyRowsByProduct(product: string): Promise<TaxudWeekRow[]> {
   const rawRows = await db
     .select()
-    .from(taxudWeeklyRows)
-    .where(eq(taxudWeeklyRows.product, product));
+    .from(rawTaxudWeeklyRows)
+    .where(eq(rawTaxudWeeklyRows.product, product));
 
   return rawRows.map((row) => ({
     ...row,

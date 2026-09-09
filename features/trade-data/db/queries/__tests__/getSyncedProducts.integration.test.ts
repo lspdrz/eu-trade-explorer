@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { afterEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
-import { taxudWeeklyRows } from "@/lib/db/schemas/taxudWeeklyRows";
+import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
 import { getSyncedProducts } from "../getSyncedProducts";
 
 const TEST_PREFIX = "__test_products__";
@@ -32,12 +32,12 @@ function rawRow(product: string) {
 describe("getSyncedProducts", () => {
   afterEach(async () => {
     await db
-      .delete(taxudWeeklyRows)
-      .where(sql`${taxudWeeklyRows.product} LIKE ${TEST_PREFIX + "%"}`);
+      .delete(rawTaxudWeeklyRows)
+      .where(sql`${rawTaxudWeeklyRows.product} LIKE ${TEST_PREFIX + "%"}`);
   });
 
   it("returns distinct product values, sorted, with no duplicates", async () => {
-    await db.insert(taxudWeeklyRows).values([
+    await db.insert(rawTaxudWeeklyRows).values([
       rawRow(`${TEST_PREFIX}_b`),
       rawRow(`${TEST_PREFIX}_b`),
       rawRow(`${TEST_PREFIX}_a`),
