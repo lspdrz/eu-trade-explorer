@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db/client";
-import { taxudWeeklyRows } from "@/lib/db/schemas/taxudWeeklyRows";
+import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
 
 /**
  * Every distinct `product` value present in the synced data, sorted.
@@ -8,9 +8,9 @@ import { taxudWeeklyRows } from "@/lib/db/schemas/taxudWeeklyRows";
  */
 export async function getSyncedProducts(): Promise<string[]> {
   const rows = await db
-    .selectDistinct({ product: taxudWeeklyRows.product })
-    .from(taxudWeeklyRows)
-    .orderBy(taxudWeeklyRows.product);
+    .selectDistinct({ product: rawTaxudWeeklyRows.product })
+    .from(rawTaxudWeeklyRows)
+    .orderBy(rawTaxudWeeklyRows.product);
 
   return rows.map((row) => row.product);
 }

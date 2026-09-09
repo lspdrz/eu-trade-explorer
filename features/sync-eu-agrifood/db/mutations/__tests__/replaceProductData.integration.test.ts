@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { afterEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
-import { taxudWeeklyRows } from "@/lib/db/schemas/taxudWeeklyRows";
+import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
 import type { RawTaxudWeekRow } from "../../../types";
 import { replaceProductData } from "../replaceProductData";
 
@@ -38,12 +38,12 @@ async function* asyncFrom<T>(items: T[]): AsyncGenerator<T> {
 }
 
 async function storedTestRows() {
-  return db.select().from(taxudWeeklyRows).where(eq(taxudWeeklyRows.product, TEST_PRODUCT));
+  return db.select().from(rawTaxudWeeklyRows).where(eq(rawTaxudWeeklyRows.product, TEST_PRODUCT));
 }
 
 describe("replaceProductData", () => {
   afterEach(async () => {
-    await db.delete(taxudWeeklyRows).where(eq(taxudWeeklyRows.product, TEST_PRODUCT));
+    await db.delete(rawTaxudWeeklyRows).where(eq(rawTaxudWeeklyRows.product, TEST_PRODUCT));
   });
 
   it("stores every row a source yields, including exact duplicates, without merging or erroring", async () => {

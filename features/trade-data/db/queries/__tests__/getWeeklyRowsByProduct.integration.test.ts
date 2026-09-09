@@ -1,16 +1,16 @@
 import { sql } from "drizzle-orm";
 import { afterEach, describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
-import { taxudWeeklyRows } from "@/lib/db/schemas/taxudWeeklyRows";
+import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
 import { getWeeklyRowsByProduct } from "../getWeeklyRowsByProduct";
 
 const TEST_PRODUCT = "__test_product__";
 
 async function cleanUpTestRows() {
-  await db.delete(taxudWeeklyRows).where(sql`${taxudWeeklyRows.product} = ${TEST_PRODUCT}`);
+  await db.delete(rawTaxudWeeklyRows).where(sql`${rawTaxudWeeklyRows.product} = ${TEST_PRODUCT}`);
 }
 
-function rawRow(overrides: Partial<typeof taxudWeeklyRows.$inferInsert>) {
+function rawRow(overrides: Partial<typeof rawTaxudWeeklyRows.$inferInsert>) {
   return {
     sector: "Fertilisers",
     marketingYear: "2023",
@@ -41,7 +41,7 @@ describe("getWeeklyRowsByProduct", () => {
 
   it("reads raw rows for a product, converting numeric fields from strings", async () => {
     const syncedAt = new Date();
-    await db.insert(taxudWeeklyRows).values([
+    await db.insert(rawTaxudWeeklyRows).values([
       rawRow({
         week: 1,
         memberStateCode: "FI",
@@ -84,7 +84,7 @@ describe("getWeeklyRowsByProduct", () => {
   });
 
   it("only returns rows for the requested product", async () => {
-    await db.insert(taxudWeeklyRows).values([
+    await db.insert(rawTaxudWeeklyRows).values([
       rawRow({ product: TEST_PRODUCT }),
       rawRow({ product: "__other_test_product__" }),
     ]);
@@ -94,7 +94,7 @@ describe("getWeeklyRowsByProduct", () => {
     expect(result).toHaveLength(1);
     expect(result[0].product).toBe(TEST_PRODUCT);
 
-    await db.delete(taxudWeeklyRows).where(sql`${taxudWeeklyRows.product} = '__other_test_product__'`);
+    await db.delete(rawTaxudWeeklyRows).where(sql`${rawTaxudWeeklyRows.product} = '__other_test_product__'`);
   });
 
   it("returns an empty array when there's no data for a product", async () => {

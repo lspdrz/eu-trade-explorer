@@ -1,0 +1,1 @@
+ALTER TABLE "taxud_weekly_rows" RENAME TO "raw_taxud_weekly_rows";

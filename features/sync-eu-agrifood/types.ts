@@ -1,7 +1,7 @@
 /**
  * A single weekly trade record as returned by the EU Agri-food Data
  * Portal's TAXUD weekly trade API — the raw record we store faithfully
- * in `taxud_weekly_rows` (lib/db/schemas/taxudWeeklyRows.ts).
+ * in `raw_taxud_weekly_rows` (lib/db/schemas/rawTaxudWeeklyRows.ts).
  * 
  * The five value fields are `string`, not `number`: parsed with
  * `numberAsString: true` (services/fetchWeeklyImports.ts) to keep exact
