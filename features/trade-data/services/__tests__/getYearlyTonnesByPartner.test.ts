@@ -6,7 +6,10 @@ vi.mock("../../db/queries/getWeeklyRowsByProduct", () => ({
 }));
 
 import { getWeeklyRowsByProduct } from "../../db/queries/getWeeklyRowsByProduct";
-import { getYearlyTonnesByPartner } from "../getYearlyTonnesByPartner";
+import {
+  aggregateYearlyTonnesByPartner,
+  getYearlyTonnesByPartner,
+} from "../getYearlyTonnesByPartner";
 
 function row(overrides: Partial<TaxudWeekRow>): TaxudWeekRow {
   return {
@@ -32,6 +35,42 @@ function row(overrides: Partial<TaxudWeekRow>): TaxudWeekRow {
     ...overrides,
   };
 }
+
+describe("aggregateYearlyTonnesByPartner (pure)", () => {
+  it("sums kg across weeks and member states into tonnes for one year/partner", () => {
+    const rows: TaxudWeekRow[] = [
+      row({ week: 1, memberStateCode: "FI", kg: 10_000_000 }),
+      row({ week: 2, memberStateCode: "FI", kg: 5_000_000 }),
+      row({ week: 1, memberStateCode: "LT", kg: 1_000_000 }),
+    ];
+
+    const result = aggregateYearlyTonnesByPartner(rows);
+
+    expect(result).toEqual([
+      { year: "2023", partnerCode: "RU", partner: "Russia", tonnes: 16_000 },
+    ]);
+  });
+
+  it("keeps separate totals per year and per partner", () => {
+    const rows: TaxudWeekRow[] = [
+      row({ marketingYear: "2022", partnerCode: "RU", partner: "Russia", kg: 2_000_000 }),
+      row({ marketingYear: "2023", partnerCode: "RU", partner: "Russia", kg: 3_000_000 }),
+      row({ marketingYear: "2023", partnerCode: "EG", partner: "Egypt", kg: 1_000_000 }),
+    ];
+
+    const result = aggregateYearlyTonnesByPartner(rows);
+
+    expect(result).toEqual([
+      { year: "2022", partnerCode: "RU", partner: "Russia", tonnes: 2_000 },
+      { year: "2023", partnerCode: "EG", partner: "Egypt", tonnes: 1_000 },
+      { year: "2023", partnerCode: "RU", partner: "Russia", tonnes: 3_000 },
+    ]);
+  });
+
+  it("returns an empty array for no input rows", () => {
+    expect(aggregateYearlyTonnesByPartner([])).toEqual([]);
+  });
+});
 
 describe("getYearlyTonnesByPartner (service)", () => {
   it("passes the product straight through to the query", async () => {

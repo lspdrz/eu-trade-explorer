@@ -1,5 +1,5 @@
 import "server-only";
-import { getSyncedProducts } from "../../services/getSyncedProducts";
+import { getSyncedProducts } from "../../db/queries/getSyncedProducts";
 import { getYearlyTonnesByPartner } from "../../services/getYearlyTonnesByPartner";
 import { DEFAULT_PRODUCT } from "../utils/chartSelectionParams";
 import { FertilizerImportsView } from "./FertilizerImportsView";
