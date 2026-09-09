@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useTransition } from "react";
-import type { TradeSource } from "../../types";
+import type { ChartView, TradeSource } from "../../types";
 import {
   type ChartSelection,
   type SelectionBounds,
@@ -13,10 +13,11 @@ import {
 /**
  * The chart's selection, read from and written back to the URL.
  *
- * Country and year edits use history.replaceState — the whole product
- * dataset is already in memory, so there's nothing for the server to redo.
- * Product and source edits use router navigation, which re-runs the Server
- * Component to fetch the new dataset; isPending covers that round-trip.
+ * Country and year edits use history.replaceState — the whole dataset is
+ * already in memory, so there's nothing for the server to redo. View,
+ * source, product, partner and product-set edits use router navigation,
+ * which re-runs the Server Component to fetch the new dataset; isPending
+ * covers that round-trip.
  */
 export function useChartSelection(bounds: SelectionBounds) {
   const searchParams = useSearchParams();
@@ -65,12 +66,39 @@ export function useChartSelection(bounds: SelectionBounds) {
     [selection, hrefFor, router],
   );
 
+  const setView = useCallback(
+    (view: ChartView) => {
+      const href = hrefFor({ ...selection, view });
+      startTransition(() => router.push(href));
+    },
+    [selection, hrefFor, router],
+  );
+
+  const setPartner = useCallback(
+    (partner: string) => {
+      const href = hrefFor({ ...selection, partner });
+      startTransition(() => router.push(href));
+    },
+    [selection, hrefFor, router],
+  );
+
+  const setProducts = useCallback(
+    (products: string[]) => {
+      const href = hrefFor({ ...selection, products });
+      startTransition(() => router.push(href));
+    },
+    [selection, hrefFor, router],
+  );
+
   return {
     selection,
     setPartnerCodes,
     setYearRange,
     setProduct,
     setSource,
+    setView,
+    setPartner,
+    setProducts,
     isPending,
   };
 }

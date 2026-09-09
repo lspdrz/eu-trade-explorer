@@ -17,6 +17,18 @@ const bounds = {
   years: [2018, 2019, 2020, 2021],
 };
 
+/** A full, all-defaults ChartSelection for this `bounds`. */
+const base = {
+  source: "comext" as const,
+  view: "countries" as const,
+  product: DEFAULT_PRODUCT,
+  partnerCodes: [] as string[],
+  partner: "",
+  products: [] as string[],
+  fromYear: 2018,
+  toYear: 2021,
+};
+
 describe("deriveBounds", () => {
   it("extracts sorted distinct years and name-sorted distinct partners from the dataset", () => {
     const totals: YearlyPartnerTotal[] = [
@@ -36,13 +48,7 @@ describe("deriveBounds", () => {
 
 describe("parseChartSelection", () => {
   it("applies defaults when params are absent", () => {
-    expect(parseChartSelection(new URLSearchParams(""), bounds)).toEqual({
-      source: "comext",
-      product: DEFAULT_PRODUCT,
-      partnerCodes: [],
-      fromYear: 2018,
-      toYear: 2021,
-    });
+    expect(parseChartSelection(new URLSearchParams(""), bounds)).toEqual(base);
   });
 
   it("falls back to the default product for an unknown product", () => {
@@ -65,7 +71,6 @@ describe("parseChartSelection", () => {
   });
 
   it("keeps a well-formed code with no data for the current product (renders as a zero bar)", () => {
-    // "MA" isn't in this product's partner list but is a valid 2-letter code.
     expect(
       parseChartSelection(new URLSearchParams("countries=MA,US"), bounds).partnerCodes,
     ).toEqual(["MA", "US"]);
@@ -105,16 +110,12 @@ describe("parseChartSelection", () => {
 
 describe("chartSelectionToParams", () => {
   it("omits params that equal their default", () => {
-    const params = chartSelectionToParams(
-      { source: "comext", product: DEFAULT_PRODUCT, partnerCodes: [], fromYear: 2018, toYear: 2021 },
-      bounds,
-    );
-    expect(params.toString()).toBe("");
+    expect(chartSelectionToParams(base, bounds).toString()).toBe("");
   });
 
   it("serialises a full selection", () => {
     const params = chartSelectionToParams(
-      { source: "comext", product: "Urea", partnerCodes: ["US", "EG"], fromYear: 2019, toYear: 2020 },
+      { ...base, product: "Urea", partnerCodes: ["US", "EG"], fromYear: 2019, toYear: 2020 },
       bounds,
     );
     expect(params.get("product")).toBe("Urea");
@@ -125,14 +126,15 @@ describe("chartSelectionToParams", () => {
 
   it("round-trips through parseChartSelection", () => {
     const selection = {
-      source: "comext" as const,
+      ...base,
       product: "Urea",
       partnerCodes: ["EG", "US"],
       fromYear: 2019,
       toYear: 2021,
     };
-    const params = chartSelectionToParams(selection, bounds);
-    expect(parseChartSelection(params, bounds)).toEqual(selection);
+    expect(parseChartSelection(chartSelectionToParams(selection, bounds), bounds)).toEqual(
+      selection,
+    );
   });
 });
 
@@ -150,35 +152,61 @@ describe("source", () => {
     ).toBe("surveillance");
   });
 
-  it("omits source from params when it is the default", () => {
-    const params = chartSelectionToParams(
-      { source: "comext", product: DEFAULT_PRODUCT, partnerCodes: [], fromYear: 2018, toYear: 2021 },
-      bounds,
-    );
-    expect(params.has("source")).toBe(false);
-  });
-
-  it("emits source only when non-default", () => {
-    const params = chartSelectionToParams(
-      {
-        source: "surveillance",
-        product: DEFAULT_PRODUCT,
-        partnerCodes: [],
-        fromYear: 2018,
-        toYear: 2021,
-      },
-      bounds,
-    );
-    expect(params.get("source")).toBe("surveillance");
+  it("omits source when default, emits when non-default", () => {
+    expect(chartSelectionToParams(base, bounds).has("source")).toBe(false);
+    expect(
+      chartSelectionToParams({ ...base, source: "surveillance" }, bounds).get("source"),
+    ).toBe("surveillance");
   });
 
   it("round-trips a surveillance selection", () => {
+    const selection = { ...base, source: "surveillance" as const, partnerCodes: ["EG"] };
+    expect(parseChartSelection(chartSelectionToParams(selection, bounds), bounds)).toEqual(
+      selection,
+    );
+  });
+});
+
+describe("view", () => {
+  it("defaults to countries; reads products; unknown -> countries", () => {
+    expect(parseChartSelection(new URLSearchParams(""), bounds).view).toBe("countries");
+    expect(
+      parseChartSelection(new URLSearchParams("view=products"), bounds).view,
+    ).toBe("products");
+    expect(
+      parseChartSelection(new URLSearchParams("view=nonsense"), bounds).view,
+    ).toBe("countries");
+  });
+
+  it("omits view when countries, emits when products", () => {
+    expect(chartSelectionToParams(base, bounds).has("view")).toBe(false);
+    expect(
+      chartSelectionToParams({ ...base, view: "products" }, bounds).get("view"),
+    ).toBe("products");
+  });
+});
+
+describe("partner + products (compare-products tab)", () => {
+  it("partner: keeps a known code (upper-cased), else empty", () => {
+    expect(parseChartSelection(new URLSearchParams("partner=us"), bounds).partner).toBe("US");
+    expect(parseChartSelection(new URLSearchParams("partner=ZZ"), bounds).partner).toBe("");
+    expect(parseChartSelection(new URLSearchParams(""), bounds).partner).toBe("");
+  });
+
+  it("products: known values only, deduped, capped at MAX_PRODUCTS", () => {
+    expect(
+      parseChartSelection(new URLSearchParams("products=Ammonia,Ammonia,Urea,Nope"), bounds)
+        .products,
+    ).toEqual(["Ammonia", "Urea"]);
+    expect(parseChartSelection(new URLSearchParams(""), bounds).products).toEqual([]);
+  });
+
+  it("round-trips a products-tab selection", () => {
     const selection = {
-      source: "surveillance" as const,
-      product: "Urea",
-      partnerCodes: ["EG"],
-      fromYear: 2019,
-      toYear: 2021,
+      ...base,
+      view: "products" as const,
+      partner: "US",
+      products: ["Ammonia", "Urea"],
     };
     expect(parseChartSelection(chartSelectionToParams(selection, bounds), bounds)).toEqual(
       selection,

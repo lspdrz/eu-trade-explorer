@@ -1,13 +1,21 @@
-import type { TradeSource, YearlyPartnerTotal } from "../../types";
+import type { ChartView, TradeSource, YearlyPartnerTotal } from "../../types";
 
 export const MAX_COUNTRIES = 3;
+export const MAX_PRODUCTS = 3;
 export const DEFAULT_PRODUCT = "Ammonia";
 export const DEFAULT_SOURCE: TradeSource = "comext";
+export const DEFAULT_VIEW: ChartView = "countries";
 
 export interface ChartSelection {
   source: TradeSource;
+  view: ChartView;
+  // "Compare countries" tab
   product: string;
   partnerCodes: string[];
+  // "Compare products" tab
+  partner: string;
+  products: string[];
+  // shared
   fromYear: number;
   toYear: number;
 }
@@ -61,18 +69,20 @@ function parseYear(
 const WELL_FORMED_CODE = /^[A-Z]{2}$/;
 
 /**
- * Parse raw URL params into a valid ChartSelection. Never throws: an unknown
- * source or product becomes the default, years are clamped to the data's
- * span and swapped if crossed.
+ * Parse raw URL params into a valid ChartSelection. Never throws: unknown
+ * source / view / product / partner become defaults, years are clamped to
+ * the data's span and swapped if crossed.
  *
- * `source` is resolved first — it decides which dataset the RSC fetched, so
- * `bounds.products` / `bounds.partners` / `bounds.years` already reflect it
- * by the time the rest is validated.
+ * `source` and `view` are resolved first — they decide which dataset the RSC
+ * fetched, so `bounds` already reflects them by the time the rest is
+ * validated. Both tabs' fields are parsed regardless of `view` (they coexist
+ * in the URL).
  *
- * Country codes are kept if they're a partner with data for the current
- * product OR a well-formed 2-letter code that simply has no rows for it — the
- * latter still renders as an explicit zero bar (the spec's "the absence is
- * shown, never silent"), rather than being dropped like true garbage.
+ * Country codes are kept if they're a known partner OR a well-formed
+ * 2-letter code with no rows — the latter still renders as an explicit zero
+ * bar (the spec's "the absence is shown, never silent") rather than being
+ * dropped like true garbage. The single `partner` (products tab) must be a
+ * known partner or it's `""`.
  */
 export function parseChartSelection(
   params: URLSearchParams,
@@ -80,6 +90,7 @@ export function parseChartSelection(
 ): ChartSelection {
   const source: TradeSource =
     params.get("source") === "surveillance" ? "surveillance" : "comext";
+  const view: ChartView = params.get("view") === "products" ? "products" : "countries";
 
   const [minYear, maxYear] = spanEnds(bounds.years);
 
@@ -99,11 +110,25 @@ export function parseChartSelection(
     if (partnerCodes.length === MAX_COUNTRIES) break;
   }
 
+  const rawPartner = (params.get("partner") ?? "").trim().toUpperCase();
+  const partner = validCodes.has(rawPartner) ? rawPartner : "";
+
+  const productSet = new Set(bounds.products);
+  const seenProducts = new Set<string>();
+  const products: string[] = [];
+  for (const raw of (params.get("products") ?? "").split(",")) {
+    const p = raw.trim();
+    if (!p || seenProducts.has(p) || !productSet.has(p)) continue;
+    seenProducts.add(p);
+    products.push(p);
+    if (products.length === MAX_PRODUCTS) break;
+  }
+
   let fromYear = parseYear(params.get("from"), minYear, minYear, maxYear);
   let toYear = parseYear(params.get("to"), maxYear, minYear, maxYear);
   if (fromYear > toYear) [fromYear, toYear] = [toYear, fromYear];
 
-  return { source, product, partnerCodes, fromYear, toYear };
+  return { source, view, product, partnerCodes, partner, products, fromYear, toYear };
 }
 
 /**
@@ -118,9 +143,12 @@ export function chartSelectionToParams(
   const params = new URLSearchParams();
 
   if (selection.source !== DEFAULT_SOURCE) params.set("source", selection.source);
+  if (selection.view !== DEFAULT_VIEW) params.set("view", selection.view);
   if (selection.product !== DEFAULT_PRODUCT) params.set("product", selection.product);
   if (selection.partnerCodes.length > 0)
     params.set("countries", selection.partnerCodes.join(","));
+  if (selection.partner) params.set("partner", selection.partner);
+  if (selection.products.length > 0) params.set("products", selection.products.join(","));
   if (selection.fromYear !== minYear) params.set("from", String(selection.fromYear));
   if (selection.toYear !== maxYear) params.set("to", String(selection.toYear));
 
