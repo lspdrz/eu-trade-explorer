@@ -3,24 +3,25 @@
 import { Radio, RadioGroup } from "@headlessui/react";
 import type { TradeSource } from "../../types";
 
-const OPTIONS: { value: TradeSource; label: string; caption: string }[] = [
+const OPTIONS: { value: TradeSource; label: string; hint: string }[] = [
   {
     value: "comext",
     label: "COMEXT",
-    caption: "Validated Eurostat trade statistics, updated monthly",
+    hint: "Validated Eurostat trade statistics, updated monthly",
   },
   {
     value: "surveillance",
     label: "Surveillance",
-    caption: "Provisional customs records, updated weekly",
+    hint: "Provisional customs records, updated weekly",
   },
 ];
 
 /**
  * Segmented two-option data-source picker. Changing it triggers a server
  * refetch upstream (a whole new dataset), so `pending` dims the control
- * while that runs. The caption under it explains the selected source's
- * recency/authority trade-off.
+ * while that runs. Each option's recency/authority trade-off is a `title`
+ * tooltip rather than always-on text, so the control is the same height as
+ * its neighbours in the filter row.
  */
 export function SourceToggle({
   value,
@@ -31,8 +32,6 @@ export function SourceToggle({
   onChange: (source: TradeSource) => void;
   pending?: boolean;
 }) {
-  const caption = OPTIONS.find((o) => o.value === value)?.caption ?? "";
-
   return (
     <div className="flex flex-col gap-1">
       <span className="text-[0.8125rem] font-medium text-muted">Source</span>
@@ -47,13 +46,13 @@ export function SourceToggle({
           <Radio
             key={o.value}
             value={o.value}
+            title={o.hint}
             className="cursor-pointer rounded px-3 py-1.5 data-checked:bg-border data-checked:font-medium"
           >
             {o.label}
           </Radio>
         ))}
       </RadioGroup>
-      <span className="text-[0.75rem] text-muted">{caption}</span>
     </div>
   );
 }

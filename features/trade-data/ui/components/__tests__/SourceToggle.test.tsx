@@ -11,16 +11,12 @@ describe("SourceToggle", () => {
     expect(html).toContain("Surveillance");
   });
 
-  it("shows the caption for the selected source", () => {
-    const comext = renderToStaticMarkup(
+  it("carries each source's explanation as a hover tooltip on its option", () => {
+    const html = renderToStaticMarkup(
       <SourceToggle value="comext" onChange={() => {}} pending={false} />,
     );
-    expect(comext).toContain("Validated Eurostat trade statistics, updated monthly");
-
-    const surv = renderToStaticMarkup(
-      <SourceToggle value="surveillance" onChange={() => {}} pending={false} />,
-    );
-    expect(surv).toContain("Provisional customs records, updated weekly");
+    expect(html).toContain('title="Validated Eurostat trade statistics, updated monthly"');
+    expect(html).toContain('title="Provisional customs records, updated weekly"');
   });
 
   it("marks itself busy while pending", () => {
