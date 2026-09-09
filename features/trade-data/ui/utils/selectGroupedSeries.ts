@@ -1,38 +1,45 @@
-import type { GroupedSeries, GroupedSeriesPoint, YearlyPartnerTotal } from "../../types";
+import type { GroupedSeries, GroupedSeriesPoint } from "../../types";
+
+/** One observation to plot: which series, which year, how many tonnes. */
+export interface SeriesRow {
+  seriesKey: string;
+  year: number;
+  tonnes: number;
+}
 
 /**
- * Shapes the full per-product yearly totals into exactly what the bar chart
- * draws: the selected countries, over the selected inclusive year range, as a
- * dense zero-filled grid. Pure — no React, no DB. This is where the chart's
+ * Shapes flat observations into the bar chart's dense grid: the selected
+ * series, over the selected inclusive year range, zero-filled. Pure — no
+ * React, no DB. A "series" is whatever the caller keys by (a partner country,
+ * or a product); this function doesn't care. This is where the chart's
  * "missing data means a zero bar, not a gap" rule lives.
  */
 export function selectGroupedSeries(
-  yearlyTotals: YearlyPartnerTotal[],
-  selection: { partnerCodes: string[]; fromYear: number; toYear: number },
+  rows: SeriesRow[],
+  selection: { seriesKeys: string[]; fromYear: number; toYear: number },
 ): GroupedSeries {
-  const { partnerCodes, fromYear, toYear } = selection;
+  const { seriesKeys, fromYear, toYear } = selection;
 
   const years = Array.from(
     { length: Math.max(0, toYear - fromYear + 1) },
     (_, i) => fromYear + i,
   );
 
-  const selected = new Set(partnerCodes);
+  const selected = new Set(seriesKeys);
   const tonnesByKey = new Map<string, number>();
-  for (const total of yearlyTotals) {
-    const year = Number(total.year);
-    if (year < fromYear || year > toYear) continue;
-    if (!selected.has(total.partnerCode)) continue;
-    tonnesByKey.set(`${total.partnerCode}|${year}`, total.tonnes);
+  for (const row of rows) {
+    if (row.year < fromYear || row.year > toYear) continue;
+    if (!selected.has(row.seriesKey)) continue;
+    tonnesByKey.set(`${row.seriesKey}|${row.year}`, row.tonnes);
   }
 
   const points: GroupedSeriesPoint[] = [];
-  for (const partnerCode of partnerCodes) {
+  for (const seriesKey of seriesKeys) {
     for (const year of years) {
       points.push({
-        partnerCode,
+        seriesKey,
         year,
-        tonnes: tonnesByKey.get(`${partnerCode}|${year}`) ?? 0,
+        tonnes: tonnesByKey.get(`${seriesKey}|${year}`) ?? 0,
       });
     }
   }

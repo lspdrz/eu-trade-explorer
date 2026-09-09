@@ -1,31 +1,30 @@
-import { MAX_COUNTRIES } from "./chartSelectionParams";
-
 /**
- * Stable colour assignment for the selected countries. A country keeps its
- * colour slot for as long as it stays selected — removing one country never
- * recolours the others (the design's "colour follows the slot, not the
- * position" rule). New countries take the lowest free slot.
+ * Stable colour assignment for the selected series. A series keeps its colour
+ * slot for as long as it stays selected — removing one never recolours the
+ * others (the design's "colour follows the slot, not the position" rule). New
+ * series take the lowest free slot, up to `max`.
  */
 export function assignColorSlots(
-  partnerCodes: string[],
+  keys: string[],
   previous: Record<string, number>,
+  max: number,
 ): Record<string, number> {
   const next: Record<string, number> = {};
   const used = new Set<number>();
 
-  for (const code of partnerCodes) {
-    const prior = previous[code];
+  for (const key of keys) {
+    const prior = previous[key];
     if (prior !== undefined && !used.has(prior)) {
-      next[code] = prior;
+      next[key] = prior;
       used.add(prior);
     }
   }
 
-  for (const code of partnerCodes) {
-    if (next[code] !== undefined) continue;
+  for (const key of keys) {
+    if (next[key] !== undefined) continue;
     let slot = 0;
-    while (used.has(slot) && slot < MAX_COUNTRIES) slot++;
-    next[code] = slot;
+    while (used.has(slot) && slot < max) slot++;
+    next[key] = slot;
     used.add(slot);
   }
 

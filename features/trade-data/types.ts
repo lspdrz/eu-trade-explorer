@@ -40,11 +40,12 @@ export interface YearlyPartnerTotal {
 }
 
 /**
- * One bar in the grouped chart: a single partner country's imported tonnes
- * for a single year. `tonnes` is 0 when that country had no imports that year.
+ * One bar in the grouped chart: a single series' imported tonnes for a single
+ * year. A "series" is whatever the chart is comparing — a partner country, or
+ * a product. `tonnes` is 0 when that series had no imports that year.
  */
 export interface GroupedSeriesPoint {
-  partnerCode: string;
+  seriesKey: string;
   year: number;
   tonnes: number;
 }
@@ -52,8 +53,8 @@ export interface GroupedSeriesPoint {
 /**
  * The chart's full input for the current selection. `years` is every year in
  * the selected inclusive range (so the x-axis has a slot even for gap years).
- * `points` is the full partnerCode × year grid, ordered by the
- * selected-country order then by year, zero-filled.
+ * `points` is the full seriesKey × year grid, ordered by the selected-series
+ * order then by year, zero-filled.
  */
 export interface GroupedSeries {
   years: number[];
@@ -67,3 +68,6 @@ export interface GroupedSeries {
  * architecture-decisions.md.
  */
 export type TradeSource = "comext" | "surveillance";
+
+/** Which comparison the chart is showing. */
+export type ChartView = "countries" | "products";

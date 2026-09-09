@@ -3,11 +3,13 @@
 import { useMemo, useState } from "react";
 import type { TradeSource, YearlyPartnerTotal } from "../../types";
 import { assignColorSlots } from "../utils/assignColorSlots";
-import { deriveBounds } from "../utils/chartSelectionParams";
+import { MAX_COUNTRIES, deriveBounds } from "../utils/chartSelectionParams";
 import { selectGroupedSeries } from "../utils/selectGroupedSeries";
 import { useChartSelection } from "../hooks/useChartSelection";
+import { ChartEmptyState } from "./ChartEmptyState";
 import { CountryCombobox } from "./CountryCombobox";
 import { ImportsBarChart } from "./ImportsBarChart";
+import { ImportsDataTable } from "./ImportsDataTable";
 import { ProductListbox } from "./ProductListbox";
 import { SourceToggle } from "./SourceToggle";
 import { YearRangeSlider } from "./YearRangeSlider";
@@ -41,14 +43,23 @@ export function FertilizerImportsView({
   // one render behind `router.push`, but the RSC has already refetched for
   // the new source/product.
 
+  const rows = useMemo(
+    () =>
+      yearlyTotals.map((t) => ({
+        seriesKey: t.partnerCode,
+        year: Number(t.year),
+        tonnes: t.tonnes,
+      })),
+    [yearlyTotals],
+  );
   const series = useMemo(
     () =>
-      selectGroupedSeries(yearlyTotals, {
-        partnerCodes: selection.partnerCodes,
+      selectGroupedSeries(rows, {
+        seriesKeys: selection.partnerCodes,
         fromYear: selection.fromYear,
         toYear: selection.toYear,
       }),
-    [yearlyTotals, selection.partnerCodes, selection.fromYear, selection.toYear],
+    [rows, selection.partnerCodes, selection.fromYear, selection.toYear],
   );
 
   // Stable colour slots: a country keeps its colour while selected. Recompute
@@ -60,11 +71,13 @@ export function FertilizerImportsView({
   const [colorSlots, setColorSlots] = useState<Record<string, number>>({});
   if (codesKey !== slotsKey) {
     setSlotsKey(codesKey);
-    setColorSlots((prev) => assignColorSlots(selection.partnerCodes, prev));
+    setColorSlots((prev) =>
+      assignColorSlots(selection.partnerCodes, prev, MAX_COUNTRIES),
+    );
   }
 
-  const selectedCountries = selection.partnerCodes.map((code) => ({
-    code,
+  const seriesMeta = selection.partnerCodes.map((code) => ({
+    key: code,
     name: bounds.partners.find((p) => p.code === code)?.name ?? code,
     color: SERIES_COLORS[colorSlots[code] ?? 0],
   }));
@@ -73,6 +86,10 @@ export function FertilizerImportsView({
     ? [bounds.years[0], bounds.years[bounds.years.length - 1]]
     : [0, 0];
   const partialYear = bounds.years.length ? maxYear : undefined;
+
+  const ariaLabel = `EU imports in tonnes per year for ${seriesMeta
+    .map((s) => s.name)
+    .join(", ")}`;
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">
@@ -111,11 +128,24 @@ export function FertilizerImportsView({
       </div>
 
       <div className="mt-8">
-        <ImportsBarChart
-          series={series}
-          countries={selectedCountries}
-          partialYear={partialYear}
-        />
+        {seriesMeta.length === 0 ? (
+          <ChartEmptyState message="Choose up to three partner countries to see the comparison." />
+        ) : (
+          <>
+            <ImportsBarChart
+              series={series}
+              seriesMeta={seriesMeta}
+              ariaLabel={ariaLabel}
+              partialYear={partialYear}
+            />
+            <ImportsDataTable
+              series={series}
+              seriesMeta={seriesMeta}
+              seriesLabel="Country"
+              partialYear={partialYear}
+            />
+          </>
+        )}
       </div>
     </main>
   );
