@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useTransition } from "react";
+import type { TradeSource } from "../../types";
 import {
   type ChartSelection,
   type SelectionBounds,
@@ -14,14 +15,14 @@ import {
  *
  * Country and year edits use history.replaceState — the whole product
  * dataset is already in memory, so there's nothing for the server to redo.
- * Product edits use router navigation, which re-runs the Server Component to
- * fetch the new product's data; isProductPending covers that round-trip.
+ * Product and source edits use router navigation, which re-runs the Server
+ * Component to fetch the new dataset; isPending covers that round-trip.
  */
 export function useChartSelection(bounds: SelectionBounds) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const [isProductPending, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const selection = useMemo<ChartSelection>(
     () => parseChartSelection(new URLSearchParams(searchParams.toString()), bounds),
@@ -56,5 +57,20 @@ export function useChartSelection(bounds: SelectionBounds) {
     [selection, hrefFor, router],
   );
 
-  return { selection, setPartnerCodes, setYearRange, setProduct, isProductPending };
+  const setSource = useCallback(
+    (source: TradeSource) => {
+      const href = hrefFor({ ...selection, source });
+      startTransition(() => router.push(href));
+    },
+    [selection, hrefFor, router],
+  );
+
+  return {
+    selection,
+    setPartnerCodes,
+    setYearRange,
+    setProduct,
+    setSource,
+    isPending,
+  };
 }

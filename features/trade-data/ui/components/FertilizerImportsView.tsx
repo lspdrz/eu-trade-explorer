@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { YearlyPartnerTotal } from "../../types";
+import type { TradeSource, YearlyPartnerTotal } from "../../types";
 import { assignColorSlots } from "../utils/assignColorSlots";
 import { deriveBounds } from "../utils/chartSelectionParams";
 import { selectGroupedSeries } from "../utils/selectGroupedSeries";
@@ -9,6 +9,7 @@ import { useChartSelection } from "../hooks/useChartSelection";
 import { CountryCombobox } from "./CountryCombobox";
 import { ImportsBarChart } from "./ImportsBarChart";
 import { ProductListbox } from "./ProductListbox";
+import { SourceToggle } from "./SourceToggle";
 import { YearRangeSlider } from "./YearRangeSlider";
 
 const SERIES_COLORS = [
@@ -18,10 +19,12 @@ const SERIES_COLORS = [
 ];
 
 export function FertilizerImportsView({
+  source,
   products,
   product,
   yearlyTotals,
 }: {
+  source: TradeSource;
   products: string[];
   product: string;
   yearlyTotals: YearlyPartnerTotal[];
@@ -30,12 +33,13 @@ export function FertilizerImportsView({
     () => ({ products, ...deriveBounds(yearlyTotals) }),
     [products, yearlyTotals],
   );
-  const { selection, setPartnerCodes, setYearRange, setProduct, isProductPending } =
+  const { selection, setPartnerCodes, setYearRange, setProduct, setSource, isPending } =
     useChartSelection(bounds);
 
-  // The `product` server prop is authoritative for the selector's value: during
-  // a product change the URL (hence `selection.product`) can lag one render
-  // behind `router.push`, but the RSC has already refetched for the new product.
+  // The `source` and `product` server props are authoritative for the
+  // selectors' values: during a change the URL (hence `selection.*`) can lag
+  // one render behind `router.push`, but the RSC has already refetched for
+  // the new source/product.
 
   const series = useMemo(
     () =>
@@ -77,17 +81,18 @@ export function FertilizerImportsView({
           Where the EU&rsquo;s nitrogen fertilizer comes from
         </h1>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
-          Customs-recorded import volumes by partner country. Choose a product and
-          up to three partners to compare across the years on record.
+          Import volumes by partner country. Choose a source and product, and up
+          to three partners to compare across the years on record.
         </p>
       </header>
 
       <div className="mt-8 flex flex-wrap items-end gap-x-8 gap-y-4 border-b border-border pb-5">
+        <SourceToggle value={source} onChange={setSource} pending={isPending} />
         <ProductListbox
           products={bounds.products}
           value={product}
           onChange={setProduct}
-          pending={isProductPending}
+          pending={isPending}
         />
         <CountryCombobox
           partners={bounds.partners}

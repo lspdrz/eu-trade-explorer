@@ -1,9 +1,11 @@
-import type { YearlyPartnerTotal } from "../../types";
+import type { TradeSource, YearlyPartnerTotal } from "../../types";
 
 export const MAX_COUNTRIES = 3;
 export const DEFAULT_PRODUCT = "Ammonia";
+export const DEFAULT_SOURCE: TradeSource = "comext";
 
 export interface ChartSelection {
+  source: TradeSource;
   product: string;
   partnerCodes: string[];
   fromYear: number;
@@ -60,8 +62,12 @@ const WELL_FORMED_CODE = /^[A-Z]{2}$/;
 
 /**
  * Parse raw URL params into a valid ChartSelection. Never throws: an unknown
- * product becomes the default, years are clamped to the data's span and
- * swapped if crossed.
+ * source or product becomes the default, years are clamped to the data's
+ * span and swapped if crossed.
+ *
+ * `source` is resolved first — it decides which dataset the RSC fetched, so
+ * `bounds.products` / `bounds.partners` / `bounds.years` already reflect it
+ * by the time the rest is validated.
  *
  * Country codes are kept if they're a partner with data for the current
  * product OR a well-formed 2-letter code that simply has no rows for it — the
@@ -72,6 +78,9 @@ export function parseChartSelection(
   params: URLSearchParams,
   bounds: SelectionBounds,
 ): ChartSelection {
+  const source: TradeSource =
+    params.get("source") === "surveillance" ? "surveillance" : "comext";
+
   const [minYear, maxYear] = spanEnds(bounds.years);
 
   const rawProduct = params.get("product");
@@ -94,7 +103,7 @@ export function parseChartSelection(
   let toYear = parseYear(params.get("to"), maxYear, minYear, maxYear);
   if (fromYear > toYear) [fromYear, toYear] = [toYear, fromYear];
 
-  return { product, partnerCodes, fromYear, toYear };
+  return { source, product, partnerCodes, fromYear, toYear };
 }
 
 /**
@@ -108,6 +117,7 @@ export function chartSelectionToParams(
   const [minYear, maxYear] = spanEnds(bounds.years);
   const params = new URLSearchParams();
 
+  if (selection.source !== DEFAULT_SOURCE) params.set("source", selection.source);
   if (selection.product !== DEFAULT_PRODUCT) params.set("product", selection.product);
   if (selection.partnerCodes.length > 0)
     params.set("countries", selection.partnerCodes.join(","));
