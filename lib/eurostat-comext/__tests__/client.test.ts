@@ -9,16 +9,16 @@ vi.mock("undici", async (importOriginal) => ({
 import { contactComextAPI } from "../client";
 
 const BASE =
-  "https://ec.europa.eu/eurostat/api/comext/dissemination/statistics/1.0/data/DS-045409";
+  "https://ec.europa.eu/eurostat/api/comext/dissemination/sdmx/3.0/data/dataflow/ESTAT/DS-045409/1.0/M.EU27_2020";
 
 describe("contactComextAPI", () => {
-  it("GETs the DS-045409 endpoint with the given search params", async () => {
+  it("GETs the SDMX 3.0 DS-045409 endpoint with the given search params", async () => {
     vi.mocked(fetch).mockResolvedValue(new Response(null, { status: 200 }));
 
-    await contactComextAPI(new URLSearchParams({ format: "JSON", freq: "M" }));
+    await contactComextAPI(new URLSearchParams({ format: "csvdata" }));
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(String(url)).toBe(`${BASE}?format=JSON&freq=M`);
+    expect(String(url)).toBe(`${BASE}?format=csvdata`);
     expect(init?.method ?? "GET").toBe("GET");
   });
 
