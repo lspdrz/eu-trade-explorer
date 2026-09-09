@@ -1,12 +1,10 @@
-import { eq } from "drizzle-orm";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
 import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
 import type { RawTaxudWeekRow } from "../../../types";
 import { replaceProductData } from "../replaceProductData";
 
-// Sentinel product name so these tests never collide with real synced data.
-const TEST_PRODUCT = "__test_product__";
+const PRODUCT = "Ammonia";
 
 function row(overrides: Partial<RawTaxudWeekRow>): RawTaxudWeekRow {
   return {
@@ -17,7 +15,7 @@ function row(overrides: Partial<RawTaxudWeekRow>): RawTaxudWeekRow {
     memberStateName: "Finland",
     partnerCode: "RU",
     partner: "Russia",
-    product: TEST_PRODUCT,
+    product: PRODUCT,
     cn8ProductCode: "28141000",
     taric10ProductCode: "2814100000",
     procedure: 4000,
@@ -37,48 +35,42 @@ async function* asyncFrom<T>(items: T[]): AsyncGenerator<T> {
   }
 }
 
-async function storedTestRows() {
-  return db.select().from(rawTaxudWeeklyRows).where(eq(rawTaxudWeeklyRows.product, TEST_PRODUCT));
-}
+const storedRows = () => db.select().from(rawTaxudWeeklyRows);
 
 describe("replaceProductData", () => {
-  afterEach(async () => {
-    await db.delete(rawTaxudWeeklyRows).where(eq(rawTaxudWeeklyRows.product, TEST_PRODUCT));
-  });
-
   it("stores every row a source yields, including exact duplicates, without merging or erroring", async () => {
     // The EU API can report two rows identical on every field it exposes
     // (confirmed live, ~1 in 12,000 rows) — with no business key to
     // collide on, both are simply stored, faithfully.
     const source = asyncFrom([row({ kg: "100" }), row({ kg: "100" })]);
 
-    await replaceProductData({ product: TEST_PRODUCT, marketingYear: "2023", source });
+    await replaceProductData({ product: PRODUCT, marketingYear: "2023", source });
 
-    const stored = await storedTestRows();
+    const stored = await storedRows();
     expect(stored).toHaveLength(2);
   });
 
   it("scoped to a marketingYear, replaces only that year's rows and leaves other years untouched", async () => {
     await replaceProductData({
-      product: TEST_PRODUCT,
+      product: PRODUCT,
       marketingYear: "2023",
       source: asyncFrom([row({ marketingYear: "2023", kg: "111" })]),
     });
 
     await replaceProductData({
-      product: TEST_PRODUCT,
+      product: PRODUCT,
       marketingYear: "2024",
       source: asyncFrom([row({ marketingYear: "2024", kg: "222" })]),
     });
 
     // Re-sync 2024 with corrected data; 2023 must be completely unaffected.
     await replaceProductData({
-      product: TEST_PRODUCT,
+      product: PRODUCT,
       marketingYear: "2024",
       source: asyncFrom([row({ marketingYear: "2024", kg: "999" })]),
     });
 
-    const stored = await storedTestRows();
+    const stored = await storedRows();
     expect(stored).toHaveLength(2);
     const y2023 = stored.find((r) => r.marketingYear === "2023");
     const y2024 = stored.find((r) => r.marketingYear === "2024");
@@ -88,18 +80,18 @@ describe("replaceProductData", () => {
 
   it("with no marketingYear given, replaces every row for the product regardless of year", async () => {
     await replaceProductData({
-      product: TEST_PRODUCT,
+      product: PRODUCT,
       source: asyncFrom([row({ marketingYear: "2020", kg: "1" }), row({ marketingYear: "2021", kg: "2" })]),
     });
 
     await replaceProductData({
-      product: TEST_PRODUCT,
+      product: PRODUCT,
       source: asyncFrom([row({ marketingYear: "2025", kg: "3" })]),
     });
 
     // The 2020/2021 rows from the first (full-history) call must be gone
     // entirely, not left behind alongside the new 2025 row.
-    const stored = await storedTestRows();
+    const stored = await storedRows();
     expect(stored).toHaveLength(1);
     expect(stored[0].marketingYear).toBe("2025");
   });
@@ -111,13 +103,13 @@ describe("replaceProductData", () => {
     const rows = Array.from({ length: 501 }, (_, i) => row({ memberStateCode: `S${i}` }));
 
     const result = await replaceProductData({
-      product: TEST_PRODUCT,
+      product: PRODUCT,
       marketingYear: "2023",
       source: asyncFrom(rows),
     });
 
     expect(result).toEqual({ rowsWritten: 501 });
-    expect(await storedTestRows()).toHaveLength(501);
+    expect(await storedRows()).toHaveLength(501);
   });
 
   it("documents its precondition: given an empty source, it still deletes the existing scope and writes nothing", async () => {
@@ -130,24 +122,24 @@ describe("replaceProductData", () => {
     // deleting real data with nothing to replace it) is guarded against
     // one layer up, not in this function.
     await replaceProductData({
-      product: TEST_PRODUCT,
+      product: PRODUCT,
       marketingYear: "2023",
       source: asyncFrom([row({ marketingYear: "2023", kg: "100" })]),
     });
 
     const result = await replaceProductData({
-      product: TEST_PRODUCT,
+      product: PRODUCT,
       marketingYear: "2023",
       source: asyncFrom([]),
     });
 
     expect(result).toEqual({ rowsWritten: 0 });
-    expect(await storedTestRows()).toHaveLength(0);
+    expect(await storedRows()).toHaveLength(0);
   });
 
   it("a source that fails partway leaves previously synced data for that scope completely untouched", async () => {
     await replaceProductData({
-      product: TEST_PRODUCT,
+      product: PRODUCT,
       marketingYear: "2023",
       source: asyncFrom([row({ marketingYear: "2023", kg: "100" })]),
     });
@@ -161,10 +153,10 @@ describe("replaceProductData", () => {
     }
 
     await expect(
-      replaceProductData({ product: TEST_PRODUCT, marketingYear: "2023", source: failingPartway() }),
+      replaceProductData({ product: PRODUCT, marketingYear: "2023", source: failingPartway() }),
     ).rejects.toThrow();
 
-    const stored = await storedTestRows();
+    const stored = await storedRows();
     expect(stored).toHaveLength(1);
     expect(Number(stored[0].kg)).toBe(100);
   });
