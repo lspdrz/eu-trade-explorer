@@ -8,13 +8,15 @@ export const dynamic = "force-dynamic";
 
 export default async function Home({ searchParams }: PageProps<"/">) {
   const params = await searchParams;
-  const productParam = Array.isArray(params.product)
+  // Each value is string | string[] (a param can repeat); take the single value.
+  const source = Array.isArray(params.source) ? params.source[0] : params.source;
+  const product = Array.isArray(params.product)
     ? params.product[0]
     : params.product;
 
   return (
     <Suspense fallback={<div className="p-6 text-muted">Loading…</div>}>
-      <FertilizerImports product={productParam} />
+      <FertilizerImports source={source} product={product} />
     </Suspense>
   );
 }
