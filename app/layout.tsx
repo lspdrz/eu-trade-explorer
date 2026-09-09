@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
+import { ThemeToggle } from "./ThemeToggle";
+
+// Runs before first paint: a returning visitor who chose dark gets it with no
+// white flash. Light is the default, so the absence of a stored choice (or any
+// error reading it) is a no-op. Kept inline and tiny for that reason.
+const THEME_SCRIPT =
+  "try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}";
 
 // IBM Plex Sans: an engineered, institutional face built for technical and
 // data contexts — a deliberate fit for customs trade statistics, and not the
@@ -19,8 +26,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={plexSans.variable}>
-      <body>{children}</body>
+    <html lang="en" className={plexSans.variable} suppressHydrationWarning>
+      <body>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <ThemeToggle />
+        {children}
+      </body>
     </html>
   );
 }

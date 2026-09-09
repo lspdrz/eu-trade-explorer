@@ -2,8 +2,10 @@
 
 /* Design tokens. Tailwind v4 reads these from @theme and generates matching
    utilities (bg-background, text-foreground, bg-series-1, …). Dark mode
-   overrides the same CSS variables under a media query — @theme itself is
-   top-level only.
+   overrides the same CSS variables under `:root[data-theme="dark"]` — set by
+   the ThemeToggle (and the pre-paint script in layout.tsx). @theme itself is
+   top-level only, so it holds the light palette; the page defaults to light
+   and ignores the OS `prefers-color-scheme`.
 
    Colors are the dataviz skill's validated reference palette (blue / orange /
    green-teal — the skill names slot 3 "aqua"). Verified with
@@ -30,23 +32,23 @@
   --color-series-3: #1baf7a;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-background: #0d0d0d;
-    --color-surface: #1a1a19;
-    --color-foreground: #ffffff;
-    --color-muted: #c3c2b7;
-    --color-border: #2c2c2a;
-    --color-baseline: #383835;
-
-    --color-series-1: #3987e5;
-    --color-series-2: #d95926;
-    --color-series-3: #199e70;
-  }
+:root {
+  color-scheme: light;
 }
 
-html {
-  color-scheme: light dark;
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-background: #0d0d0d;
+  --color-surface: #1a1a19;
+  --color-foreground: #ffffff;
+  --color-muted: #c3c2b7;
+  --color-border: #2c2c2a;
+  --color-baseline: #383835;
+
+  --color-series-1: #3987e5;
+  --color-series-2: #d95926;
+  --color-series-3: #199e70;
 }
 
 body {
