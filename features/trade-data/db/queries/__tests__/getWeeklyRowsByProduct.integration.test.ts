@@ -1,14 +1,7 @@
-import { sql } from "drizzle-orm";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
 import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
 import { getWeeklyRowsByProduct } from "../getWeeklyRowsByProduct";
-
-const TEST_PRODUCT = "__test_product__";
-
-async function cleanUpTestRows() {
-  await db.delete(rawTaxudWeeklyRows).where(sql`${rawTaxudWeeklyRows.product} = ${TEST_PRODUCT}`);
-}
 
 function rawRow(overrides: Partial<typeof rawTaxudWeeklyRows.$inferInsert>) {
   return {
@@ -19,7 +12,7 @@ function rawRow(overrides: Partial<typeof rawTaxudWeeklyRows.$inferInsert>) {
     memberStateName: "Finland",
     partnerCode: "RU",
     partner: "Russia",
-    product: TEST_PRODUCT,
+    product: "Ammonia",
     cn8ProductCode: "28141000",
     taric10ProductCode: "2814100000",
     procedure: 4000,
@@ -35,18 +28,10 @@ function rawRow(overrides: Partial<typeof rawTaxudWeeklyRows.$inferInsert>) {
 }
 
 describe("getWeeklyRowsByProduct", () => {
-  afterEach(async () => {
-    await cleanUpTestRows();
-  });
-
   it("reads raw rows for a product, converting numeric fields from strings", async () => {
     const syncedAt = new Date();
     await db.insert(rawTaxudWeeklyRows).values([
       rawRow({
-        week: 1,
-        memberStateCode: "FI",
-        partnerCode: "RU",
-        partner: "Russia",
         euroValue: "123.45",
         unitValue: "6.7",
         kg: "10000000",
@@ -56,9 +41,7 @@ describe("getWeeklyRowsByProduct", () => {
       }),
     ]);
 
-    const result = await getWeeklyRowsByProduct(TEST_PRODUCT);
-
-    expect(result).toEqual([
+    expect(await getWeeklyRowsByProduct("Ammonia")).toEqual([
       {
         id: expect.any(Number),
         sector: "Fertilisers",
@@ -68,7 +51,7 @@ describe("getWeeklyRowsByProduct", () => {
         memberStateName: "Finland",
         partnerCode: "RU",
         partner: "Russia",
-        product: TEST_PRODUCT,
+        product: "Ammonia",
         cn8ProductCode: "28141000",
         taric10ProductCode: "2814100000",
         procedure: 4000,
@@ -84,21 +67,16 @@ describe("getWeeklyRowsByProduct", () => {
   });
 
   it("only returns rows for the requested product", async () => {
-    await db.insert(rawTaxudWeeklyRows).values([
-      rawRow({ product: TEST_PRODUCT }),
-      rawRow({ product: "__other_test_product__" }),
-    ]);
+    await db
+      .insert(rawTaxudWeeklyRows)
+      .values([rawRow({ product: "Ammonia" }), rawRow({ product: "Urea" })]);
 
-    const result = await getWeeklyRowsByProduct(TEST_PRODUCT);
-
+    const result = await getWeeklyRowsByProduct("Ammonia");
     expect(result).toHaveLength(1);
-    expect(result[0].product).toBe(TEST_PRODUCT);
-
-    await db.delete(rawTaxudWeeklyRows).where(sql`${rawTaxudWeeklyRows.product} = '__other_test_product__'`);
+    expect(result[0].product).toBe("Ammonia");
   });
 
   it("returns an empty array when there's no data for a product", async () => {
-    const result = await getWeeklyRowsByProduct(TEST_PRODUCT);
-    expect(result).toEqual([]);
+    expect(await getWeeklyRowsByProduct("Ammonia")).toEqual([]);
   });
 });
