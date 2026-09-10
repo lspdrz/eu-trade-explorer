@@ -4,6 +4,7 @@ import type { ComextObservation } from "../types";
 import { replaceComextObservations } from "../db/mutations/replaceComextObservations";
 import { fetchComextImports } from "./fetchComextImports";
 
+const START_YEAR = 2010;
 const TRAILING_YEARS = 3;
 
 type HeadingResult = { rowsWritten: number } | { error: string } | { skipped: true };
@@ -17,15 +18,24 @@ function monthList(fromYear: number, toYear: number): string[] {
 }
 
 /**
- * The monthly refresh: re-pull the trailing 3 calendar years from COMEXT
- * and replace them. Runs each heading independently — a failure or an
- * upstream outage on one leaves the other's data intact (see
- * replaceComextObservations' scoping). An all-empty heading is skipped,
- * not written, so a schema change upstream can't wipe good rows.
+ * Re-pull COMEXT and replace what's on record. Runs each heading
+ * independently — a failure or an upstream outage on one leaves the other's
+ * data intact (see replaceComextObservations' scoping). An all-empty
+ * heading is skipped, not written, so a schema change upstream can't wipe
+ * good rows.
+ *
+ * Default: the trailing 3 calendar years, for a frequent run.
+ * `mode === "backfill"`: every year from 2010 — a full table replace (the
+ * delete covers all months on record for each heading), meant to run once
+ * by hand via scripts/sync-comext.ts --backfill. Idempotent, so a failed
+ * run is just re-run.
  */
-export async function runComextRefresh(): Promise<Record<ComextHeading, HeadingResult>> {
+export async function runComextRefresh(
+  mode: string | null,
+): Promise<Record<ComextHeading, HeadingResult>> {
   const thisYear = new Date().getFullYear();
-  const fromYear = thisYear - (TRAILING_YEARS - 1);
+  const fromYear =
+    mode === "backfill" ? START_YEAR : thisYear - (TRAILING_YEARS - 1);
   const periods = monthList(fromYear, thisYear);
 
   const result = {} as Record<ComextHeading, HeadingResult>;
