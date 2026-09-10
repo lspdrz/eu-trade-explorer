@@ -19,16 +19,15 @@ const VARS: Record<keyof GlobeTokens, string> = {
 };
 
 /**
- * Resolve the palette CSS custom properties to concrete colour strings so
- * canvas drawing (which can't use `var(--x)`) tracks the active theme.
- * `read` / `el` are injectable for tests; in the browser they default to
- * `getComputedStyle(document.documentElement)`. Call only from an effect.
+ * The current values of the palette CSS custom properties, resolved to
+ * concrete colour strings. Canvas can't use `var(--x)`, and the tokens
+ * differ per theme (`globals.css` redefines them under
+ * `[data-theme="dark"]`), so the globe reads them live and re-reads when
+ * the theme flips rather than carrying its own copy of both palettes.
+ * Touches the DOM — call only from an effect.
  */
-export function readGlobeTokens(
-  read: (el: Element) => CSSStyleDeclaration = (el) => getComputedStyle(el),
-  el: Element = document.documentElement,
-): GlobeTokens {
-  const style = read(el);
+export function readGlobeTokens(): GlobeTokens {
+  const style = getComputedStyle(document.documentElement);
   const out = {} as GlobeTokens;
   for (const key of Object.keys(VARS) as (keyof GlobeTokens)[]) {
     out[key] = style.getPropertyValue(VARS[key]).trim();

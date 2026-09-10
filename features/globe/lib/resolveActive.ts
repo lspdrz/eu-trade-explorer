@@ -1,6 +1,6 @@
 import { DEFAULT_TOP_N, MAX_GLOBE_COUNTRIES } from "@/features/globe/constants/globeConfig";
 import type { PartnerImportTotal } from "@/features/globe/types";
-import { topN } from "@/features/globe/lib/topN";
+import { topN } from "@/features/globe/utils/topN";
 
 /**
  * The set of origin countries the globe should draw. No explicit request
@@ -11,7 +11,8 @@ export function resolveActive(
   totals: PartnerImportTotal[],
   requested: string[],
 ): string[] {
-  if (requested.length === 0) return topN(totals, DEFAULT_TOP_N);
+  if (requested.length === 0)
+    return topN(totals, DEFAULT_TOP_N).map((t) => t.partnerCode);
   const known = new Set(totals.map((t) => t.partnerCode));
   return requested.filter((c) => known.has(c)).slice(0, MAX_GLOBE_COUNTRIES);
 }

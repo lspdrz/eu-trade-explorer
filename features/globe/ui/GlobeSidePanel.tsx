@@ -3,7 +3,7 @@
 import { format } from "d3-format";
 import { DEFAULT_TOP_N, MAX_GLOBE_COUNTRIES } from "@/features/globe/constants/globeConfig";
 import type { PartnerImportTotal } from "@/features/globe/types";
-import { topN } from "@/features/globe/lib/topN";
+import { topN } from "@/features/globe/utils/topN";
 import { CountryPicker } from "@/features/globe/ui/CountryPicker";
 
 /** Compact tonnes at 3 significant figures — "69.7M", "400k" (d3 emits "G", we want "B"). */
@@ -31,7 +31,7 @@ export function GlobeSidePanel({
   const rankByCode = new Map(totals.map((t, i) => [t.partnerCode, i + 1]));
 
   const rows = totals.filter((t) => active.has(t.partnerCode)); // tonnage order
-  const defaultTopN = topN(totals, DEFAULT_TOP_N);
+  const defaultTopN = topN(totals, DEFAULT_TOP_N).map((t) => t.partnerCode);
   const isDefault =
     activeCodes.length === defaultTopN.length &&
     defaultTopN.every((c) => active.has(c));

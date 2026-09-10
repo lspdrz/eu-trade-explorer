@@ -4,12 +4,19 @@ import { makeImportWidthScale } from "@/features/globe/lib/importWidthScale";
 describe("makeImportWidthScale", () => {
   const s = makeImportWidthScale(1_000_000);
 
-  it("width is monotonic in tonnes and clamped to [0.75, 7]", () => {
-    expect(s.width(0)).toBeCloseTo(0.75, 5);
-    expect(s.width(1_000_000)).toBeCloseTo(7, 5);
+  it("width is monotonic in tonnes and clamped to [0.6, 9]", () => {
+    expect(s.width(0)).toBeCloseTo(0.6, 5);
+    expect(s.width(1_000_000)).toBeCloseTo(9, 5);
     expect(s.width(250_000)).toBeGreaterThan(s.width(0));
     expect(s.width(250_000)).toBeLessThan(s.width(1_000_000));
-    expect(s.width(5_000_000)).toBeCloseTo(7, 5); // clamped above the domain
+    expect(s.width(5_000_000)).toBeCloseTo(9, 5); // clamped above the domain
+  });
+
+  it("is super-linear — the top half of the range is where most width lives", () => {
+    // sqrt would put width(half) well above the midpoint; a >1 exponent
+    // keeps it below, so the big flows pull ahead.
+    const mid = (s.width(0) + s.width(1_000_000)) / 2;
+    expect(s.width(500_000)).toBeLessThan(mid);
   });
 
   it("count is an integer clamped to [1, 12]", () => {
@@ -22,7 +29,7 @@ describe("makeImportWidthScale", () => {
 
   it("tolerates a zero domain max (no data)", () => {
     const z = makeImportWidthScale(0);
-    expect(z.width(0)).toBeCloseTo(0.75, 5);
+    expect(z.width(0)).toBeCloseTo(0.6, 5);
     expect(z.count(0)).toBe(1);
   });
 });

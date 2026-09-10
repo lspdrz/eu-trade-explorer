@@ -1,12 +1,26 @@
-import { geoGraticule10, type GeoPath, geoInterpolate } from "d3-geo";
+import {
+  geoDistance,
+  geoGraticule10,
+  type GeoPath,
+  geoInterpolate,
+} from "d3-geo";
 import { EU_ANCHOR } from "@/features/globe/constants/euAnchor";
 import type { Land } from "@/features/globe/types";
 import { edgeFade, sampleArc } from "@/features/globe/lib/flowArc";
-import { isOnFrontHemisphere } from "@/features/globe/lib/hemisphere";
 import type { Particle } from "@/features/globe/lib/particles";
 import type { GlobeTokens } from "@/features/globe/lib/themeTokens";
 
 const TAU = 2 * Math.PI;
+
+/**
+ * Is `point` on the visible half of an orthographic globe centred on
+ * `view`? Both `[lon, lat]`. `geoPath` clips polygons and line strings
+ * itself; this is for the dots we place by hand (particles, the anchor).
+ */
+const isOnFrontHemisphere = (
+  point: [number, number],
+  view: [number, number],
+) => geoDistance(point, view) < Math.PI / 2;
 
 /**
  * Everything a frame needs, gathered once per `draw()`. The projection is
