@@ -1,0 +1,2 @@
+CREATE INDEX "raw_comext_imports_cn8_prefix_idx" ON "raw_comext_imports" ("cn8_product_code" text_pattern_ops);--> statement-breakpoint
+CREATE INDEX "raw_taxud_weekly_rows_product_idx" ON "raw_taxud_weekly_rows" ("product");

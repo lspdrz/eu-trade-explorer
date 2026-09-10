@@ -1,0 +1,426 @@
+{
+  "version": "8",
+  "dialect": "postgres",
+  "id": "4108cdba-56ef-497c-b29a-0f7ce0509024",
+  "prevIds": [
+    "2ae2df60-d334-4360-88c0-87e3c1ede9d4"
+  ],
+  "ddl": [
+    {
+      "isRlsEnabled": false,
+      "name": "raw_comext_imports",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "raw_taxud_weekly_rows",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_comext_imports"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "cn8_product_code",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_comext_imports"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "partner_code",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_comext_imports"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "period",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_comext_imports"
+    },
+    {
+      "type": "numeric",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "quantity_100kg",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_comext_imports"
+    },
+    {
+      "type": "numeric",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "value_euros",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_comext_imports"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "synced_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_comext_imports"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "sector",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "marketing_year",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "week",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "member_state_code",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "member_state_name",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "partner_code",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "partner",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "product",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "cn8_product_code",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "taric10_product_code",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "procedure",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "preference",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "numeric",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "euro_value",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "numeric",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "unit_value",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "numeric",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "kg",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "numeric",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "kg_equivalent",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "numeric",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "coefficient",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "synced_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "cn8_product_code",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": {
+            "name": "text_pattern_ops",
+            "default": false
+          }
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "raw_comext_imports_cn8_prefix_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "raw_comext_imports"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "product",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "raw_taxud_weekly_rows_product_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "raw_comext_imports_pkey",
+      "schema": "public",
+      "table": "raw_comext_imports",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "taxud_weekly_rows_pkey",
+      "schema": "public",
+      "table": "raw_taxud_weekly_rows",
+      "entityType": "pks"
+    }
+  ],
+  "renames": []
+}
