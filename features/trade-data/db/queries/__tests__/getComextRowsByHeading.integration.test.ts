@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
 import { rawComextImports } from "@/lib/db/schemas/rawComextImports";
-import { getComextRowsByHeading } from "../getComextRowsByHeading";
+import { getComextRowsByHeading } from "@/features/trade-data/db/queries/getComextRowsByHeading";
 
 function row(o: Partial<typeof rawComextImports.$inferInsert>) {
   return {

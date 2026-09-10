@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
 import { rawComextImports } from "@/lib/db/schemas/rawComextImports";
-import { getComextPartners } from "../getComextPartners";
+import { getComextPartners } from "@/features/trade-data/db/queries/getComextPartners";
 
 const row = (partnerCode: string) => ({
   cn8ProductCode: "28141000",

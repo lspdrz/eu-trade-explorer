@@ -2,8 +2,8 @@ import "server-only";
 import { and, inArray, like } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { rawComextImports } from "@/lib/db/schemas/rawComextImports";
-import type { ComextHeading } from "../../constants/headings";
-import type { ComextObservation } from "../../types";
+import type { ComextHeading } from "@/features/sync-comext/constants/headings";
+import type { ComextObservation } from "@/features/sync-comext/types";
 
 const BATCH_SIZE = 500;
 

@@ -1,6 +1,6 @@
 import "server-only";
-import { getWeeklyRowsByProduct } from "../db/queries/getWeeklyRowsByProduct";
-import type { TaxudWeekRow, YearlyPartnerTotal } from "../types";
+import { getWeeklyRowsByProduct } from "@/features/trade-data/db/queries/getWeeklyRowsByProduct";
+import type { TaxudWeekRow, YearlyPartnerTotal } from "@/features/trade-data/types";
 
 const KG_PER_TONNE = 1_000;
 

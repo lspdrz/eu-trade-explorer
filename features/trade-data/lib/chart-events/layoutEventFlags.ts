@@ -1,5 +1,5 @@
-import type { ChartEvent } from "../../types";
-import { sortEvents } from "./chartEvents";
+import type { ChartEvent } from "@/features/trade-data/types";
+import { sortEvents } from "@/features/trade-data/lib/chart-events/chartEvents";
 
 export const FLAG_ROW_H = 24; // flag (~17px) + a gap between stacked rows
 

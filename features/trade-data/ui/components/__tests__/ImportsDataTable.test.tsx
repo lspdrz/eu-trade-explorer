@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { GroupedSeries } from "../../../types";
-import { ImportsDataTable } from "../ImportsDataTable";
+import type { GroupedSeries } from "@/features/trade-data/types";
+import { ImportsDataTable } from "@/features/trade-data/ui/components/ImportsDataTable";
 
 const grid: GroupedSeries = {
   years: [2020, 2021],

@@ -12,11 +12,11 @@ let selection = {
   toYear: undefined as number | undefined,
 };
 
-vi.mock("../../hooks/useChartSelection", () => ({
+vi.mock("@/features/trade-data/ui/hooks/useChartSelection", () => ({
   useChartSelection: () => ({ selection, setSelection, isPending: false }),
 }));
 
-import { FertilizerImportsCountryView } from "../FertilizerImportsCountryView";
+import { FertilizerImportsCountryView } from "@/features/trade-data/ui/components/FertilizerImportsCountryView";
 
 const props = {
   availableProducts: ["Ammonia", "Nitrogenous fertilisers"],

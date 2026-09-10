@@ -1,16 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
-import type { RawTaxudWeekRow } from "../../types";
+import type { RawTaxudWeekRow } from "@/features/sync-eu-agrifood/types";
 
-vi.mock("../fetchWeeklyImports", () => ({
+vi.mock("@/features/sync-eu-agrifood/lib/fetchWeeklyImports", () => ({
   fetchWeeklyImports: vi.fn(),
 }));
-vi.mock("../../db/mutations/replaceProductData", () => ({
+vi.mock("@/features/sync-eu-agrifood/db/mutations/replaceProductData", () => ({
   replaceProductData: vi.fn(),
 }));
 
-import { fetchWeeklyImports } from "../fetchWeeklyImports";
-import { replaceProductData } from "../../db/mutations/replaceProductData";
-import { runFertilizerSync } from "../runFertilizerSync";
+import { fetchWeeklyImports } from "@/features/sync-eu-agrifood/lib/fetchWeeklyImports";
+import { replaceProductData } from "@/features/sync-eu-agrifood/db/mutations/replaceProductData";
+import { runFertilizerSync } from "@/features/sync-eu-agrifood/lib/runFertilizerSync";
 
 // The EU API split "Nitrogenous fertilisers" into these six, confirmed live
 // (2026-09-07) via the authoritative products endpoint and by cross-

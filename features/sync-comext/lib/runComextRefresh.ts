@@ -1,8 +1,8 @@
 import "server-only";
-import { COMEXT_HEADINGS, type ComextHeading } from "../constants/headings";
-import type { ComextObservation } from "../types";
-import { replaceComextObservations } from "../db/mutations/replaceComextObservations";
-import { fetchComextImports } from "./fetchComextImports";
+import { COMEXT_HEADINGS, type ComextHeading } from "@/features/sync-comext/constants/headings";
+import type { ComextObservation } from "@/features/sync-comext/types";
+import { replaceComextObservations } from "@/features/sync-comext/db/mutations/replaceComextObservations";
+import { fetchComextImports } from "@/features/sync-comext/lib/fetchComextImports";
 
 const START_YEAR = 2010;
 const TRAILING_YEARS = 3;

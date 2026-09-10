@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ComextYearRow } from "../../types";
+import type { ComextYearRow } from "@/features/trade-data/types";
 
-vi.mock("../../db/queries/getComextRowsByHeading", () => ({
+vi.mock("@/features/trade-data/db/queries/getComextRowsByHeading", () => ({
   getComextRowsByHeading: vi.fn(),
 }));
 
-import { getComextRowsByHeading } from "../../db/queries/getComextRowsByHeading";
+import { getComextRowsByHeading } from "@/features/trade-data/db/queries/getComextRowsByHeading";
 import {
   aggregateComextYearlyTonnes,
   getComextYearlyTonnesByPartner,
-} from "../getComextYearlyTonnesByPartner";
+} from "@/features/trade-data/lib/getComextYearlyTonnesByPartner";
 
 const r = (o: Partial<ComextYearRow>): ComextYearRow => ({
   partnerCode: "RU",

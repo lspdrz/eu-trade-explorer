@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { StoredEvents } from "../../../types";
+import type { StoredEvents } from "@/features/trade-data/types";
 import {
   EMPTY_EVENTS,
   MAX_EVENTS,
@@ -7,7 +7,7 @@ import {
   parseStoredEvents,
   serializeStoredEvents,
   sortEvents,
-} from "../chartEvents";
+} from "@/features/trade-data/lib/chart-events/chartEvents";
 
 const ev = (
   o: Partial<{ id: string; year: number; month: number; label: string }> = {},

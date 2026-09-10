@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
 import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
-import type { RawTaxudWeekRow } from "../../../types";
-import { replaceProductData } from "../replaceProductData";
+import type { RawTaxudWeekRow } from "@/features/sync-eu-agrifood/types";
+import { replaceProductData } from "@/features/sync-eu-agrifood/db/mutations/replaceProductData";
 
 const PRODUCT = "Ammonia";
 

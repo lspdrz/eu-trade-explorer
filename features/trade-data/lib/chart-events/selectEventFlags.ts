@@ -1,6 +1,6 @@
-import type { ChartEvent } from "../../types";
-import { eventX } from "./chartEvents";
-import { FLAG_ROW_H, layoutEventFlags, type FlagPlacement } from "./layoutEventFlags";
+import type { ChartEvent } from "@/features/trade-data/types";
+import { eventX } from "@/features/trade-data/lib/chart-events/chartEvents";
+import { FLAG_ROW_H, layoutEventFlags, type FlagPlacement } from "@/features/trade-data/lib/chart-events/layoutEventFlags";
 
 /**
  * The chart's event layer, ready to render: given the store state and the

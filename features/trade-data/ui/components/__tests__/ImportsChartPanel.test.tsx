@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { GroupedSeriesPoint } from "../../../types";
-import { ImportsChartPanel } from "../ImportsChartPanel";
+import type { GroupedSeriesPoint } from "@/features/trade-data/types";
+import { ImportsChartPanel } from "@/features/trade-data/ui/components/ImportsChartPanel";
 
 const rows: GroupedSeriesPoint[] = [
   { seriesKey: "RU", year: 2021, tonnes: 100 },

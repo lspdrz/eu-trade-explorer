@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { eventStore } from "../useChartEvents";
+import { eventStore } from "@/features/trade-data/ui/hooks/useChartEvents";
 
 function fakeStorage() {
   let store: Record<string, string> = {};

@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { ThemeToggle } from "../ThemeToggle";
+import { ThemeToggle } from "@/app/ThemeToggle";
 
 describe("ThemeToggle", () => {
   it("renders a labelled button (icon fills in after mount)", () => {

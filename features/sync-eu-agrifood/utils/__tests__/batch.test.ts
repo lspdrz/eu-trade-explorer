@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { batchesOf } from "../batch";
+import { batchesOf } from "@/features/sync-eu-agrifood/utils/batch";
 
 async function* asyncFrom<T>(items: T[]): AsyncGenerator<T> {
   for (const item of items) {

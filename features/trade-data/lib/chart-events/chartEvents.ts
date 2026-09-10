@@ -1,4 +1,4 @@
-import type { ChartEvent, StoredEvents } from "../../types";
+import type { ChartEvent, StoredEvents } from "@/features/trade-data/types";
 
 export const EVENTS_KEY = "chart-events";
 export const MAX_EVENTS = 20;

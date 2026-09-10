@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { StackedSeries } from "../../../types";
-import { StackedImportsDataTable } from "../StackedImportsDataTable";
+import type { StackedSeries } from "@/features/trade-data/types";
+import { StackedImportsDataTable } from "@/features/trade-data/ui/components/StackedImportsDataTable";
 
 const series: StackedSeries = {
   years: [2021, 2022],

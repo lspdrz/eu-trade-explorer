@@ -1,7 +1,7 @@
 import "server-only";
 import { streamArray } from "stream-json/web/streamers/stream-array.js";
 import { contactEUAPI } from "@/lib/eu-agrifood-api/client";
-import type { RawTaxudWeekRow } from "../types";
+import type { RawTaxudWeekRow } from "@/features/sync-eu-agrifood/types";
 
 // numberAsString stringifies every numeric field, not just the
 // precision-sensitive ones — this converts week/procedure/preference

@@ -5,7 +5,7 @@ vi.mock("@/features/sync-comext/lib/runComextRefresh", () => ({
 }));
 
 import { runComextRefresh } from "@/features/sync-comext/lib/runComextRefresh";
-import { GET } from "../route";
+import { GET } from "@/app/api/comext-refresh/route";
 
 const SECRET = "test-cron-secret";
 const req = (auth?: string) =>

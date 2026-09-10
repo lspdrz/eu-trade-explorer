@@ -1,17 +1,17 @@
 "use client";
 
 import { useMemo } from "react";
-import type { YearlyPartnerTotal } from "../../types";
+import type { YearlyPartnerTotal } from "@/features/trade-data/types";
 import {
   MAX_PRODUCTS,
   deriveBounds,
   deriveYearRange,
-} from "../../lib/chartSelectionParams";
-import { useChartSelection } from "../hooks/useChartSelection";
-import { CountryCombobox } from "./CountryCombobox";
-import { ImportsChartPanel } from "./ImportsChartPanel";
-import { ProductMultiSelect } from "./ProductMultiSelect";
-import { YearRangeSlider } from "./YearRangeSlider";
+} from "@/features/trade-data/lib/chartSelectionParams";
+import { useChartSelection } from "@/features/trade-data/ui/hooks/useChartSelection";
+import { CountryCombobox } from "@/features/trade-data/ui/components/CountryCombobox";
+import { ImportsChartPanel } from "@/features/trade-data/ui/components/ImportsChartPanel";
+import { ProductMultiSelect } from "@/features/trade-data/ui/components/ProductMultiSelect";
+import { YearRangeSlider } from "@/features/trade-data/ui/components/YearRangeSlider";
 
 /**
  * "Compare products" tab: one partner country, up to three products, a bar

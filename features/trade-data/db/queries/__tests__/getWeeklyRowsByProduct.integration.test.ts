@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
 import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
-import { getWeeklyRowsByProduct } from "../getWeeklyRowsByProduct";
+import { getWeeklyRowsByProduct } from "@/features/trade-data/db/queries/getWeeklyRowsByProduct";
 
 function rawRow(overrides: Partial<typeof rawTaxudWeeklyRows.$inferInsert>) {
   return {

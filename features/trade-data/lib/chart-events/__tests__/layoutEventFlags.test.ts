@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ChartEvent } from "../../../types";
-import { layoutEventFlags } from "../layoutEventFlags";
+import type { ChartEvent } from "@/features/trade-data/types";
+import { layoutEventFlags } from "@/features/trade-data/lib/chart-events/layoutEventFlags";
 
 const ev = (id: string, year: number, month: number, label = "E"): ChartEvent => ({
   id,

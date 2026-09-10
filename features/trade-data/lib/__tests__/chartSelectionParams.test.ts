@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type { ChartSelection, YearlyPartnerTotal } from "../../types";
+import type { ChartSelection, YearlyPartnerTotal } from "@/features/trade-data/types";
 import {
   PIVOT_CLEARED,
   deriveBounds,
   deriveYearRange,
   parseSelection,
   serializeSelection,
-} from "../chartSelectionParams";
+} from "@/features/trade-data/lib/chartSelectionParams";
 
 const parse = (q: string) => parseSelection(new URLSearchParams(q));
 

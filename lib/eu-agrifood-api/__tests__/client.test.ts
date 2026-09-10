@@ -6,7 +6,7 @@ vi.mock("undici", async (importOriginal) => ({
   fetch: vi.fn(),
 }));
 
-import { contactEUAPI } from "../client";
+import { contactEUAPI } from "@/lib/eu-agrifood-api/client";
 
 describe("contactEUAPI", () => {
   it("builds the URL from the base, the given path, and search params", async () => {

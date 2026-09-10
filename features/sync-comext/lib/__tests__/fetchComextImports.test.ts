@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/eurostat-comext/client", () => ({ contactComextAPI: vi.fn() }));
 
 import { contactComextAPI } from "@/lib/eurostat-comext/client";
-import { COMEXT_HEADINGS } from "../../constants/headings";
-import { fetchComextImports } from "../fetchComextImports";
+import { COMEXT_HEADINGS } from "@/features/sync-comext/constants/headings";
+import { fetchComextImports } from "@/features/sync-comext/lib/fetchComextImports";
 
 const HEADER =
   "STRUCTURE,STRUCTURE_ID,freq,reporter,partner,product,flow,indicators,TIME_PERIOD,OBS_VALUE\n";

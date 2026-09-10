@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useSyncExternalStore } from "react";
-import type { ChartEvent, StoredEvents } from "../../types";
+import type { ChartEvent, StoredEvents } from "@/features/trade-data/types";
 import {
   EMPTY_EVENTS,
   EVENTS_KEY,
@@ -10,7 +10,7 @@ import {
   parseStoredEvents,
   serializeStoredEvents,
   sortEvents,
-} from "../../lib/chart-events/chartEvents";
+} from "@/features/trade-data/lib/chart-events/chartEvents";
 
 const listeners = new Set<() => void>();
 let cache: { raw: string | null; parsed: StoredEvents } | null = null;

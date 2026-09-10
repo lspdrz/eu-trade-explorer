@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
 import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
-import { getAgrifoodProducts } from "../getAgrifoodProducts";
+import { getAgrifoodProducts } from "@/features/trade-data/db/queries/getAgrifoodProducts";
 
 function rawRow(product: string) {
   return {

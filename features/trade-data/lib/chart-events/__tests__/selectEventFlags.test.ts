@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ChartEvent } from "../../../types";
-import { selectEventFlags } from "../selectEventFlags";
+import type { ChartEvent } from "@/features/trade-data/types";
+import { selectEventFlags } from "@/features/trade-data/lib/chart-events/selectEventFlags";
 
 const ev = (o: Partial<ChartEvent>): ChartEvent => ({
   id: o.id ?? "a",

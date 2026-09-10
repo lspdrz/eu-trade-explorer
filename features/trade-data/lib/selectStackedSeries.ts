@@ -1,4 +1,4 @@
-import type { StackedCell, StackedSeries, StackedSeriesPoint } from "../types";
+import type { StackedCell, StackedSeries, StackedSeriesPoint } from "@/features/trade-data/types";
 
 /**
  * Shapes flat (partner, product, year) observations into the stacked chart's

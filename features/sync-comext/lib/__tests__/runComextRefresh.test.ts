@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../fetchComextImports", () => ({ fetchComextImports: vi.fn() }));
-vi.mock("../../db/mutations/replaceComextObservations", () => ({
+vi.mock("@/features/sync-comext/lib/fetchComextImports", () => ({ fetchComextImports: vi.fn() }));
+vi.mock("@/features/sync-comext/db/mutations/replaceComextObservations", () => ({
   replaceComextObservations: vi.fn().mockResolvedValue({ rowsWritten: 0 }),
 }));
 
-import { replaceComextObservations } from "../../db/mutations/replaceComextObservations";
-import { fetchComextImports } from "../fetchComextImports";
-import { runComextRefresh } from "../runComextRefresh";
+import { replaceComextObservations } from "@/features/sync-comext/db/mutations/replaceComextObservations";
+import { fetchComextImports } from "@/features/sync-comext/lib/fetchComextImports";
+import { runComextRefresh } from "@/features/sync-comext/lib/runComextRefresh";
 
 const obs = (period: string) => ({
   cn8ProductCode: "28141000",

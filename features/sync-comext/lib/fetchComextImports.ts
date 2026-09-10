@@ -1,8 +1,8 @@
 import "server-only";
 import { contactComextAPI } from "@/lib/eurostat-comext/client";
-import { COMEXT_HEADINGS, type ComextHeading } from "../constants/headings";
-import type { ComextObservation } from "../types";
-import { parseComextCsv } from "./parseComextCsv";
+import { COMEXT_HEADINGS, type ComextHeading } from "@/features/sync-comext/constants/headings";
+import type { ComextObservation } from "@/features/sync-comext/types";
+import { parseComextCsv } from "@/features/sync-comext/lib/parseComextCsv";
 
 /**
  * Fetches one heading's COMEXT monthly import observations for a single

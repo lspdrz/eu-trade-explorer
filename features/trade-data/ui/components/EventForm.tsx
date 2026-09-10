@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MAX_LABEL, MONTH_LABELS, isValidEvent } from "../../lib/chart-events/chartEvents";
+import { MAX_LABEL, MONTH_LABELS, isValidEvent } from "@/features/trade-data/lib/chart-events/chartEvents";
 
 export type EventDraft = { year: number; month: number; label: string };
 

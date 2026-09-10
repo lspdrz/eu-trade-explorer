@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { StackedSeriesPoint } from "../../types";
-import { selectStackedSeries } from "../selectStackedSeries";
+import type { StackedSeriesPoint } from "@/features/trade-data/types";
+import { selectStackedSeries } from "@/features/trade-data/lib/selectStackedSeries";
 
 const p = (o: Partial<StackedSeriesPoint>): StackedSeriesPoint => ({
   partnerCode: "EG",

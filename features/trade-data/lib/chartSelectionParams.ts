@@ -3,7 +3,7 @@ import type {
   ChartView,
   TradeSource,
   YearlyPartnerTotal,
-} from "../types";
+} from "@/features/trade-data/types";
 
 export const MAX_COUNTRIES = 3;
 export const MAX_PRODUCTS = 3;

@@ -1,5 +1,5 @@
 import { format } from "d3-format";
-import type { GroupedSeries, SelectedSeries } from "../../types";
+import type { GroupedSeries, SelectedSeries } from "@/features/trade-data/types";
 
 const formatInt = format(",");
 

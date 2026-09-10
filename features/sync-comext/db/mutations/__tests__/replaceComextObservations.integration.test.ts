@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
 import { rawComextImports } from "@/lib/db/schemas/rawComextImports";
-import type { ComextObservation } from "../../../types";
-import { replaceComextObservations } from "../replaceComextObservations";
+import type { ComextObservation } from "@/features/sync-comext/types";
+import { replaceComextObservations } from "@/features/sync-comext/db/mutations/replaceComextObservations";
 
 function obs(o: Partial<ComextObservation>): ComextObservation {
   return {

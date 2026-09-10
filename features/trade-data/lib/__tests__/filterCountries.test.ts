@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterCountries } from "../filterCountries";
+import { filterCountries } from "@/features/trade-data/lib/filterCountries";
 
 const partners = [
   { code: "CI", name: "Côte d’Ivoire" },

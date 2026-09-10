@@ -1,8 +1,8 @@
 "use client";
 
-import { formatEventDate } from "../../lib/chart-events/chartEvents";
-import type { FlagPlacement } from "../../lib/chart-events/layoutEventFlags";
-import { FLAG_ROW_H } from "../../lib/chart-events/layoutEventFlags";
+import { formatEventDate } from "@/features/trade-data/lib/chart-events/chartEvents";
+import type { FlagPlacement } from "@/features/trade-data/lib/chart-events/layoutEventFlags";
+import { FLAG_ROW_H } from "@/features/trade-data/lib/chart-events/layoutEventFlags";
 
 /** Approx flag box height (11px text + padding + border) — where its rule starts. */
 const FLAG_H = 20;

@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { SelectedSeries, StackedSeriesPoint } from "../../types";
-import { assignColorSlots } from "../../lib/assignColorSlots";
-import { MAX_PRODUCTS } from "../../lib/chartSelectionParams";
-import { selectStackedSeries } from "../../lib/selectStackedSeries";
-import { SERIES_COLORS } from "../../lib/seriesColors";
-import { ChartEmptyState } from "./ChartEmptyState";
-import { StackedImportsChart } from "./StackedImportsChart";
-import { StackedImportsDataTable } from "./StackedImportsDataTable";
+import type { SelectedSeries, StackedSeriesPoint } from "@/features/trade-data/types";
+import { assignColorSlots } from "@/features/trade-data/lib/assignColorSlots";
+import { MAX_PRODUCTS } from "@/features/trade-data/lib/chartSelectionParams";
+import { selectStackedSeries } from "@/features/trade-data/lib/selectStackedSeries";
+import { SERIES_COLORS } from "@/features/trade-data/lib/seriesColors";
+import { ChartEmptyState } from "@/features/trade-data/ui/components/ChartEmptyState";
+import { StackedImportsChart } from "@/features/trade-data/ui/components/StackedImportsChart";
+import { StackedImportsDataTable } from "@/features/trade-data/ui/components/StackedImportsDataTable";
 
 /**
  * The stacked "Compare countries" chart area: flat (partner, product, year)

@@ -1,7 +1,7 @@
 import "server-only";
-import { peekFirst } from "../utils/peekFirst";
-import { replaceProductData } from "../db/mutations/replaceProductData";
-import { fetchWeeklyImports } from "./fetchWeeklyImports";
+import { peekFirst } from "@/features/sync-eu-agrifood/utils/peekFirst";
+import { replaceProductData } from "@/features/sync-eu-agrifood/db/mutations/replaceProductData";
+import { fetchWeeklyImports } from "@/features/sync-eu-agrifood/lib/fetchWeeklyImports";
 
 const PRODUCTS = [
   "Ammonia",

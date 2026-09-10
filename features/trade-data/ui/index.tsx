@@ -1,16 +1,16 @@
 import "server-only";
-import { COMEXT_PRODUCTS } from "../constants/comextProducts";
-import { getAgrifoodPartners } from "../db/queries/getAgrifoodPartners";
-import { getAgrifoodProducts } from "../db/queries/getAgrifoodProducts";
-import { getComextPartners } from "../db/queries/getComextPartners";
-import { getComextYearlyTonnesByPartner } from "../lib/getComextYearlyTonnesByPartner";
-import { getAgrifoodYearlyTonnesByPartner } from "../lib/getAgrifoodYearlyTonnesByPartner";
-import { ChartTabs } from "./components/ChartTabs";
-import { EventsPanel } from "./components/EventsPanel";
-import { FertilizerImportsCountryView } from "./components/FertilizerImportsCountryView";
-import { FertilizerImportsProductsView } from "./components/FertilizerImportsProductsView";
-import { SourceToggle } from "./components/SourceToggle";
-import { parseSelection } from "../lib/chartSelectionParams";
+import { COMEXT_PRODUCTS } from "@/features/trade-data/constants/comextProducts";
+import { getAgrifoodPartners } from "@/features/trade-data/db/queries/getAgrifoodPartners";
+import { getAgrifoodProducts } from "@/features/trade-data/db/queries/getAgrifoodProducts";
+import { getComextPartners } from "@/features/trade-data/db/queries/getComextPartners";
+import { getComextYearlyTonnesByPartner } from "@/features/trade-data/lib/getComextYearlyTonnesByPartner";
+import { getAgrifoodYearlyTonnesByPartner } from "@/features/trade-data/lib/getAgrifoodYearlyTonnesByPartner";
+import { ChartTabs } from "@/features/trade-data/ui/components/ChartTabs";
+import { EventsPanel } from "@/features/trade-data/ui/components/EventsPanel";
+import { FertilizerImportsCountryView } from "@/features/trade-data/ui/components/FertilizerImportsCountryView";
+import { FertilizerImportsProductsView } from "@/features/trade-data/ui/components/FertilizerImportsProductsView";
+import { SourceToggle } from "@/features/trade-data/ui/components/SourceToggle";
+import { parseSelection } from "@/features/trade-data/lib/chartSelectionParams";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 

@@ -1,12 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { GroupedSeries } from "../../../types";
+import type { GroupedSeries } from "@/features/trade-data/types";
 
 let eventsState = {
   enabled: false,
   events: [] as { id: string; year: number; month: number; label: string }[],
 };
-vi.mock("../../hooks/useChartEvents", () => ({
+vi.mock("@/features/trade-data/ui/hooks/useChartEvents", () => ({
   useChartEvents: () => ({
     ...eventsState,
     setEnabled: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock("../../hooks/useChartEvents", () => ({
   }),
 }));
 
-import { ImportsBarChart } from "../ImportsBarChart";
+import { ImportsBarChart } from "@/features/trade-data/ui/components/ImportsBarChart";
 
 const seriesMeta = [
   { key: "US", name: "United States", color: "#111" },

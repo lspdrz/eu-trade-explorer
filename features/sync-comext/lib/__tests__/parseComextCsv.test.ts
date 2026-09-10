@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { parseComextCsv } from "../parseComextCsv";
+import { parseComextCsv } from "@/features/sync-comext/lib/parseComextCsv";
 
 const fixture = readFileSync(
   join(__dirname, "fixtures/comext-2814-ru-eg-2023q1.csv"),

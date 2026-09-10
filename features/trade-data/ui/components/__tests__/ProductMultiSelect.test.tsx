@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { ProductMultiSelect } from "../ProductMultiSelect";
+import { ProductMultiSelect } from "@/features/trade-data/ui/components/ProductMultiSelect";
 
 const products = ["Ammonia", "Nitrogenous fertilisers", "Urea"];
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COMEXT_PRODUCT_HEADINGS, COMEXT_PRODUCTS } from "../comextProducts";
+import { COMEXT_PRODUCT_HEADINGS, COMEXT_PRODUCTS } from "@/features/trade-data/constants/comextProducts";
 
 describe("comextProducts", () => {
   it("maps each product to its HS heading", () => {

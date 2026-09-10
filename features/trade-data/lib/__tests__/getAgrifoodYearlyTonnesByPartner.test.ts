@@ -1,15 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
-import type { TaxudWeekRow } from "../../types";
+import type { TaxudWeekRow } from "@/features/trade-data/types";
 
-vi.mock("../../db/queries/getWeeklyRowsByProduct", () => ({
+vi.mock("@/features/trade-data/db/queries/getWeeklyRowsByProduct", () => ({
   getWeeklyRowsByProduct: vi.fn(),
 }));
 
-import { getWeeklyRowsByProduct } from "../../db/queries/getWeeklyRowsByProduct";
+import { getWeeklyRowsByProduct } from "@/features/trade-data/db/queries/getWeeklyRowsByProduct";
 import {
   aggregateAgrifoodYearlyTonnes,
   getAgrifoodYearlyTonnesByPartner,
-} from "../getAgrifoodYearlyTonnesByPartner";
+} from "@/features/trade-data/lib/getAgrifoodYearlyTonnesByPartner";
 
 function row(overrides: Partial<TaxudWeekRow>): TaxudWeekRow {
   return {

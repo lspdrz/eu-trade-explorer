@@ -5,7 +5,7 @@ vi.mock("@/features/sync-eu-agrifood/lib/runFertilizerSync", () => ({
 }));
 
 import { runFertilizerSync } from "@/features/sync-eu-agrifood/lib/runFertilizerSync";
-import { GET } from "../route";
+import { GET } from "@/app/api/fertilizer-sync/route";
 
 const SECRET = "test-cron-secret";
 

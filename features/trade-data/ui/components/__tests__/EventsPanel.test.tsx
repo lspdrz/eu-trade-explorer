@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ChartEvent } from "../../../types";
+import type { ChartEvent } from "@/features/trade-data/types";
 
 const state: {
   enabled: boolean;
@@ -18,9 +18,9 @@ const state: {
   removeEvent: vi.fn(),
 };
 
-vi.mock("../../hooks/useChartEvents", () => ({ useChartEvents: () => state }));
+vi.mock("@/features/trade-data/ui/hooks/useChartEvents", () => ({ useChartEvents: () => state }));
 
-import { EventsPanel } from "../EventsPanel";
+import { EventsPanel } from "@/features/trade-data/ui/components/EventsPanel";
 
 beforeEach(() => {
   state.enabled = false;

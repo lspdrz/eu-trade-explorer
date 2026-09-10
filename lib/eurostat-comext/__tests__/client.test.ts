@@ -6,7 +6,7 @@ vi.mock("undici", async (importOriginal) => ({
   fetch: vi.fn(),
 }));
 
-import { contactComextAPI } from "../client";
+import { contactComextAPI } from "@/lib/eurostat-comext/client";
 
 const BASE =
   "https://ec.europa.eu/eurostat/api/comext/dissemination/sdmx/3.0/data/dataflow/ESTAT/DS-045409/1.0/M.EU27_2020";

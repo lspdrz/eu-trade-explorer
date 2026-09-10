@@ -1,6 +1,8 @@
+import { readdirSync } from "node:fs";
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import noRelativeImportPaths from "eslint-plugin-no-relative-import-paths";
 
 /**
  * Project structure
@@ -20,7 +22,8 @@ import nextTs from "eslint-config-next/typescript";
  *
  * Import direction:  app → features/{feature}/ui → lib → db → @/lib
  * Features never import each other. Server modules start with `import "server-only"`.
- * (enforced in eslint.config.mjs)
+ * Every import uses the `@/` alias — no relative paths (`./` or `../`).
+ * (all enforced in eslint.config.mjs)
  *
  */
 
@@ -34,10 +37,31 @@ const NO_UI = {
   group: ["**/ui/**"],
   message: "lib/, db/ and utils/ must not import from ui/.",
 };
-const NO_CROSS_FEATURE = {
-  group: ["@/features/*/**"],
-  message:
-    "Features are independent — no cross-feature imports. Use relative paths within a feature; promote shared code to lib/.",
+
+// Root-level folders under features/ that are shared, not features.
+const SHARED_ROOT_DIRS = ["constants", "db", "utils", "components"];
+const FEATURE_DIRS = readdirSync("features", { withFileTypes: true })
+  .filter((d) => d.isDirectory() && !SHARED_ROOT_DIRS.includes(d.name))
+  .map((d) => d.name);
+
+// Feature isolation, resolver-based (catches both `@/features/x/…` and
+// `../../x/…`): a file in features/<f> may not reach into any other
+// feature — only its own, `@/lib`, and the shared root folders.
+const FEATURE_ISOLATION = {
+  rules: {
+    "import/no-restricted-paths": [
+      "error",
+      {
+        zones: FEATURE_DIRS.map((f) => ({
+          target: `./features/${f}`,
+          from: "./features",
+          except: [`./${f}`, ...SHARED_ROOT_DIRS.map((d) => `./${d}`)],
+          message:
+            "Features are independent — no cross-feature imports. Use @/lib, or promote shared code to a root features/ folder.",
+        })),
+      },
+    ],
+  },
 };
 
 const eslintConfig = defineConfig([
@@ -53,7 +77,25 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
   ]),
 
+  // --- Imports ------------------------------------------------------------
+
+  // Every import uses the `@/` alias (repo root) — no relative paths at
+  // all. Relative paths break silently when a file moves and obscure
+  // which layer a dependency lives in.
+  {
+    plugins: { "no-relative-import-paths": noRelativeImportPaths },
+    rules: {
+      "no-relative-import-paths/no-relative-import-paths": [
+        "error",
+        { allowSameFolder: false, prefix: "@" },
+      ],
+    },
+  },
+
   // --- Architectural boundaries -------------------------------------------
+
+  // Feature isolation for every features/<f>/ (resolver-based).
+  { files: ["features/**"], ...FEATURE_ISOLATION },
 
   // app/ — routing only: no direct DB access (go through a feature's lib/).
   {
@@ -67,28 +109,25 @@ const eslintConfig = defineConfig([
   {
     files: ["features/**/db/**"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [NO_UI, NO_CROSS_FEATURE] }],
+      "no-restricted-imports": ["error", { patterns: [NO_UI] }],
     },
   },
 
   // lib/ — a feature's own logic: server-only read models (marked per file
   // with `import "server-only"`) and pure view logic, side by side. No DB
-  // client, no ui/, no cross-feature.
+  // client, no ui/.
   {
     files: ["features/**/lib/**"],
     rules: {
-      "no-restricted-imports": [
-        "error",
-        { patterns: [NO_DB, NO_UI, NO_CROSS_FEATURE] },
-      ],
+      "no-restricted-imports": ["error", { patterns: [NO_DB, NO_UI] }],
     },
   },
 
-  // ui/ — no direct DB, no cross-feature imports (may import within its own ui/).
+  // ui/ — no direct DB (may import within its own ui/).
   {
     files: ["features/**/ui/**"],
     rules: {
-      "no-restricted-imports": ["error", { patterns: [NO_DB, NO_CROSS_FEATURE] }],
+      "no-restricted-imports": ["error", { patterns: [NO_DB] }],
     },
   },
 
@@ -98,10 +137,7 @@ const eslintConfig = defineConfig([
   {
     files: ["features/**/utils/**"],
     rules: {
-      "no-restricted-imports": [
-        "error",
-        { patterns: [NO_DB, NO_UI, NO_CROSS_FEATURE] },
-      ],
+      "no-restricted-imports": ["error", { patterns: [NO_DB, NO_UI] }],
     },
   },
 ]);

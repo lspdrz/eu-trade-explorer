@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { xAxisLabelStep } from "../xAxisLabelStep";
+import { xAxisLabelStep } from "@/features/trade-data/lib/xAxisLabelStep";
 
 describe("xAxisLabelStep", () => {
   it("labels every year when there's room", () => {

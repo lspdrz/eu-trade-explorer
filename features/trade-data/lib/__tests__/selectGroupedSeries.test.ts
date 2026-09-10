@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { GroupedSeriesPoint } from "../../types";
-import { selectGroupedSeries } from "../selectGroupedSeries";
+import type { GroupedSeriesPoint } from "@/features/trade-data/types";
+import { selectGroupedSeries } from "@/features/trade-data/lib/selectGroupedSeries";
 
 const r = (o: Partial<GroupedSeriesPoint>): GroupedSeriesPoint => ({
   seriesKey: "US",

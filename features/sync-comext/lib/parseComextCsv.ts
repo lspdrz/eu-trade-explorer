@@ -1,4 +1,4 @@
-import type { ComextObservation } from "../types";
+import type { ComextObservation } from "@/features/sync-comext/types";
 
 /**
  * Parses Eurostat's SDMX-3.0 fully-long CSV (COMEXT DS-045409) into flat

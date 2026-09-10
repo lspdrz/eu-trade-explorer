@@ -6,7 +6,7 @@ vi.mock("@/lib/eu-agrifood-api/client", () => ({
 }));
 
 import { contactEUAPI } from "@/lib/eu-agrifood-api/client";
-import { fetchWeeklyImports } from "../fetchWeeklyImports";
+import { fetchWeeklyImports } from "@/features/sync-eu-agrifood/lib/fetchWeeklyImports";
 
 // contactEUAPI's inferred return type is undici's own Response (it calls
 // undici's fetch, not the global one — see client.ts's doc comment), so
