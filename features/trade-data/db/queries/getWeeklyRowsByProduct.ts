@@ -7,7 +7,7 @@ import type { TaxudWeekRow } from "../../types";
 /**
  * Reads every raw synced row for a product, converting the numeric-as-
  * string columns to real numbers (`TaxudWeekRow`). No aggregation
- * here — that's `services/getYearlyTonnesByPartner.ts`'s job.
+ * here — that's `services/getAgrifoodYearlyTonnesByPartner.ts`'s job.
  */
 export async function getWeeklyRowsByProduct(product: string): Promise<TaxudWeekRow[]> {
   const rawRows = await db

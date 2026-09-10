@@ -7,9 +7,9 @@ vi.mock("../../db/queries/getWeeklyRowsByProduct", () => ({
 
 import { getWeeklyRowsByProduct } from "../../db/queries/getWeeklyRowsByProduct";
 import {
-  aggregateYearlyTonnesByPartner,
-  getYearlyTonnesByPartner,
-} from "../getYearlyTonnesByPartner";
+  aggregateAgrifoodYearlyTonnes,
+  getAgrifoodYearlyTonnesByPartner,
+} from "../getAgrifoodYearlyTonnesByPartner";
 
 function row(overrides: Partial<TaxudWeekRow>): TaxudWeekRow {
   return {
@@ -36,7 +36,7 @@ function row(overrides: Partial<TaxudWeekRow>): TaxudWeekRow {
   };
 }
 
-describe("aggregateYearlyTonnesByPartner (pure)", () => {
+describe("aggregateAgrifoodYearlyTonnes (pure)", () => {
   it("sums kg across weeks and member states into tonnes for one year/partner", () => {
     const rows: TaxudWeekRow[] = [
       row({ week: 1, memberStateCode: "FI", kg: 10_000_000 }),
@@ -44,7 +44,7 @@ describe("aggregateYearlyTonnesByPartner (pure)", () => {
       row({ week: 1, memberStateCode: "LT", kg: 1_000_000 }),
     ];
 
-    const result = aggregateYearlyTonnesByPartner(rows);
+    const result = aggregateAgrifoodYearlyTonnes(rows);
 
     expect(result).toEqual([
       { year: "2023", partnerCode: "RU", partner: "Russia", tonnes: 16_000 },
@@ -58,7 +58,7 @@ describe("aggregateYearlyTonnesByPartner (pure)", () => {
       row({ marketingYear: "2023", partnerCode: "EG", partner: "Egypt", kg: 1_000_000 }),
     ];
 
-    const result = aggregateYearlyTonnesByPartner(rows);
+    const result = aggregateAgrifoodYearlyTonnes(rows);
 
     expect(result).toEqual([
       { year: "2022", partnerCode: "RU", partner: "Russia", tonnes: 2_000 },
@@ -68,15 +68,15 @@ describe("aggregateYearlyTonnesByPartner (pure)", () => {
   });
 
   it("returns an empty array for no input rows", () => {
-    expect(aggregateYearlyTonnesByPartner([])).toEqual([]);
+    expect(aggregateAgrifoodYearlyTonnes([])).toEqual([]);
   });
 });
 
-describe("getYearlyTonnesByPartner (service)", () => {
+describe("getAgrifoodYearlyTonnesByPartner (service)", () => {
   it("passes the product straight through to the query", async () => {
     vi.mocked(getWeeklyRowsByProduct).mockResolvedValue([]);
 
-    await getYearlyTonnesByPartner("Urea");
+    await getAgrifoodYearlyTonnesByPartner("Urea");
 
     expect(getWeeklyRowsByProduct).toHaveBeenCalledWith("Urea");
   });
@@ -87,7 +87,7 @@ describe("getYearlyTonnesByPartner (service)", () => {
       row({ week: 2, memberStateCode: "FI", kg: 5_000_000 }),
     ]);
 
-    const result = await getYearlyTonnesByPartner("Ammonia");
+    const result = await getAgrifoodYearlyTonnesByPartner("Ammonia");
 
     expect(result).toEqual([
       { year: "2023", partnerCode: "RU", partner: "Russia", tonnes: 15_000 },
@@ -97,7 +97,7 @@ describe("getYearlyTonnesByPartner (service)", () => {
   it("returns an empty array when the query returns no rows", async () => {
     vi.mocked(getWeeklyRowsByProduct).mockResolvedValue([]);
 
-    const result = await getYearlyTonnesByPartner("Ammonia");
+    const result = await getAgrifoodYearlyTonnesByPartner("Ammonia");
 
     expect(result).toEqual([]);
   });

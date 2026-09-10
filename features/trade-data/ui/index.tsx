@@ -1,9 +1,10 @@
 import "server-only";
 import { COMEXT_PRODUCTS } from "../constants/comextProducts";
-import { getSourcePartners } from "../db/queries/getSourcePartners";
-import { getSyncedProducts } from "../db/queries/getSyncedProducts";
+import { getAgrifoodPartners } from "../db/queries/getAgrifoodPartners";
+import { getAgrifoodProducts } from "../db/queries/getAgrifoodProducts";
+import { getComextPartners } from "../db/queries/getComextPartners";
 import { getComextYearlyTonnesByPartner } from "../services/getComextYearlyTonnesByPartner";
-import { getYearlyTonnesByPartner } from "../services/getYearlyTonnesByPartner";
+import { getAgrifoodYearlyTonnesByPartner } from "../services/getAgrifoodYearlyTonnesByPartner";
 import { ChartTabs } from "./components/ChartTabs";
 import { FertilizerImportsCountryView } from "./components/FertilizerImportsCountryView";
 import { FertilizerImportsProductsView } from "./components/FertilizerImportsProductsView";
@@ -39,31 +40,22 @@ export async function FertilizerImports({
   );
 
   const availableProducts =
-    source === "comext" ? [...COMEXT_PRODUCTS] : await getSyncedProducts();
-  const availablePartners = await getSourcePartners(source);
+    source === "comext" ? [...COMEXT_PRODUCTS] : await getAgrifoodProducts();
+  const availablePartners =
+    source === "comext" ? await getComextPartners() : await getAgrifoodPartners();
 
   const totalsFor = (p: string) =>
     source === "comext"
       ? getComextYearlyTonnesByPartner(p)
-      : getYearlyTonnesByPartner(p);
+      : getAgrifoodYearlyTonnesByPartner(p);
 
-  let tab: React.ReactNode;
-
-  if (view === "countries") {
-    // Fetch whatever the URL names; an unknown product just returns nothing.
-    const totalsByCountry = availableProducts.includes(product)
+  // Each fetch no-ops for the inactive view, so only the active one hits the DB.
+  const totalsByCountry =
+    view === "countries" && availableProducts.includes(product)
       ? await totalsFor(product)
       : [];
-    tab = (
-      <FertilizerImportsCountryView
-        availableProducts={availableProducts}
-        availablePartners={availablePartners}
-        product={product}
-        totalsByCountry={totalsByCountry}
-      />
-    );
-  } else {
-    const totalsByProduct = partner
+  const totalsByProduct =
+    view === "products" && partner
       ? await Promise.all(
           availableProducts.map(async (p) => ({
             product: p,
@@ -71,7 +63,16 @@ export async function FertilizerImports({
           })),
         )
       : [];
-    tab = (
+
+  const tab =
+    view === "countries" ? (
+      <FertilizerImportsCountryView
+        availableProducts={availableProducts}
+        availablePartners={availablePartners}
+        product={product}
+        totalsByCountry={totalsByCountry}
+      />
+    ) : (
       <FertilizerImportsProductsView
         availableProducts={availableProducts}
         availablePartners={availablePartners}
@@ -79,7 +80,6 @@ export async function FertilizerImports({
         totalsByProduct={totalsByProduct}
       />
     );
-  }
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-10">

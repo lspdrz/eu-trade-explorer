@@ -1,7 +1,7 @@
 /**
  * A weekly trade row as read back from our own database, with the
  * numeric-as-string columns converted to real numbers for arithmetic
- * (see `getYearlyTonnesByPartner.ts`).
+ * (see `getAgrifoodYearlyTonnesByPartner.ts`).
  */
 export interface TaxudWeekRow {
   id: number;

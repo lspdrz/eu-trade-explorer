@@ -8,14 +8,14 @@ const KG_PER_TONNE = 1_000;
  * Reads every raw synced row for a product and aggregates them into yearly
  * EU-wide totals per partner — aggregation happens here, at read time, not
  * in the sync feature. Coordinates the DB read and the pure computation
- * (`aggregateYearlyTonnesByPartner` below); never touches the DB itself
+ * (`aggregateAgrifoodYearlyTonnes` below); never touches the DB itself
  * (see architecture-decisions.md).
  */
-export async function getYearlyTonnesByPartner(
+export async function getAgrifoodYearlyTonnesByPartner(
   product: string,
 ): Promise<YearlyPartnerTotal[]> {
   const rows = await getWeeklyRowsByProduct(product);
-  return aggregateYearlyTonnesByPartner(rows);
+  return aggregateAgrifoodYearlyTonnes(rows);
 }
 
 /**
@@ -28,7 +28,7 @@ export async function getYearlyTonnesByPartner(
  * (marketingYear, partnerCode) pair. Results are sorted by year, then
  * partner code, for deterministic output.
  */
-export function aggregateYearlyTonnesByPartner(
+export function aggregateAgrifoodYearlyTonnes(
   rows: TaxudWeekRow[],
 ): YearlyPartnerTotal[] {
   const totals = new Map<string, YearlyPartnerTotal>();
