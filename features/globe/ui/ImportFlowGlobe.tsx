@@ -3,27 +3,22 @@
 import {
   geoCentroid,
   geoContains,
-  geoGraticule10,
-  geoInterpolate,
   geoOrthographic,
   geoPath,
 } from "d3-geo";
 import { format } from "d3-format";
-import type { Feature, FeatureCollection } from "geojson";
+import type { FeatureCollection } from "geojson";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import {
-  ARC_SAMPLES,
   GLOBE_MAX,
   GLOBE_MIN,
   INITIAL_ROTATION,
   PARTICLE_SPEED,
 } from "@/features/globe/constants/globeConfig";
-import { EU_ANCHOR } from "@/features/globe/constants/euAnchor";
 import { ISO3166_NUMERIC_TO_ALPHA2 } from "@/features/globe/constants/iso3166";
-import type { PartnerImportTotal } from "@/features/globe/types";
+import type { Land, PartnerImportTotal } from "@/features/globe/types";
 import { buildGlobeSummary } from "@/features/globe/lib/globeSummary";
-import { isOnFrontHemisphere } from "@/features/globe/lib/hemisphere";
 import { makeImportWidthScale } from "@/features/globe/lib/importWidthScale";
 import {
   type Particle,
@@ -31,6 +26,14 @@ import {
   spacedPhases,
   stepParticles,
 } from "@/features/globe/lib/particles";
+import {
+  paintAnchor,
+  paintFlows,
+  paintGraticule,
+  paintLand,
+  paintOcean,
+  type Scene,
+} from "@/features/globe/lib/paintGlobe";
 import { type Rotation, rotationDelta, zoomBy } from "@/features/globe/lib/projectionMath";
 import { readGlobeTokens } from "@/features/globe/lib/themeTokens";
 
@@ -39,7 +42,6 @@ const GEO_URL = "/geo/countries-110m.json";
 /** Compact tonnes at 3 significant figures — "69.7M", "400k". */
 const compact = (n: number) => format(".3s")(n).replace("G", "B");
 
-type Land = { code: string | null; feature: Feature; centroid: [number, number] };
 type Hover = { code: string; x: number; y: number };
 
 const PLACEHOLDER_TOKENS = {
@@ -211,94 +213,33 @@ export function ImportFlowGlobe({
     );
 
     const draw = () => {
-      const t = tokensRef.current;
       const r = rotationRef.current;
-      projection.rotate([r.lambda, r.phi, 0]);
-      projection.scale(baseScale * zoomRef.current);
-      const viewCenter: [number, number] = [-r.lambda, -r.phi];
-      const hoverCode = hoveredRef.current?.code;
+      projection.rotate([r.lambda, r.phi, 0]).scale(baseScale * zoomRef.current);
+
+      const scene: Scene = {
+        ctx,
+        path,
+        project: (p) => projection(p) ?? null,
+        tokens: tokensRef.current,
+        land,
+        activeCodes,
+        active,
+        hoverCode: hoveredRef.current?.code,
+        viewCenter: [-r.lambda, -r.phi],
+        centroidByCode,
+        tonnesByCode,
+        arcWidth: widthScale.width,
+        particles: particlesRef.current,
+      };
 
       ctx.save();
       ctx.scale(dpr, dpr);
       ctx.clearRect(0, 0, size, size);
-
-      // ocean sphere — filled, with a visible limb
-      ctx.beginPath();
-      path({ type: "Sphere" });
-      ctx.fillStyle = t.surface;
-      ctx.fill();
-      ctx.strokeStyle = t.baseline;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // graticule
-      ctx.beginPath();
-      path(geoGraticule10());
-      ctx.strokeStyle = t.border;
-      ctx.globalAlpha = 0.6;
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-
-      // land — a clearly distinct tone from the ocean
-      for (const l of land) {
-        ctx.beginPath();
-        path(l.feature);
-        const lit = l.code && (active.has(l.code) || hoverCode === l.code);
-        if (lit) {
-          ctx.fillStyle = t.series1;
-          ctx.globalAlpha = 0.22;
-          ctx.fill();
-          ctx.globalAlpha = 1;
-        } else {
-          ctx.fillStyle = t.border;
-          ctx.fill();
-        }
-        ctx.lineWidth = 0.5;
-        ctx.strokeStyle = t.baseline;
-        ctx.stroke();
-      }
-
-      // arcs + particles
-      for (const code of activeCodes) {
-        const from = centroidByCode.get(code);
-        if (!from) continue;
-        const interp = geoInterpolate(from, EU_ANCHOR);
-        const coords = Array.from({ length: ARC_SAMPLES + 1 }, (_, i) =>
-          interp(i / ARC_SAMPLES),
-        );
-        ctx.beginPath();
-        path({ type: "LineString", coordinates: coords });
-        ctx.strokeStyle = t.series1;
-        ctx.globalAlpha = 0.35;
-        ctx.lineWidth = widthScale.width(tonnesByCode.get(code) ?? 0);
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-
-        for (const p of particlesRef.current.get(code) ?? []) {
-          const pt = interp(p.t) as [number, number];
-          if (!isOnFrontHemisphere(pt, viewCenter)) continue;
-          const xy = projection(pt);
-          if (!xy) continue;
-          const fade =
-            p.t < 0.08 ? p.t / 0.08 : p.t > 0.92 ? (1 - p.t) / 0.08 : 1;
-          ctx.beginPath();
-          ctx.arc(xy[0], xy[1], 1.5, 0, 2 * Math.PI);
-          ctx.fillStyle = t.series1;
-          ctx.globalAlpha = fade;
-          ctx.fill();
-          ctx.globalAlpha = 1;
-        }
-      }
-
-      // EU anchor
-      const anchor = projection(EU_ANCHOR);
-      if (anchor && isOnFrontHemisphere(EU_ANCHOR, viewCenter)) {
-        ctx.beginPath();
-        ctx.arc(anchor[0], anchor[1], 3, 0, 2 * Math.PI);
-        ctx.fillStyle = t.foreground;
-        ctx.fill();
-      }
+      paintOcean(scene);
+      paintGraticule(scene);
+      paintLand(scene);
+      paintFlows(scene);
+      paintAnchor(scene);
       ctx.restore();
     };
     drawRef.current = draw;
