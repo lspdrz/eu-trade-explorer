@@ -53,8 +53,8 @@ export function FertilizerImportsCountryView({
       <div className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-4 border-b border-border pb-5">
         <ProductListbox
           products={availableProducts}
-          value={product}
-          onChange={(next) => setSelection({ product: next })}
+          value={selection.products[0] ?? product}
+          onChange={(next) => setSelection({ products: [next] })}
           pending={isPending}
         />
         <CountryCombobox

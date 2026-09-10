@@ -134,10 +134,10 @@ export interface ChartSelection {
   source: TradeSource;
   view: ChartView;
   // "Compare countries" tab
-  product: string;
   partnerCodes: string[];
   // "Compare products" tab
   partner: string;
+  // both tabs — the countries view stacks these, the products view groups them
   products: string[];
   // shared
   fromYear: number | undefined;

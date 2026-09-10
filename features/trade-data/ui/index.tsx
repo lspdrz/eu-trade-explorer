@@ -35,7 +35,7 @@ export async function FertilizerImports({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { source, view, product, partner } = parseSelection(
+  const { source, view, products, partner } = parseSelection(
     toURLSearchParams(await searchParams),
   );
 
@@ -50,9 +50,10 @@ export async function FertilizerImports({
       : getAgrifoodYearlyTonnesByPartner(p);
 
   // Each fetch no-ops for the inactive view, so only the active one hits the DB.
+  const countryProduct = products[0] ?? "";
   const totalsByCountry =
-    view === "countries" && availableProducts.includes(product)
-      ? await totalsFor(product)
+    view === "countries" && availableProducts.includes(countryProduct)
+      ? await totalsFor(countryProduct)
       : [];
   const totalsByProduct =
     view === "products" && partner
@@ -69,7 +70,7 @@ export async function FertilizerImports({
       <FertilizerImportsCountryView
         availableProducts={availableProducts}
         availablePartners={availablePartners}
-        product={product}
+        product={countryProduct}
         totalsByCountry={totalsByCountry}
       />
     ) : (

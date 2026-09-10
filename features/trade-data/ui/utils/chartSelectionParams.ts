@@ -53,13 +53,20 @@ function year(raw: string | null): number | undefined {
  * and client-side.
  */
 export function parseSelection(params: URLSearchParams): ChartSelection {
+  const view: ChartView =
+    params.get("view") === "products" ? "products" : "countries";
+  const rawProducts = stringList(params.get("products"), MAX_PRODUCTS);
   return {
     source: params.get("source") === "surveillance" ? "surveillance" : "comext",
-    view: params.get("view") === "products" ? "products" : "countries",
-    product: params.get("product")?.trim() || DEFAULT_PRODUCT,
+    view,
     partnerCodes: codeList(params.get("countries"), MAX_COUNTRIES),
     partner: (params.get("partner") ?? "").trim().toUpperCase().match(WELL_FORMED_CODE)?.[0] ?? "",
-    products: stringList(params.get("products"), MAX_PRODUCTS),
+    // The countries view always shows at least one product; an empty URL means
+    // "just the default". The products view starts empty (pick a partner first).
+    products:
+      rawProducts.length === 0 && view === "countries"
+        ? [DEFAULT_PRODUCT]
+        : rawProducts,
     fromYear: year(params.get("from")),
     toYear: year(params.get("to")),
   };
@@ -75,11 +82,16 @@ export function serializeSelection(selection: ChartSelection): URLSearchParams {
 
   if (selection.source !== DEFAULT_SOURCE) params.set("source", selection.source);
   if (selection.view !== DEFAULT_VIEW) params.set("view", selection.view);
-  if (selection.product !== DEFAULT_PRODUCT) params.set("product", selection.product);
   if (selection.partnerCodes.length > 0)
     params.set("countries", selection.partnerCodes.join(","));
   if (selection.partner) params.set("partner", selection.partner);
-  if (selection.products.length > 0)
+  // An empty list is never emitted; on the countries view neither is the lone
+  // default product (so the canonical countries URL stays clean).
+  const productsIsCountriesDefault =
+    selection.view === "countries" &&
+    selection.products.length === 1 &&
+    selection.products[0] === DEFAULT_PRODUCT;
+  if (selection.products.length > 0 && !productsIsCountriesDefault)
     params.set("products", selection.products.join(","));
   if (selection.fromYear !== undefined) params.set("from", String(selection.fromYear));
   if (selection.toYear !== undefined) params.set("to", String(selection.toYear));

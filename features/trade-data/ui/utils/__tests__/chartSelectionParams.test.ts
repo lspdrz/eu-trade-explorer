@@ -9,14 +9,13 @@ import {
 
 const parse = (q: string) => parseSelection(new URLSearchParams(q));
 
-/** A full, all-defaults ChartSelection. */
+/** A full, all-defaults ChartSelection (countries view → products defaults to Ammonia). */
 const base: ChartSelection = {
   source: "comext",
   view: "countries",
-  product: "Ammonia",
   partnerCodes: [],
   partner: "",
-  products: [],
+  products: ["Ammonia"],
   fromYear: undefined,
   toYear: undefined,
 };
@@ -36,12 +35,6 @@ describe("parseSelection", () => {
     expect(parse("view=nonsense").view).toBe("countries");
   });
 
-  it("product: kept verbatim (no validation), defaulted when absent", () => {
-    expect(parse("product=Urea").product).toBe("Urea");
-    expect(parse("product=Totally%20Made%20Up").product).toBe("Totally Made Up");
-    expect(parse("").product).toBe("Ammonia");
-  });
-
   it("countries: upper-cased, deduped, well-formed only, capped at 3", () => {
     expect(parse("countries=us,1,x,USA,eg,us,DZ,MA").partnerCodes).toEqual([
       "US",
@@ -56,12 +49,27 @@ describe("parseSelection", () => {
     expect(parse("").partner).toBe("");
   });
 
+  it("products: view-aware default — Ammonia on countries, empty on products", () => {
+    expect(parse("").products).toEqual(["Ammonia"]);
+    expect(parse("view=products").products).toEqual([]);
+    expect(parse("products=Ammonia,Urea").products).toEqual(["Ammonia", "Urea"]);
+    expect(parse("view=products&products=Ammonia,Urea").products).toEqual([
+      "Ammonia",
+      "Urea",
+    ]);
+  });
+
   it("products: trimmed, deduped, capped at 3 (no validation)", () => {
     expect(parse("products=Ammonia,Ammonia,Urea,Nope,Extra").products).toEqual([
       "Ammonia",
       "Urea",
       "Nope",
     ]);
+  });
+
+  it("ignores a legacy ?product= param", () => {
+    expect(parse("product=Urea")).not.toHaveProperty("product");
+    expect(parse("product=Urea").products).toEqual(["Ammonia"]);
   });
 
   it("years: the number the URL asked for, or undefined", () => {
@@ -95,6 +103,19 @@ describe("serializeSelection", () => {
     expect(params.get("to")).toBe("2022");
     expect(params.has("product")).toBe(false);
     expect(parseSelection(params)).toEqual(selection);
+  });
+
+  it("omits products that equal the view default", () => {
+    expect(serializeSelection(base).toString()).toBe(""); // countries + ["Ammonia"]
+    expect(serializeSelection({ ...base, products: [] }).toString()).toBe("");
+    expect(
+      serializeSelection({ ...base, view: "products", products: [] }).toString(),
+    ).toBe("view=products");
+  });
+
+  it("emits a non-default products list on the countries view", () => {
+    const params = serializeSelection({ ...base, products: ["Ammonia", "Urea"] });
+    expect(params.get("products")).toBe("Ammonia,Urea");
   });
 });
 
