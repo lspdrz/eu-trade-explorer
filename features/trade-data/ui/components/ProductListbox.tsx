@@ -8,6 +8,10 @@ import {
 } from "@headlessui/react";
 
 /**
+ * @deprecated Nothing renders this since the countries tab went
+ * multi-product (2026-09). Use `ProductMultiSelect`. Kept for reference /
+ * a possible future single-select reuse.
+ *
  * Single-select product picker. Changing it triggers a server refetch
  * upstream, so `pending` dims the control while that runs.
  */
