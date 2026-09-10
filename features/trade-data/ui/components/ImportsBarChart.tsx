@@ -209,7 +209,7 @@ export function ImportsBarChart({
 
       <EventOverlay
         placements={eventFlags}
-        flagBandHeight={flagBandHeight}
+        plotTop={marginTop}
         plotHeight={innerHeight}
       />
 

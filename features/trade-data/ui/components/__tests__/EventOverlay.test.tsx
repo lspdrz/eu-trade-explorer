@@ -21,7 +21,7 @@ describe("EventOverlay", () => {
   it("renders nothing when there are no placements", () => {
     expect(
       renderToStaticMarkup(
-        <EventOverlay placements={[]} flagBandHeight={0} plotHeight={300} />,
+        <EventOverlay placements={[]} plotTop={36} plotHeight={300} />,
       ),
     ).toBe("");
   });
@@ -36,7 +36,7 @@ describe("EventOverlay", () => {
             event: { id: "b", year: 2022, month: 12, label: "Gas cap" },
           }),
         ]}
-        flagBandHeight={20}
+        plotTop={56}
         plotHeight={300}
       />,
     );
@@ -53,7 +53,7 @@ describe("EventOverlay", () => {
             event: { id: "a", year: 2022, month: 3, label: "Russia invades Ukraine" },
           }),
         ]}
-        flagBandHeight={20}
+        plotTop={56}
         plotHeight={300}
       />,
     );

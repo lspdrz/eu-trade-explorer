@@ -54,7 +54,7 @@ describe("selectEventFlags", () => {
     });
     expect(placements.map((p) => p.event.id)).toEqual(["a", "b"]);
     expect(placements.every((p) => p.row === 0)).toBe(true);
-    expect(flagBandHeight).toBe(20); // 1 row * FLAG_ROW_H
+    expect(flagBandHeight).toBe(24); // 1 row * FLAG_ROW_H
   });
 
   it("drops out-of-range events but keeps the in-range ones", () => {
@@ -76,6 +76,6 @@ describe("selectEventFlags", () => {
         ev({ id: "b", year: 2021, month: 2, label: "Another crowded label" }),
       ],
     });
-    expect(flagBandHeight).toBe(40); // 2 rows
+    expect(flagBandHeight).toBe(48); // 2 rows
   });
 });

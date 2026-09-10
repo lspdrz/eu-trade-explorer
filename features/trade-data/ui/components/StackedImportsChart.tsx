@@ -226,7 +226,7 @@ export function StackedImportsChart({
 
       <EventOverlay
         placements={eventFlags}
-        flagBandHeight={flagBandHeight}
+        plotTop={marginTop}
         plotHeight={innerHeight}
       />
 

@@ -1,7 +1,7 @@
 import type { ChartEvent } from "../../types";
 import { sortEvents } from "./chartEvents";
 
-export const FLAG_ROW_H = 20;
+export const FLAG_ROW_H = 24; // flag (~17px) + a gap between stacked rows
 
 const CHAR_PX = 6.5;
 const FLAG_PAD = 14;
