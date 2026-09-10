@@ -21,6 +21,15 @@ if (!connectionString) {
  * Postgres, meaning two code paths for local Docker vs. production Neon.
  * `pg` speaks real Postgres wire protocol and works identically against
  * both, since Neon also supports normal TCP connections.
+ *
+ * `max: 1` — every serverless invocation on Vercel handles one request at a
+ * time, so one connection per instance is all a pool can use. The default
+ * (10) would let a burst of concurrent invocations open 10× the connections
+ * they need and exhaust Postgres's limit. Horizontal scale is handled
+ * outside this pool: in production `DATABASE_URL` must point at Neon's
+ * *pooled* endpoint (the `-pooler` host — PgBouncer in transaction mode),
+ * and the Vercel functions + the Neon project should sit in the same region
+ * (us-east) so each query isn't a cross-region round trip.
  */
-const pool = new Pool({ connectionString });
+const pool = new Pool({ connectionString, max: 1 });
 export const db = drizzle({ client: pool });
