@@ -23,21 +23,22 @@ export function EventsPanel() {
     <section className="rounded-lg border border-border p-4 text-sm">
       <div className="flex items-center justify-between">
         <span className="font-medium">Events</span>
-        <Switch
-          checked={enabled}
-          onChange={setEnabled}
-          className="group inline-flex h-5 w-9 items-center rounded-full border border-border bg-surface transition data-checked:bg-foreground"
-        >
-          <span className="sr-only">Show on chart</span>
-          <span className="ml-0.5 h-3.5 w-3.5 rounded-full bg-muted transition group-data-checked:ml-4 group-data-checked:bg-background" />
-        </Switch>
+        <span className="flex items-center gap-2">
+          <span className="text-xs text-muted">Show on chart</span>
+          <Switch
+            checked={enabled}
+            onChange={setEnabled}
+            className="group inline-flex h-5 w-9 items-center rounded-full border border-border bg-surface transition data-checked:bg-foreground"
+          >
+            <span className="sr-only">Show on chart</span>
+            <span className="ml-0.5 h-3.5 w-3.5 rounded-full bg-muted transition group-data-checked:ml-4 group-data-checked:bg-background" />
+          </Switch>
+        </span>
       </div>
-      <p className="mt-0.5 text-xs text-muted">Show on chart</p>
 
       {events.length === 0 && !adding && (
         <p className="mt-4 text-xs text-muted">
-          No events yet. Mark a moment &mdash; a war, a sanctions package, a
-          price cap &mdash; to see it on the timeline.
+          No events yet. Add an event to see it on the timeline.
         </p>
       )}
 
