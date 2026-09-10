@@ -9,14 +9,16 @@ import { runFertilizerSync } from "@/features/sync-eu-agrifood/services/runFerti
 //   npx tsx --conditions=react-server --env-file=.env.local scripts/sync-agrifood.ts
 //   npx tsx --conditions=react-server --env-file=.env.local scripts/sync-agrifood.ts --backfill
 //
-// with DATABASE_URL pointed at the production (Neon) database. To bring the
-// cron back — Pro plan + Fluid Compute, then restore vercel.json with
-//   { "path": "/api/fertilizer-sync", "schedule": "0 6 * * *" }
-// This route still works (secret-guarded) for a manual curl during dev.
+// with DATABASE_URL pointed at the production (Neon) database.
 //
-// Route segment config, read by name at build time; Vercel uses it to set
-// the function timeout. 800s is already sized for the Pro re-enable.
-export const maxDuration = 800;
+// Route segment config, read by name at build time; Vercel sets the
+// function timeout from it. Capped at 300 because the Hobby plan REJECTS
+// the build for anything higher (it doesn't clamp). A real run here is
+// minutes, so on Hobby this route can only be spot-checked, not actually
+// used — the scripts above are the real path. To bring the cron back:
+// Pro plan + Fluid Compute, raise this to ~800, and restore vercel.json
+// with { "path": "/api/fertilizer-sync", "schedule": "0 6 * * *" }.
+export const maxDuration = 300;
 
 // This is a public URL by Next.js convention (any Route Handler is), so it's
 // guarded by a shared secret rather than left open — otherwise anyone could

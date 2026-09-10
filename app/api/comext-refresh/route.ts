@@ -7,13 +7,16 @@ import { runComextRefresh } from "@/features/sync-comext/services/runComextRefre
 //   npx tsx --conditions=react-server --env-file=.env.local scripts/sync-comext.ts             # trailing 3 years
 //   npx tsx --conditions=react-server --env-file=.env.local scripts/sync-comext.ts --backfill  # every year from 2010
 //
-// with DATABASE_URL pointed at production. Re-enable on Pro + Fluid Compute
-// by restoring vercel.json with { "path": "/api/comext-refresh",
-// "schedule": "0 6 3 * *" }.
+// with DATABASE_URL pointed at production.
 //
-// Route segment config, read by name at build time. 600s: 6 COMEXT calls
-// at ~45s each is ~270s, but the API has multi-hour degraded windows.
-export const maxDuration = 600;
+// Route segment config, read by name at build time. Capped at 300 because
+// the Hobby plan rejects the build above that (see fertilizer-sync/route.ts
+// for the fuller note). A trailing-3-year run is ~270s of COMEXT calls plus
+// the API's multi-hour degraded windows, so this route is only a
+// spot-check on Hobby — scripts/sync-comext.ts is the real path. Re-enable
+// the cron on Pro + Fluid Compute: raise this to ~600 and restore
+// vercel.json with { "path": "/api/comext-refresh", "schedule": "0 6 3 * *" }.
+export const maxDuration = 300;
 
 // Public URL by Next.js convention — guarded by a shared secret so it
 // can't be triggered at will (the COMEXT API is slow and rate-limited).
