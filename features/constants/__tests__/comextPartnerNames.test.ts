@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COMEXT_PARTNER_NAMES } from "@/features/trade-data/constants/comextPartnerNames";
+import { COMEXT_PARTNER_NAMES } from "@/features/constants/comextPartnerNames";
 
 describe("COMEXT_PARTNER_NAMES", () => {
   it("names the major fertiliser trade partners", () => {

@@ -1,5 +1,5 @@
 import "server-only";
-import { COMEXT_PARTNER_NAMES } from "@/features/trade-data/constants/comextPartnerNames";
+import { COMEXT_PARTNER_NAMES } from "@/features/constants/comextPartnerNames";
 import { COMEXT_PRODUCT_HEADINGS } from "@/features/trade-data/constants/comextProducts";
 import { getComextRowsByHeading } from "@/features/trade-data/db/queries/getComextRowsByHeading";
 import type {
