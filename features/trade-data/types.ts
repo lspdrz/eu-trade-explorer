@@ -63,6 +63,25 @@ export interface GroupedSeries {
 }
 
 /**
+ * A viewer-defined point-in-time marker on the year axis ("Russia invades
+ * Ukraine", Feb 2022). Private to one browser — stored in localStorage, never
+ * sent anywhere. `month` is 1–12.
+ */
+export interface ChartEvent {
+  id: string;
+  year: number;
+  month: number;
+  label: string;
+}
+
+/** The whole localStorage blob under `chart-events`. `v` guards migrations. */
+export interface StoredEvents {
+  v: 1;
+  enabled: boolean;
+  events: ChartEvent[];
+}
+
+/**
  * A single (partner, product, year) observation for the stacked countries
  * chart. The flat input to `selectStackedSeries`.
  */
