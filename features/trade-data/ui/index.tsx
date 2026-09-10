@@ -101,7 +101,11 @@ export async function FertilizerImports({
       </header>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_17rem] lg:items-start">
-        <div>
+        {/* min-w-0: without it the 1fr track grows to the data table's
+            intrinsic width (grid items default to min-width:auto), shoving
+            the events panel off-screen. With it, the table scrolls inside
+            its own overflow-x-auto instead. */}
+        <div className="min-w-0">
           <div className="mb-6">
             <SourceToggle />
           </div>
