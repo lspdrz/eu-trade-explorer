@@ -1,6 +1,21 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { StackedSeries } from "../../../types";
+
+let eventsState = {
+  enabled: false,
+  events: [] as { id: string; year: number; month: number; label: string }[],
+};
+vi.mock("../../hooks/useChartEvents", () => ({
+  useChartEvents: () => ({
+    ...eventsState,
+    setEnabled: vi.fn(),
+    addEvent: vi.fn(),
+    updateEvent: vi.fn(),
+    removeEvent: vi.fn(),
+  }),
+}));
+
 import { StackedImportsChart } from "../StackedImportsChart";
 
 const seriesMeta = [
@@ -62,6 +77,10 @@ const base = {
 const bars = (html: string) =>
   (html.match(/class="[^"]*chart-bar/g) ?? []).length;
 
+beforeEach(() => {
+  eventsState = { enabled: false, events: [] };
+});
+
 describe("StackedImportsChart", () => {
   it("renders one rect per non-zero segment", () => {
     // EG2021: 2 non-zero, MA2021: 1, EG2022: 1, MA2022: 1 => 5
@@ -101,5 +120,36 @@ describe("StackedImportsChart", () => {
     expect(html).toContain(
       'aria-label="EU imports for Ammonia, Urea, by partner country"',
     );
+  });
+});
+
+describe("StackedImportsChart event markers", () => {
+  it("draws a flag + rule when the layer is on and the event is in range", () => {
+    eventsState = {
+      enabled: true,
+      events: [{ id: "a", year: 2021, month: 9, label: "Test event" }],
+    };
+    const html = renderToStaticMarkup(<StackedImportsChart {...base} />);
+    expect(html).toContain("data-event-flag");
+    expect(html).toContain("data-event-rule");
+    expect(html).toContain("Sep 2021");
+  });
+
+  it("draws nothing when the layer is off", () => {
+    eventsState = {
+      enabled: false,
+      events: [{ id: "a", year: 2021, month: 9, label: "Test event" }],
+    };
+    const html = renderToStaticMarkup(<StackedImportsChart {...base} />);
+    expect(html).not.toContain("data-event-flag");
+  });
+
+  it("ignores an event outside the visible years", () => {
+    eventsState = {
+      enabled: true,
+      events: [{ id: "a", year: 2005, month: 9, label: "Old" }],
+    };
+    const html = renderToStaticMarkup(<StackedImportsChart {...base} />);
+    expect(html).not.toContain("data-event-flag");
   });
 });

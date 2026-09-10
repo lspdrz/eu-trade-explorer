@@ -1,6 +1,21 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { GroupedSeries } from "../../../types";
+
+let eventsState = {
+  enabled: false,
+  events: [] as { id: string; year: number; month: number; label: string }[],
+};
+vi.mock("../../hooks/useChartEvents", () => ({
+  useChartEvents: () => ({
+    ...eventsState,
+    setEnabled: vi.fn(),
+    addEvent: vi.fn(),
+    updateEvent: vi.fn(),
+    removeEvent: vi.fn(),
+  }),
+}));
+
 import { ImportsBarChart } from "../ImportsBarChart";
 
 const seriesMeta = [
@@ -23,6 +38,10 @@ const grid: GroupedSeries = {
 function countBars(html: string): number {
   return (html.match(/class="[^"]*chart-bar/g) ?? []).length;
 }
+
+beforeEach(() => {
+  eventsState = { enabled: false, events: [] };
+});
 
 describe("ImportsBarChart", () => {
   it("renders one bar per (series, year)", () => {
@@ -86,5 +105,42 @@ describe("ImportsBarChart", () => {
     );
     expect(countBars(html)).toBe(2);
     expect(html).toContain('data-series="Ammonia"');
+  });
+});
+
+describe("ImportsBarChart event markers", () => {
+  it("draws a flag + rule when the layer is on and the event is in range", () => {
+    eventsState = {
+      enabled: true,
+      events: [{ id: "a", year: 2021, month: 6, label: "Test event" }],
+    };
+    const html = renderToStaticMarkup(
+      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" width={800} />,
+    );
+    expect(html).toContain("data-event-flag");
+    expect(html).toContain("data-event-rule");
+    expect(html).toContain("Jun 2021");
+  });
+
+  it("draws nothing when the layer is off", () => {
+    eventsState = {
+      enabled: false,
+      events: [{ id: "a", year: 2021, month: 6, label: "Test event" }],
+    };
+    const html = renderToStaticMarkup(
+      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" width={800} />,
+    );
+    expect(html).not.toContain("data-event-flag");
+  });
+
+  it("ignores an event outside the visible years", () => {
+    eventsState = {
+      enabled: true,
+      events: [{ id: "a", year: 1999, month: 6, label: "Old" }],
+    };
+    const html = renderToStaticMarkup(
+      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" width={800} />,
+    );
+    expect(html).not.toContain("data-event-flag");
   });
 });
