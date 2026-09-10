@@ -1,4 +1,12 @@
-import { integer, numeric, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  index,
+  integer,
+  numeric,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 // A faithful, unaggregated snapshot of EU API weekly trade rows — see
 // features/sync-eu-agrifood/db/mutations/replaceProductData.ts for what
@@ -32,4 +40,9 @@ export const rawTaxudWeeklyRows = pgTable("raw_taxud_weekly_rows", {
   kgEquivalent: numeric("kg_equivalent").notNull(),
   coefficient: numeric().notNull(),
   syncedAt: timestamp("synced_at", { withTimezone: true }).notNull().defaultNow(),
-});
+}, (t) => [
+  // The one read filter: `getWeeklyRowsByProduct` does `where product = ?`.
+  // Also the write scope: `replaceProductData` deletes by (product,
+  // marketing_year) before re-inserting.
+  index("raw_taxud_weekly_rows_product_idx").on(t.product),
+]);

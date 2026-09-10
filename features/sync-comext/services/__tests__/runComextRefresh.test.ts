@@ -28,7 +28,7 @@ describe("runComextRefresh", () => {
   it("fetches both headings x [thisYear-2 .. thisYear] and writes each heading once with the 36-month period list", async () => {
     vi.mocked(fetchComextImports).mockResolvedValue([obs("2024-01")]);
 
-    await runComextRefresh();
+    await runComextRefresh(null);
 
     // 2 headings x 3 years
     expect(fetchComextImports).toHaveBeenCalledTimes(6);
@@ -49,7 +49,7 @@ describe("runComextRefresh", () => {
       return [obs("2024-01")];
     });
 
-    const result = await runComextRefresh();
+    const result = await runComextRefresh(null);
 
     expect(result["2814"]).toEqual({ rowsWritten: 3 });
     expect(result["3102"]).toMatchObject({ error: expect.stringContaining("boom") });
@@ -62,10 +62,26 @@ describe("runComextRefresh", () => {
       heading === "2814" ? [] : [obs("2025-06")],
     );
 
-    const result = await runComextRefresh();
+    const result = await runComextRefresh(null);
 
     expect(result["2814"]).toEqual({ skipped: true });
     expect(result["3102"]).toEqual({ rowsWritten: 3 });
     expect(replaceComextObservations).toHaveBeenCalledTimes(1);
+  });
+
+  it("backfill mode pulls every year from 2010 and replaces that whole span", async () => {
+    vi.mocked(fetchComextImports).mockResolvedValue([obs("2010-01")]);
+
+    await runComextRefresh("backfill");
+
+    // 2 headings x [2010 .. 2026] = 34 fetches
+    expect(fetchComextImports).toHaveBeenCalledTimes(34);
+    expect(fetchComextImports).toHaveBeenCalledWith({ heading: "2814", year: 2010 });
+
+    expect(replaceComextObservations).toHaveBeenCalledTimes(2);
+    const call = vi.mocked(replaceComextObservations).mock.calls[0][0];
+    expect(call.periods).toHaveLength(17 * 12);
+    expect(call.periods[0]).toBe("2010-01");
+    expect(call.periods.at(-1)).toBe("2026-12");
   });
 });

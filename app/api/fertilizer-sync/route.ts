@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { runFertilizerSync } from "@/features/sync-eu-agrifood/services/runFertilizerSync";
 
-// Route segment config, not a normal export — Next.js reads this by name
-// at build time and Vercel uses it to set this function's actual timeout
-// on deploy; nothing in this codebase calls it directly (same mechanism
-// as app/page.tsx's `dynamic = "force-dynamic"`). 800s because a full
-// history backfill (?mode=backfill) has measured at 5.5+ minutes against
-// this API, well over Vercel's default.
+// NOT SCHEDULED. There was a `vercel.json` cron on this route; it was
+// removed because Vercel's free (Hobby) plan clamps every function to 60s,
+// and a full run here is minutes (the EU API has multi-hour degraded
+// windows). Data is refreshed by hand instead:
+//
+//   npx tsx --conditions=react-server --env-file=.env.local scripts/sync-agrifood.ts
+//   npx tsx --conditions=react-server --env-file=.env.local scripts/sync-agrifood.ts --backfill
+//
+// with DATABASE_URL pointed at the production (Neon) database. To bring the
+// cron back — Pro plan + Fluid Compute, then restore vercel.json with
+//   { "path": "/api/fertilizer-sync", "schedule": "0 6 * * *" }
+// This route still works (secret-guarded) for a manual curl during dev.
+//
+// Route segment config, read by name at build time; Vercel uses it to set
+// the function timeout. 800s is already sized for the Pro re-enable.
 export const maxDuration = 800;
 
 // This is a public URL by Next.js convention (any Route Handler is), so it's
