@@ -1,4 +1,4 @@
-import type { GroupedSeries, GroupedSeriesPoint } from "../../types";
+import type { GroupedSeries, GroupedSeriesPoint } from "../types";
 
 /**
  * Shapes flat observations into the bar chart's dense grid: the selected

@@ -3,14 +3,14 @@ import { COMEXT_PRODUCTS } from "../constants/comextProducts";
 import { getAgrifoodPartners } from "../db/queries/getAgrifoodPartners";
 import { getAgrifoodProducts } from "../db/queries/getAgrifoodProducts";
 import { getComextPartners } from "../db/queries/getComextPartners";
-import { getComextYearlyTonnesByPartner } from "../services/getComextYearlyTonnesByPartner";
-import { getAgrifoodYearlyTonnesByPartner } from "../services/getAgrifoodYearlyTonnesByPartner";
+import { getComextYearlyTonnesByPartner } from "../lib/getComextYearlyTonnesByPartner";
+import { getAgrifoodYearlyTonnesByPartner } from "../lib/getAgrifoodYearlyTonnesByPartner";
 import { ChartTabs } from "./components/ChartTabs";
 import { EventsPanel } from "./components/EventsPanel";
 import { FertilizerImportsCountryView } from "./components/FertilizerImportsCountryView";
 import { FertilizerImportsProductsView } from "./components/FertilizerImportsProductsView";
 import { SourceToggle } from "./components/SourceToggle";
-import { parseSelection } from "./utils/chartSelectionParams";
+import { parseSelection } from "../lib/chartSelectionParams";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 

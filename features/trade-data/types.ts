@@ -146,7 +146,7 @@ export type ComextProduct = "Ammonia" | "Nitrogenous fertilisers";
  * The chart's full selection, exactly as the URL expresses it. `fromYear` /
  * `toYear` are what the URL asked for (`undefined` when it said nothing) —
  * clamping to the data's real span is `deriveYearRange`'s job. Owned by
- * `ui/utils/chartSelectionParams.ts` (parse / serialize); the hook and the
+ * `lib/chartSelectionParams.ts` (parse / serialize); the hook and the
  * views consume it.
  */
 export interface ChartSelection {

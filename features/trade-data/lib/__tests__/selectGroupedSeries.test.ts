@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { GroupedSeriesPoint } from "../../../types";
+import type { GroupedSeriesPoint } from "../../types";
 import { selectGroupedSeries } from "../selectGroupedSeries";
 
 const r = (o: Partial<GroupedSeriesPoint>): GroupedSeriesPoint => ({

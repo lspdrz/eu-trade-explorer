@@ -4,7 +4,7 @@
  * in `raw_taxud_weekly_rows` (lib/db/schemas/rawTaxudWeeklyRows.ts).
  * 
  * The five value fields are `string`, not `number`: parsed with
- * `numberAsString: true` (services/fetchWeeklyImports.ts) to keep exact
+ * `numberAsString: true` (lib/fetchWeeklyImports.ts) to keep exact
  * digits instead of risking precision loss through `parseFloat`.
  * `week`/`procedure`/`preference` stay `number` only because that same
  * file's reviver converts them back — safe, small integers. Converting

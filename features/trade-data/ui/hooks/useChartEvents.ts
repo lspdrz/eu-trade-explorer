@@ -10,7 +10,7 @@ import {
   parseStoredEvents,
   serializeStoredEvents,
   sortEvents,
-} from "../utils/chartEvents";
+} from "../../lib/chart-events/chartEvents";
 
 const listeners = new Set<() => void>();
 let cache: { raw: string | null; parsed: StoredEvents } | null = null;

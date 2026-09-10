@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/features/sync-comext/services/runComextRefresh", () => ({
+vi.mock("@/features/sync-comext/lib/runComextRefresh", () => ({
   runComextRefresh: vi.fn(),
 }));
 
-import { runComextRefresh } from "@/features/sync-comext/services/runComextRefresh";
+import { runComextRefresh } from "@/features/sync-comext/lib/runComextRefresh";
 import { GET } from "../route";
 
 const SECRET = "test-cron-secret";

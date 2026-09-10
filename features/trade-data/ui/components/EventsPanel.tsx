@@ -3,7 +3,7 @@
 import { Switch } from "@headlessui/react";
 import { useState } from "react";
 import type { ChartEvent } from "../../types";
-import { MAX_EVENTS, formatEventDate } from "../utils/chartEvents";
+import { MAX_EVENTS, formatEventDate } from "../../lib/chart-events/chartEvents";
 import { useChartEvents } from "../hooks/useChartEvents";
 import { EventForm, emptyDraft } from "./EventForm";
 

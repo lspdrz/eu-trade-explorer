@@ -3,7 +3,7 @@
 import { Radio, RadioGroup } from "@headlessui/react";
 import type { TradeSource } from "../../types";
 import { useChartSelection } from "../hooks/useChartSelection";
-import { PIVOT_CLEARED } from "../utils/chartSelectionParams";
+import { PIVOT_CLEARED } from "../../lib/chartSelectionParams";
 
 const OPTIONS: { value: TradeSource; label: string; hint: string }[] = [
   {

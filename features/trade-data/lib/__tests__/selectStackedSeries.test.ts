@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { StackedSeriesPoint } from "../../../types";
+import type { StackedSeriesPoint } from "../../types";
 import { selectStackedSeries } from "../selectStackedSeries";
 
 const p = (o: Partial<StackedSeriesPoint>): StackedSeriesPoint => ({

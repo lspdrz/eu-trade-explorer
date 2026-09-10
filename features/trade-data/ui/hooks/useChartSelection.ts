@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useTransition } from "react";
 import type { ChartSelection } from "../../types";
-import { parseSelection, serializeSelection } from "../utils/chartSelectionParams";
+import { parseSelection, serializeSelection } from "../../lib/chartSelectionParams";
 
 type SetSelectionOptions = {
   /**

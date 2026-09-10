@@ -1,5 +1,5 @@
 import type { SelectedSeries, StackedSeries } from "../../types";
-import { formatInt } from "../utils/chartFormat";
+import { formatInt } from "../../lib/chartFormat";
 
 /**
  * The numbers behind the stacked chart — a <details> the reader opens on

@@ -6,7 +6,7 @@ import {
   MAX_PRODUCTS,
   deriveBounds,
   deriveYearRange,
-} from "../utils/chartSelectionParams";
+} from "../../lib/chartSelectionParams";
 import { useChartSelection } from "../hooks/useChartSelection";
 import { CountryCombobox } from "./CountryCombobox";
 import { ImportsChartPanel } from "./ImportsChartPanel";

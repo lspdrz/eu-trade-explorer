@@ -6,19 +6,19 @@ import nextTs from "eslint-config-next/typescript";
  * Project structure
  *
  *   app/         Routing only — pages + route handlers. No DB access; calls into features/.
- *   features/    One folder per capability, each split by layer:
+ *   features/    One folder per capability:
  *     <feature>/
- *       ui/        React. RSCs fetch their own data; ui/utils/ is pure & client-safe. Can import
- *                  from db/ or services/
- *
- *       services/  Orchestration & policy. Coordinates db/ + pure logic + external APIs.
- *                  Exists only when there's something to orchestrate.
+ *       ui/        React. RSCs fetch their own data. Can import from lib/ or db/.
+ *       lib/       The feature's own logic: server-only read models / orchestration
+ *                  (marked per file with `import "server-only"`) and pure view logic,
+ *                  side by side, purpose-named. Sub-group when a cluster earns it.
  *       db/        The ONLY place that touches Postgres. queries/ (read), mutations/ (write).
- *       utils/     Pure helpers. types.ts — the feature's own shapes.
- *   lib/         Cross-feature infra only (db client + schemas, EU API HTTP wrapper).
- *                No business logic; nothing feature-specific.
+ *       utils/     Genuinely generic, domain-agnostic helpers only (iterator combinators…).
+ *                  Feature logic goes in lib/. types.ts — the feature's own shapes.
+ *   lib/         Cross-feature code every feature may need (db client + schemas, EU API
+ *                HTTP wrappers). Same idea as features/<f>/lib but app-wide scope.
  *
- * Import direction:  app → features/{feature}/ui → services → db → lib
+ * Import direction:  app → features/{feature}/ui → lib → db → @/lib
  * Features never import each other. Server modules start with `import "server-only"`.
  * (enforced in eslint.config.mjs)
  *
@@ -32,7 +32,7 @@ const NO_DB = {
 };
 const NO_UI = {
   group: ["**/ui/**"],
-  message: "services/, db/ and utils/ must not import from ui/.",
+  message: "lib/, db/ and utils/ must not import from ui/.",
 };
 const NO_CROSS_FEATURE = {
   group: ["@/features/*/**"],
@@ -55,7 +55,7 @@ const eslintConfig = defineConfig([
 
   // --- Architectural boundaries -------------------------------------------
 
-  // app/ — routing only: no direct DB access (go through a feature's services/).
+  // app/ — routing only: no direct DB access (go through a feature's lib/).
   {
     files: ["app/**"],
     rules: {
@@ -71,9 +71,11 @@ const eslintConfig = defineConfig([
     },
   },
 
-  // services/ — orchestration: no DB client, no ui/.
+  // lib/ — a feature's own logic: server-only read models (marked per file
+  // with `import "server-only"`) and pure view logic, side by side. No DB
+  // client, no ui/, no cross-feature.
   {
-    files: ["features/**/services/**"],
+    files: ["features/**/lib/**"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -90,9 +92,9 @@ const eslintConfig = defineConfig([
     },
   },
 
-  // utils/ — pure helpers (sync's async-iterator helpers, trade-data's
-  // ui/utils/). Placed after ui/ so ui/utils/** lands here: no DB, no ui/,
-  // no cross-feature.
+  // utils/ — genuinely generic, domain-agnostic helpers only (sync's
+  // async-iterator combinators). Feature logic goes in lib/, not here.
+  // Placed after ui/ so any ui/utils/** would also land here.
   {
     files: ["features/**/utils/**"],
     rules: {

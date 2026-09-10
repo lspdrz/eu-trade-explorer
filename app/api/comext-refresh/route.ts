@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { runComextRefresh } from "@/features/sync-comext/services/runComextRefresh";
+import { runComextRefresh } from "@/features/sync-comext/lib/runComextRefresh";
 
 // NOT SCHEDULED — same reason as app/api/fertilizer-sync/route.ts (Vercel
 // free tier clamps functions to 60s; this runs minutes). Refresh by hand:

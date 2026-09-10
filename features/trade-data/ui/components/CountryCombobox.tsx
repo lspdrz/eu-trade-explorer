@@ -7,8 +7,8 @@ import {
   ComboboxOptions,
 } from "@headlessui/react";
 import { useState } from "react";
-import { MAX_COUNTRIES } from "../utils/chartSelectionParams";
-import { filterCountries } from "../utils/filterCountries";
+import { MAX_COUNTRIES } from "../../lib/chartSelectionParams";
+import { filterCountries } from "../../lib/filterCountries";
 
 /**
  * Typeahead multi-select for partner countries. `max` caps the selection

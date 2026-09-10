@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ChartSelection, YearlyPartnerTotal } from "../../../types";
+import type { ChartSelection, YearlyPartnerTotal } from "../../types";
 import {
   PIVOT_CLEARED,
   deriveBounds,

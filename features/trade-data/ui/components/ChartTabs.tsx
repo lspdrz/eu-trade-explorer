@@ -3,7 +3,7 @@
 import { Tab, TabGroup, TabList } from "@headlessui/react";
 import type { ChartView } from "../../types";
 import { useChartSelection } from "../hooks/useChartSelection";
-import { PIVOT_CLEARED } from "../utils/chartSelectionParams";
+import { PIVOT_CLEARED } from "../../lib/chartSelectionParams";
 
 const VIEWS: ChartView[] = ["countries", "products"];
 const LABEL: Record<ChartView, string> = {

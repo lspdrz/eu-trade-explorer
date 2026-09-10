@@ -11,7 +11,7 @@
  * min (COMEXT is slow); re-run it if it fails — each heading's write is one
  * idempotent transaction.
  */
-import { runComextRefresh } from "@/features/sync-comext/services/runComextRefresh";
+import { runComextRefresh } from "@/features/sync-comext/lib/runComextRefresh";
 
 async function main() {
   const mode = process.argv.includes("--backfill") ? "backfill" : null;

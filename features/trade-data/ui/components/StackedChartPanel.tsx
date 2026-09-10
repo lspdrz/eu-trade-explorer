@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from "react";
 import type { SelectedSeries, StackedSeriesPoint } from "../../types";
-import { assignColorSlots } from "../utils/assignColorSlots";
-import { MAX_PRODUCTS } from "../utils/chartSelectionParams";
-import { selectStackedSeries } from "../utils/selectStackedSeries";
-import { SERIES_COLORS } from "../utils/seriesColors";
+import { assignColorSlots } from "../../lib/assignColorSlots";
+import { MAX_PRODUCTS } from "../../lib/chartSelectionParams";
+import { selectStackedSeries } from "../../lib/selectStackedSeries";
+import { SERIES_COLORS } from "../../lib/seriesColors";
 import { ChartEmptyState } from "./ChartEmptyState";
 import { StackedImportsChart } from "./StackedImportsChart";
 import { StackedImportsDataTable } from "./StackedImportsDataTable";
