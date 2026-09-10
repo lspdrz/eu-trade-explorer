@@ -17,10 +17,7 @@ export const COMEXT_PRODUCT_HEADINGS = {
   "Nitrogenous fertilisers": "3102",
 } as const satisfies Record<ComextProduct, string>;
 
-/**
- * Selector options, in display order. `Ammonia` is shared with the
- * surveillance product list, so `DEFAULT_PRODUCT` stays valid here.
- */
+/** Selector options, in display order. */
 export const COMEXT_PRODUCTS: ComextProduct[] = Object.keys(
   COMEXT_PRODUCT_HEADINGS,
 ) as ComextProduct[];

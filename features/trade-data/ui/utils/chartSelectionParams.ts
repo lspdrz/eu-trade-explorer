@@ -7,9 +7,23 @@ import type {
 
 export const MAX_COUNTRIES = 3;
 export const MAX_PRODUCTS = 3;
-export const DEFAULT_PRODUCT = "Ammonia";
 export const DEFAULT_SOURCE: TradeSource = "comext";
 export const DEFAULT_VIEW: ChartView = "countries";
+
+/**
+ * The selection fields a "pivot" (a source switch or a tab switch) wipes.
+ * Switching either is a fresh start — no product / partner / year carried
+ * across, no stale param from the other source's universe. `source` and
+ * `view` themselves are set by the caller alongside this. There is no
+ * default product: an empty `products` means the chart prompts for one.
+ */
+export const PIVOT_CLEARED = {
+  products: [],
+  partnerCodes: [],
+  partner: "",
+  fromYear: undefined,
+  toYear: undefined,
+} satisfies Partial<ChartSelection>;
 
 const WELL_FORMED_CODE = /^[A-Z]{2}$/;
 
@@ -46,27 +60,19 @@ function year(raw: string | null): number | undefined {
 
 /**
  * Parse the URL into a ChartSelection. Never throws, needs no data bounds —
- * it only does structure (split, dedupe, cap, well-formed-code filter) and
- * defaults. An unknown product / partner isn't "fixed" to a valid one: it's
- * kept, and the chart simply renders nothing for it (the spec's "the absence
- * is shown, never silent"). Runs identically server-side (to pick the fetch)
- * and client-side.
+ * it only does structure (split, dedupe, cap, well-formed-code filter). No
+ * defaulting beyond `source` / `view`: an unknown or absent product / partner
+ * isn't "fixed" to a valid one — it's kept (or empty), and the chart simply
+ * prompts or renders nothing (the spec's "the absence is shown, never
+ * silent"). Runs identically server-side (to pick the fetch) and client-side.
  */
 export function parseSelection(params: URLSearchParams): ChartSelection {
-  const view: ChartView =
-    params.get("view") === "products" ? "products" : "countries";
-  const rawProducts = stringList(params.get("products"), MAX_PRODUCTS);
   return {
     source: params.get("source") === "surveillance" ? "surveillance" : "comext",
-    view,
+    view: params.get("view") === "products" ? "products" : "countries",
     partnerCodes: codeList(params.get("countries"), MAX_COUNTRIES),
     partner: (params.get("partner") ?? "").trim().toUpperCase().match(WELL_FORMED_CODE)?.[0] ?? "",
-    // The countries view always shows at least one product; an empty URL means
-    // "just the default". The products view starts empty (pick a partner first).
-    products:
-      rawProducts.length === 0 && view === "countries"
-        ? [DEFAULT_PRODUCT]
-        : rawProducts,
+    products: stringList(params.get("products"), MAX_PRODUCTS),
     fromYear: year(params.get("from")),
     toYear: year(params.get("to")),
   };
@@ -85,13 +91,7 @@ export function serializeSelection(selection: ChartSelection): URLSearchParams {
   if (selection.partnerCodes.length > 0)
     params.set("countries", selection.partnerCodes.join(","));
   if (selection.partner) params.set("partner", selection.partner);
-  // An empty list is never emitted; on the countries view neither is the lone
-  // default product (so the canonical countries URL stays clean).
-  const productsIsCountriesDefault =
-    selection.view === "countries" &&
-    selection.products.length === 1 &&
-    selection.products[0] === DEFAULT_PRODUCT;
-  if (selection.products.length > 0 && !productsIsCountriesDefault)
+  if (selection.products.length > 0)
     params.set("products", selection.products.join(","));
   if (selection.fromYear !== undefined) params.set("from", String(selection.fromYear));
   if (selection.toYear !== undefined) params.set("to", String(selection.toYear));

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ChartSelection, YearlyPartnerTotal } from "../../../types";
 import {
+  PIVOT_CLEARED,
   deriveBounds,
   deriveYearRange,
   parseSelection,
@@ -9,13 +10,13 @@ import {
 
 const parse = (q: string) => parseSelection(new URLSearchParams(q));
 
-/** A full, all-defaults ChartSelection (countries view → products defaults to Ammonia). */
+/** A full, all-defaults ChartSelection. There is no default product. */
 const base: ChartSelection = {
   source: "comext",
   view: "countries",
   partnerCodes: [],
   partner: "",
-  products: ["Ammonia"],
+  products: [],
   fromYear: undefined,
   toYear: undefined,
 };
@@ -49,14 +50,10 @@ describe("parseSelection", () => {
     expect(parse("").partner).toBe("");
   });
 
-  it("products: view-aware default — Ammonia on countries, empty on products", () => {
-    expect(parse("").products).toEqual(["Ammonia"]);
+  it("products: empty when absent, no default on either view", () => {
+    expect(parse("").products).toEqual([]);
     expect(parse("view=products").products).toEqual([]);
     expect(parse("products=Ammonia,Urea").products).toEqual(["Ammonia", "Urea"]);
-    expect(parse("view=products&products=Ammonia,Urea").products).toEqual([
-      "Ammonia",
-      "Urea",
-    ]);
   });
 
   it("products: trimmed, deduped, capped at 3 (no validation)", () => {
@@ -69,7 +66,7 @@ describe("parseSelection", () => {
 
   it("ignores a legacy ?product= param", () => {
     expect(parse("product=Urea")).not.toHaveProperty("product");
-    expect(parse("product=Urea").products).toEqual(["Ammonia"]);
+    expect(parse("product=Urea").products).toEqual([]);
   });
 
   it("years: the number the URL asked for, or undefined", () => {
@@ -105,17 +102,59 @@ describe("serializeSelection", () => {
     expect(parseSelection(params)).toEqual(selection);
   });
 
-  it("omits products that equal the view default", () => {
-    expect(serializeSelection(base).toString()).toBe(""); // countries + ["Ammonia"]
+  it("omits an empty products list, emits a non-empty one", () => {
     expect(serializeSelection({ ...base, products: [] }).toString()).toBe("");
     expect(
-      serializeSelection({ ...base, view: "products", products: [] }).toString(),
+      serializeSelection({ ...base, products: ["Ammonia", "Urea"] }).get("products"),
+    ).toBe("Ammonia,Urea");
+  });
+
+  it("a pivot patch serialises to just the pivot param", () => {
+    const dirty: ChartSelection = {
+      ...base,
+      source: "surveillance",
+      view: "products",
+      partnerCodes: ["EG"],
+      partner: "RU",
+      products: ["Ammonia", "Urea"],
+      fromYear: 2015,
+      toYear: 2020,
+    };
+    // tab switch keeps source, clears the rest
+    expect(
+      serializeSelection({ ...dirty, ...PIVOT_CLEARED, view: "countries" }).toString(),
+    ).toBe("source=surveillance");
+    // source switch keeps view, clears the rest
+    expect(
+      serializeSelection({ ...dirty, ...PIVOT_CLEARED, source: "comext" }).toString(),
     ).toBe("view=products");
   });
 
-  it("emits a non-default products list on the countries view", () => {
-    const params = serializeSelection({ ...base, products: ["Ammonia", "Urea"] });
-    expect(params.get("products")).toBe("Ammonia,Urea");
+  const dirty: ChartSelection = {
+    ...base,
+    source: "comext",
+    view: "products",
+    partner: "RU",
+    products: ["Ammonia"],
+    fromYear: 2018,
+  };
+
+  it("a source pivot retains the active tab and clears the rest", () => {
+    const after = parseSelection(
+      serializeSelection({ ...dirty, ...PIVOT_CLEARED, source: "surveillance" }),
+    );
+    expect(after.view).toBe("products"); // tab kept
+    expect(after.source).toBe("surveillance");
+    expect(after).toMatchObject({ partner: "", products: [], fromYear: undefined });
+  });
+
+  it("a tab pivot retains the source and clears the rest", () => {
+    const after = parseSelection(
+      serializeSelection({ ...dirty, ...PIVOT_CLEARED, view: "countries" }),
+    );
+    expect(after.source).toBe("comext"); // source kept
+    expect(after.view).toBe("countries");
+    expect(after).toMatchObject({ partner: "", products: [], fromYear: undefined });
   });
 });
 
