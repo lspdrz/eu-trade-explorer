@@ -1,7 +1,7 @@
 /**
  * A weekly trade row as read back from our own database, with the
  * numeric-as-string columns converted to real numbers for arithmetic
- * (see `getYearlyTonnesByPartner.ts`).
+ * (see `getAgrifoodYearlyTonnesByPartner.ts`).
  */
 export interface TaxudWeekRow {
   id: number;
@@ -40,11 +40,13 @@ export interface YearlyPartnerTotal {
 }
 
 /**
- * One bar in the grouped chart: a single partner country's imported tonnes
- * for a single year. `tonnes` is 0 when that country had no imports that year.
+ * A single (series, year) datum — a partner country's or a product's imported
+ * tonnes for one year. Used both as a flat input row to `selectGroupedSeries`
+ * and as a cell in the grid it returns (where `tonnes` is 0 for a series with
+ * no imports that year). A "series" is whatever the chart is comparing.
  */
 export interface GroupedSeriesPoint {
-  partnerCode: string;
+  seriesKey: string;
   year: number;
   tonnes: number;
 }
@@ -52,8 +54,8 @@ export interface GroupedSeriesPoint {
 /**
  * The chart's full input for the current selection. `years` is every year in
  * the selected inclusive range (so the x-axis has a slot even for gap years).
- * `points` is the full partnerCode × year grid, ordered by the
- * selected-country order then by year, zero-filled.
+ * `points` is the full seriesKey × year grid, ordered by the selected-series
+ * order then by year, zero-filled.
  */
 export interface GroupedSeries {
   years: number[];
@@ -67,3 +69,53 @@ export interface GroupedSeries {
  * architecture-decisions.md.
  */
 export type TradeSource = "comext" | "surveillance";
+
+/** Which comparison the chart is showing. */
+export type ChartView = "countries" | "products";
+
+/**
+ * The two products the COMEXT source offers (the surveillance source has its
+ * own 7-way list, read from the DB). `constants/comextProducts.ts` maps each
+ * to its HS heading and `satisfies` this, so the two can't drift.
+ */
+export type ComextProduct = "Ammonia" | "Nitrogenous fertilisers";
+
+/**
+ * The chart's full selection, exactly as the URL expresses it. `fromYear` /
+ * `toYear` are what the URL asked for (`undefined` when it said nothing) —
+ * clamping to the data's real span is `deriveYearRange`'s job. Owned by
+ * `ui/utils/chartSelectionParams.ts` (parse / serialize); the hook and the
+ * views consume it.
+ */
+export interface ChartSelection {
+  source: TradeSource;
+  view: ChartView;
+  // "Compare countries" tab
+  product: string;
+  partnerCodes: string[];
+  // "Compare products" tab
+  partner: string;
+  products: string[];
+  // shared
+  fromYear: number | undefined;
+  toYear: number | undefined;
+}
+
+/** A selected series (partner country or product) plus its assigned colour —
+ * what the legend, bars, and data table render from. */
+export interface SelectedSeries {
+  key: string;
+  name: string;
+  color: string;
+}
+
+/**
+ * One COMEXT import row trimmed to what yearly aggregation needs, with the
+ * numeric-as-string quantity converted to a real number (NULL → 0). Returned
+ * by `getComextRowsByHeading`, consumed by `getComextYearlyTonnesByPartner`.
+ */
+export interface ComextYearRow {
+  partnerCode: string;
+  period: string; // "YYYY-MM"
+  quantity100kg: number;
+}

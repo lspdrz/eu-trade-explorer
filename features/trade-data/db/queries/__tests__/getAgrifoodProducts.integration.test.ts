@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
 import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
-import { getSyncedProducts } from "../getSyncedProducts";
+import { getAgrifoodProducts } from "../getAgrifoodProducts";
 
 function rawRow(product: string) {
   return {
@@ -26,16 +26,16 @@ function rawRow(product: string) {
   };
 }
 
-describe("getSyncedProducts", () => {
+describe("getAgrifoodProducts", () => {
   it("returns distinct product values, sorted, with no duplicates", async () => {
     await db
       .insert(rawTaxudWeeklyRows)
       .values([rawRow("Urea"), rawRow("Urea"), rawRow("Ammonia")]);
 
-    expect(await getSyncedProducts()).toEqual(["Ammonia", "Urea"]);
+    expect(await getAgrifoodProducts()).toEqual(["Ammonia", "Urea"]);
   });
 
   it("returns [] when nothing is synced", async () => {
-    expect(await getSyncedProducts()).toEqual([]);
+    expect(await getAgrifoodProducts()).toEqual([]);
   });
 });

@@ -2,16 +2,7 @@ import "server-only";
 import { like } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { rawComextImports } from "@/lib/db/schemas/rawComextImports";
-
-/**
- * One COMEXT import row, trimmed to what yearly aggregation needs, with the
- * numeric-as-string quantity converted to a real number (NULL → 0).
- */
-export interface ComextYearRow {
-  partnerCode: string;
-  period: string; // "YYYY-MM"
-  quantity100kg: number;
-}
+import type { ComextYearRow } from "../../types";
 
 /**
  * Every raw COMEXT import row under an HS heading — matched by CN8 prefix,

@@ -1,32 +1,100 @@
-import type { TradeSource, YearlyPartnerTotal } from "../../types";
+import type {
+  ChartSelection,
+  ChartView,
+  TradeSource,
+  YearlyPartnerTotal,
+} from "../../types";
 
 export const MAX_COUNTRIES = 3;
+export const MAX_PRODUCTS = 3;
 export const DEFAULT_PRODUCT = "Ammonia";
 export const DEFAULT_SOURCE: TradeSource = "comext";
+export const DEFAULT_VIEW: ChartView = "countries";
 
-export interface ChartSelection {
-  source: TradeSource;
-  product: string;
-  partnerCodes: string[];
-  fromYear: number;
-  toYear: number;
+const WELL_FORMED_CODE = /^[A-Z]{2}$/;
+
+function codeList(raw: string | null, max: number): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const part of (raw ?? "").split(",")) {
+    const code = part.trim().toUpperCase();
+    if (!code || seen.has(code) || !WELL_FORMED_CODE.test(code)) continue;
+    seen.add(code);
+    out.push(code);
+    if (out.length === max) break;
+  }
+  return out;
 }
 
-export interface SelectionBounds {
-  products: string[];
-  partners: { code: string; name: string }[];
-  years: number[];
+function stringList(raw: string | null, max: number): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const part of (raw ?? "").split(",")) {
+    const v = part.trim();
+    if (!v || seen.has(v)) continue;
+    seen.add(v);
+    out.push(v);
+    if (out.length === max) break;
+  }
+  return out;
+}
+
+function year(raw: string | null): number | undefined {
+  const n = Number(raw);
+  return raw && Number.isFinite(n) ? Math.trunc(n) : undefined;
 }
 
 /**
- * The parts of `SelectionBounds` derivable from one product's dataset: which
- * partners have data for it (name-sorted) and which years it spans (ascending).
- * The caller adds `products` (a separate dataset) to complete the bounds.
- * `parseChartSelection` sanitises URL params against the full bounds.
+ * Parse the URL into a ChartSelection. Never throws, needs no data bounds —
+ * it only does structure (split, dedupe, cap, well-formed-code filter) and
+ * defaults. An unknown product / partner isn't "fixed" to a valid one: it's
+ * kept, and the chart simply renders nothing for it (the spec's "the absence
+ * is shown, never silent"). Runs identically server-side (to pick the fetch)
+ * and client-side.
  */
-export function deriveBounds(
-  yearlyTotals: YearlyPartnerTotal[],
-): Pick<SelectionBounds, "partners" | "years"> {
+export function parseSelection(params: URLSearchParams): ChartSelection {
+  return {
+    source: params.get("source") === "surveillance" ? "surveillance" : "comext",
+    view: params.get("view") === "products" ? "products" : "countries",
+    product: params.get("product")?.trim() || DEFAULT_PRODUCT,
+    partnerCodes: codeList(params.get("countries"), MAX_COUNTRIES),
+    partner: (params.get("partner") ?? "").trim().toUpperCase().match(WELL_FORMED_CODE)?.[0] ?? "",
+    products: stringList(params.get("products"), MAX_PRODUCTS),
+    fromYear: year(params.get("from")),
+    toYear: year(params.get("to")),
+  };
+}
+
+/**
+ * The inverse of parseSelection. Params equal to their default are omitted,
+ * so the canonical URL stays clean. `setSelection` serialises the whole
+ * selection on every edit, so there's no per-param surgery to do.
+ */
+export function serializeSelection(selection: ChartSelection): URLSearchParams {
+  const params = new URLSearchParams();
+
+  if (selection.source !== DEFAULT_SOURCE) params.set("source", selection.source);
+  if (selection.view !== DEFAULT_VIEW) params.set("view", selection.view);
+  if (selection.product !== DEFAULT_PRODUCT) params.set("product", selection.product);
+  if (selection.partnerCodes.length > 0)
+    params.set("countries", selection.partnerCodes.join(","));
+  if (selection.partner) params.set("partner", selection.partner);
+  if (selection.products.length > 0)
+    params.set("products", selection.products.join(","));
+  if (selection.fromYear !== undefined) params.set("from", String(selection.fromYear));
+  if (selection.toYear !== undefined) params.set("to", String(selection.toYear));
+
+  return params;
+}
+
+/**
+ * The partners (name-sorted) and years (ascending) present in a fetched
+ * dataset — the options the pickers offer and the slider's span.
+ */
+export function deriveBounds(yearlyTotals: YearlyPartnerTotal[]): {
+  partners: { code: string; name: string }[];
+  years: number[];
+} {
   const partnersByCode = new Map<string, string>();
   const yearSet = new Set<number>();
   for (const total of yearlyTotals) {
@@ -42,87 +110,22 @@ export function deriveBounds(
   return { partners, years };
 }
 
-function spanEnds(years: number[]): [number, number] {
-  if (years.length === 0) return [0, 0];
-  return [years[0], years[years.length - 1]];
-}
-
-function parseYear(
-  raw: string | null,
-  fallback: number,
-  minYear: number,
-  maxYear: number,
-): number {
-  const n = Number(raw);
-  if (!raw || !Number.isFinite(n)) return fallback;
-  return Math.min(Math.max(Math.trunc(n), minYear), maxYear);
-}
-
-const WELL_FORMED_CODE = /^[A-Z]{2}$/;
-
 /**
- * Parse raw URL params into a valid ChartSelection. Never throws: an unknown
- * source or product becomes the default, years are clamped to the data's
- * span and swapped if crossed.
- *
- * `source` is resolved first — it decides which dataset the RSC fetched, so
- * `bounds.products` / `bounds.partners` / `bounds.years` already reflect it
- * by the time the rest is validated.
- *
- * Country codes are kept if they're a partner with data for the current
- * product OR a well-formed 2-letter code that simply has no rows for it — the
- * latter still renders as an explicit zero bar (the spec's "the absence is
- * shown, never silent"), rather than being dropped like true garbage.
+ * Resolve the selection's `fromYear` / `toYear` against the years actually in
+ * the data: default to the full span, clamp to it, swap if crossed. `years`
+ * must be ascending (as `deriveBounds` returns it).
  */
-export function parseChartSelection(
-  params: URLSearchParams,
-  bounds: SelectionBounds,
-): ChartSelection {
-  const source: TradeSource =
-    params.get("source") === "surveillance" ? "surveillance" : "comext";
+export function deriveYearRange(
+  selection: Pick<ChartSelection, "fromYear" | "toYear">,
+  years: number[],
+): { fromYear: number; toYear: number } {
+  if (years.length === 0) return { fromYear: 0, toYear: 0 };
+  const min = years[0];
+  const max = years[years.length - 1];
+  const clamp = (n: number) => Math.min(Math.max(n, min), max);
 
-  const [minYear, maxYear] = spanEnds(bounds.years);
-
-  const rawProduct = params.get("product");
-  const product =
-    rawProduct && bounds.products.includes(rawProduct) ? rawProduct : DEFAULT_PRODUCT;
-
-  const validCodes = new Set(bounds.partners.map((p) => p.code));
-  const seen = new Set<string>();
-  const partnerCodes: string[] = [];
-  for (const raw of (params.get("countries") ?? "").split(",")) {
-    const code = raw.trim().toUpperCase();
-    if (!code || seen.has(code)) continue;
-    if (!validCodes.has(code) && !WELL_FORMED_CODE.test(code)) continue;
-    seen.add(code);
-    partnerCodes.push(code);
-    if (partnerCodes.length === MAX_COUNTRIES) break;
-  }
-
-  let fromYear = parseYear(params.get("from"), minYear, minYear, maxYear);
-  let toYear = parseYear(params.get("to"), maxYear, minYear, maxYear);
+  let fromYear = clamp(selection.fromYear ?? min);
+  let toYear = clamp(selection.toYear ?? max);
   if (fromYear > toYear) [fromYear, toYear] = [toYear, fromYear];
-
-  return { source, product, partnerCodes, fromYear, toYear };
-}
-
-/**
- * The inverse of parseChartSelection. Params equal to their default are
- * omitted, so the canonical view has a clean URL.
- */
-export function chartSelectionToParams(
-  selection: ChartSelection,
-  bounds: SelectionBounds,
-): URLSearchParams {
-  const [minYear, maxYear] = spanEnds(bounds.years);
-  const params = new URLSearchParams();
-
-  if (selection.source !== DEFAULT_SOURCE) params.set("source", selection.source);
-  if (selection.product !== DEFAULT_PRODUCT) params.set("product", selection.product);
-  if (selection.partnerCodes.length > 0)
-    params.set("countries", selection.partnerCodes.join(","));
-  if (selection.fromYear !== minYear) params.set("from", String(selection.fromYear));
-  if (selection.toYear !== maxYear) params.set("to", String(selection.toYear));
-
-  return params;
+  return { fromYear, toYear };
 }

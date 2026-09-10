@@ -1,14 +1,12 @@
 import "server-only";
 import { COMEXT_PARTNER_NAMES } from "../constants/comextPartnerNames";
-import {
-  COMEXT_PRODUCT_HEADINGS,
-  type ComextProduct,
-} from "../constants/comextProducts";
-import {
-  getComextRowsByHeading,
-  type ComextYearRow,
-} from "../db/queries/getComextRowsByHeading";
-import type { YearlyPartnerTotal } from "../types";
+import { COMEXT_PRODUCT_HEADINGS } from "../constants/comextProducts";
+import { getComextRowsByHeading } from "../db/queries/getComextRowsByHeading";
+import type {
+  ComextProduct,
+  ComextYearRow,
+  YearlyPartnerTotal,
+} from "../types";
 
 const HUNDRED_KG_PER_TONNE = 10;
 
@@ -16,7 +14,7 @@ const HUNDRED_KG_PER_TONNE = 10;
  * Reads every COMEXT row for a product's HS heading and aggregates them into
  * EU-wide yearly totals per partner country — same read-model shape
  * (YearlyPartnerTotal) and same read-time-aggregation split as the
- * surveillance path's getYearlyTonnesByPartner. An unknown product (one
+ * surveillance path's getAgrifoodYearlyTonnesByPartner. An unknown product (one
  * without a heading) yields [] and never touches the DB; the RSC's product
  * fallback means that shouldn't happen in practice.
  */

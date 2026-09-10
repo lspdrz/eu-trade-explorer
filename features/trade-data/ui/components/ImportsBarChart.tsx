@@ -4,15 +4,9 @@ import { max } from "d3-array";
 import { format } from "d3-format";
 import { scaleBand, scaleLinear } from "d3-scale";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import type { GroupedSeries } from "../../types";
+import type { GroupedSeries, SelectedSeries } from "../../types";
 import { xAxisLabelStep } from "../utils/xAxisLabelStep";
 import { ChartTooltip } from "./ChartTooltip";
-
-export interface SelectedCountry {
-  code: string;
-  name: string;
-  color: string;
-}
 
 const MARGIN = { top: 16, right: 16, bottom: 40, left: 64 };
 const DEFAULT_WIDTH = 960;
@@ -21,15 +15,24 @@ const DEFAULT_HEIGHT = 420;
 const formatTonnes = (n: number): string => format("~s")(n).replace("G", "B");
 const formatInt = format(",");
 
+/**
+ * Grouped bar chart of yearly import tonnes per series. Dimension-agnostic —
+ * a "series" is whatever the caller keyed by (a partner country, a product).
+ * All wording lives with the caller: `ariaLabel` here, the empty state and
+ * the "Show the numbers" table are separate (ChartEmptyState /
+ * ImportsDataTable).
+ */
 export function ImportsBarChart({
   series,
-  countries,
+  seriesMeta,
+  ariaLabel,
   partialYear,
   width: widthProp,
   height = DEFAULT_HEIGHT,
 }: {
   series: GroupedSeries;
-  countries: SelectedCountry[];
+  seriesMeta: SelectedSeries[];
+  ariaLabel: string;
   partialYear?: number;
   width?: number;
   height?: number;
@@ -56,25 +59,14 @@ export function ImportsBarChart({
 
   const width = widthProp ?? measuredWidth;
 
-  const colorByCode = useMemo(
-    () => new Map(countries.map((c) => [c.code, c.color])),
-    [countries],
+  const colorByKey = useMemo(
+    () => new Map(seriesMeta.map((s) => [s.key, s.color])),
+    [seriesMeta],
   );
-  const nameByCode = useMemo(
-    () => new Map(countries.map((c) => [c.code, c.name])),
-    [countries],
+  const nameByKey = useMemo(
+    () => new Map(seriesMeta.map((s) => [s.key, s.name])),
+    [seriesMeta],
   );
-
-  if (countries.length === 0) {
-    return (
-      <div
-        ref={wrapRef}
-        className="flex h-[420px] items-center justify-center border border-dashed border-border px-6 text-center text-sm text-muted"
-      >
-        Choose up to three partner countries to see the comparison.
-      </div>
-    );
-  }
 
   const innerWidth = Math.max(0, width - MARGIN.left - MARGIN.right);
   const innerHeight = Math.max(0, height - MARGIN.top - MARGIN.bottom);
@@ -85,7 +77,7 @@ export function ImportsBarChart({
     .paddingInner(0.2)
     .paddingOuter(0.1);
   const x1 = scaleBand<string>()
-    .domain(countries.map((c) => c.code))
+    .domain(seriesMeta.map((s) => s.key))
     .range([0, x0.bandwidth()])
     .padding(0.05);
   const yMax = max(series.points, (p) => p.tonnes) ?? 0;
@@ -96,9 +88,6 @@ export function ImportsBarChart({
   const yTicks = y.ticks(5);
   const labelStep = xAxisLabelStep(series.years.length, innerWidth);
   const lastYearIndex = series.years.length - 1;
-  const summary = `EU imports in tonnes per year for ${countries
-    .map((c) => c.name)
-    .join(", ")}`;
 
   return (
     <div ref={wrapRef} className="relative w-full overflow-x-clip">
@@ -109,7 +98,7 @@ export function ImportsBarChart({
           height={height}
           preserveAspectRatio="xMidYMid meet"
           role="img"
-          aria-label={summary}
+          aria-label={ariaLabel}
           className="block max-w-full"
         >
           <defs>
@@ -153,12 +142,12 @@ export function ImportsBarChart({
             {/* bars */}
             {series.points.map((p) => {
               const groupX = x0(p.year) ?? 0;
-              const barX = groupX + (x1(p.partnerCode) ?? 0);
+              const barX = groupX + (x1(p.seriesKey) ?? 0);
               const barY = y(p.tonnes);
               const barW = x1.bandwidth();
               const barH = Math.max(0, innerHeight - barY);
               const isPartial = p.year === partialYear;
-              const label = `${nameByCode.get(p.partnerCode)}, ${p.year}: ${formatInt(
+              const label = `${nameByKey.get(p.seriesKey)}, ${p.year}: ${formatInt(
                 Math.round(p.tonnes),
               )} tonnes${isPartial ? " (partial year)" : ""}`;
               const tip = {
@@ -167,16 +156,16 @@ export function ImportsBarChart({
                 label,
               };
               return (
-                <g key={`${p.partnerCode}-${p.year}`}>
+                <g key={`${p.seriesKey}-${p.year}`}>
                   <rect
                     className="chart-bar transition-all duration-300 motion-reduce:transition-none"
                     x={barX}
                     y={barY}
                     width={barW}
                     height={barH}
-                    fill={colorByCode.get(p.partnerCode)}
+                    fill={colorByKey.get(p.seriesKey)}
                     opacity={isPartial ? 0.55 : 1}
-                    data-partner={p.partnerCode}
+                    data-series={p.seriesKey}
                     data-year={p.year}
                     data-partial={isPartial ? "true" : undefined}
                     tabIndex={0}
@@ -195,7 +184,7 @@ export function ImportsBarChart({
                       width={barW}
                       height={barH}
                       fill={`url(#${hatchId})`}
-                      style={{ color: colorByCode.get(p.partnerCode) }}
+                      style={{ color: colorByKey.get(p.seriesKey) }}
                     />
                   )}
                 </g>
@@ -230,63 +219,16 @@ export function ImportsBarChart({
 
       {/* legend */}
       <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-        {countries.map((c) => (
-          <li key={c.code} className="flex items-center gap-1.5">
+        {seriesMeta.map((s) => (
+          <li key={s.key} className="flex items-center gap-1.5">
             <span
               className="inline-block h-2.5 w-2.5 rounded-full"
-              style={{ backgroundColor: c.color }}
+              style={{ backgroundColor: s.color }}
             />
-            {c.name}
+            {s.name}
           </li>
         ))}
       </ul>
-
-      {/* the numbers behind the chart — visible on demand, works with no JS,
-          and the accessible representation of the same data */}
-      <details className="mt-5 text-sm">
-        <summary className="cursor-pointer text-muted select-none marker:text-border hover:text-foreground">
-          Show the numbers
-        </summary>
-        <div className="mt-3 overflow-x-auto">
-          <table className="w-full border-collapse text-[0.8125rem] tabular-nums">
-            <caption className="sr-only">
-              Imported tonnes per year by partner country
-            </caption>
-            <thead>
-              <tr className="border-b border-border text-left text-muted">
-                <th scope="col" className="py-1.5 pr-4 font-medium">
-                  Country
-                </th>
-                {series.years.map((year) => (
-                  <th key={year} scope="col" className="px-2 py-1.5 text-right font-medium">
-                    {year}
-                    {year === partialYear ? "*" : ""}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {countries.map((c) => (
-                <tr key={c.code} className="border-b border-border/60">
-                  <th scope="row" className="py-1.5 pr-4 text-left font-normal">
-                    {c.name}
-                  </th>
-                  {series.years.map((year) => {
-                    const point = series.points.find(
-                      (p) => p.partnerCode === c.code && p.year === year,
-                    );
-                    return (
-                      <td key={year} className="px-2 py-1.5 text-right">
-                        {formatInt(Math.round(point?.tonnes ?? 0))}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </details>
 
       {hovered && (
         <ChartTooltip
