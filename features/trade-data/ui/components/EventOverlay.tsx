@@ -29,7 +29,11 @@ export function EventOverlay({
   const baseline = plotTop + plotHeight;
 
   return (
+    // Layer sitting over the whole chart; itself transparent to the pointer so
+    // the bars stay hoverable, but the flags below opt back in.
     <div className="pointer-events-none absolute inset-0">
+      {/* the vertical rules: one 1px line per event, from just under its flag
+          down to the bars' baseline */}
       {placements.map(({ event, x, row }) => {
         const ruleTop = row * FLAG_ROW_H + FLAG_H;
         return (
@@ -47,6 +51,8 @@ export function EventOverlay({
           />
         );
       })}
+      {/* the flag labels: "Mmm YYYY - label" boxes stacked into rows by
+          layoutEventFlags so they never overlap; clickable (title = full label) */}
       {placements.map(({ event, left, row }) => (
         <div
           key={`flag-${event.id}`}
@@ -55,10 +61,12 @@ export function EventOverlay({
           className="pointer-events-auto absolute flex max-w-[15rem] items-baseline gap-1 rounded border border-border bg-surface px-1.5 py-0.5 text-[11px] text-foreground shadow-sm"
           style={{ left, top: row * FLAG_ROW_H }}
         >
+          {/* date prefix — never truncated */}
           <span className="font-medium whitespace-nowrap tabular-nums">
             {formatEventDate(event.year, event.month)}
           </span>
           <span aria-hidden>&ndash;</span>
+          {/* label — ellipsised past max-w */}
           <span className="truncate">{event.label}</span>
         </div>
       ))}

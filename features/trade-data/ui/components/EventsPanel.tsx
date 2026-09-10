@@ -31,6 +31,7 @@ export function EventsPanel() {
             className="group inline-flex h-5 w-9 items-center rounded-full border border-border bg-surface transition data-checked:bg-foreground"
           >
             <span className="sr-only">Show on chart</span>
+            {/* the sliding knob — shifts right + recolours when checked */}
             <span className="ml-0.5 h-3.5 w-3.5 rounded-full bg-muted transition group-data-checked:ml-4 group-data-checked:bg-background" />
           </Switch>
         </span>
