@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { peekFirst } from "../peekFirst";
+import { peekFirst } from "@/features/sync-eu-agrifood/utils/peekFirst";
 
 async function* asyncFrom<T>(items: T[]): AsyncGenerator<T> {
   for (const item of items) {

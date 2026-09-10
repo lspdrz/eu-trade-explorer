@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/features/sync-eu-agrifood/services/runFertilizerSync", () => ({
+vi.mock("@/features/sync-eu-agrifood/lib/runFertilizerSync", () => ({
   runFertilizerSync: vi.fn(),
 }));
 
-import { runFertilizerSync } from "@/features/sync-eu-agrifood/services/runFertilizerSync";
-import { GET } from "../route";
+import { runFertilizerSync } from "@/features/sync-eu-agrifood/lib/runFertilizerSync";
+import { GET } from "@/app/api/fertilizer-sync/route";
 
 const SECRET = "test-cron-secret";
 

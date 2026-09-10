@@ -2,10 +2,10 @@
 
 import { Switch } from "@headlessui/react";
 import { useState } from "react";
-import type { ChartEvent } from "../../types";
-import { MAX_EVENTS, formatEventDate } from "../utils/chartEvents";
-import { useChartEvents } from "../hooks/useChartEvents";
-import { EventForm, emptyDraft } from "./EventForm";
+import type { ChartEvent } from "@/features/trade-data/types";
+import { MAX_EVENTS, formatEventDate } from "@/features/trade-data/lib/chart-events/chartEvents";
+import { useChartEvents } from "@/features/trade-data/ui/hooks/useChartEvents";
+import { EventForm, emptyDraft } from "@/features/trade-data/ui/components/EventForm";
 
 /**
  * The right-column events editor. Self-wired to `useChartEvents`: a "show on

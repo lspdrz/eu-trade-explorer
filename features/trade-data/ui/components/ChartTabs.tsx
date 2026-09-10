@@ -1,9 +1,9 @@
 "use client";
 
 import { Tab, TabGroup, TabList } from "@headlessui/react";
-import type { ChartView } from "../../types";
-import { useChartSelection } from "../hooks/useChartSelection";
-import { PIVOT_CLEARED } from "../utils/chartSelectionParams";
+import type { ChartView } from "@/features/trade-data/types";
+import { useChartSelection } from "@/features/trade-data/ui/hooks/useChartSelection";
+import { PIVOT_CLEARED } from "@/features/trade-data/lib/chartSelectionParams";
 
 const VIEWS: ChartView[] = ["countries", "products"];
 const LABEL: Record<ChartView, string> = {

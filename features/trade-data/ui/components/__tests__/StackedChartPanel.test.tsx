@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { StackedSeriesPoint } from "../../../types";
-import { StackedChartPanel } from "../StackedChartPanel";
+import type { StackedSeriesPoint } from "@/features/trade-data/types";
+import { StackedChartPanel } from "@/features/trade-data/ui/components/StackedChartPanel";
 
 const rows: StackedSeriesPoint[] = [
   { partnerCode: "EG", product: "Ammonia", year: 2021, tonnes: 100 },

@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { ChartLegend } from "../ChartLegend";
+import { ChartLegend } from "@/features/trade-data/ui/components/ChartLegend";
 
 describe("ChartLegend", () => {
   it("renders a swatch and name per item", () => {

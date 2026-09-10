@@ -1,4 +1,4 @@
-import type { ComextProduct } from "../types";
+import type { ComextProduct } from "@/features/trade-data/types";
 
 /**
  * The COMEXT source's products and the HS heading each maps to. `satisfies

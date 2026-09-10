@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { FlagPlacement } from "../../utils/layoutEventFlags";
-import { EventOverlay } from "../EventOverlay";
+import type { FlagPlacement } from "@/features/trade-data/lib/chart-events/layoutEventFlags";
+import { EventOverlay } from "@/features/trade-data/ui/components/EventOverlay";
 
 const placement = (
   o: Partial<FlagPlacement> & { label: string },

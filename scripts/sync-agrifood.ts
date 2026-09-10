@@ -11,7 +11,7 @@
  * imports to their no-op; `--env-file` loads DATABASE_URL before the
  * module graph (lib/db/client reads process.env at import time).
  */
-import { runFertilizerSync } from "@/features/sync-eu-agrifood/services/runFertilizerSync";
+import { runFertilizerSync } from "@/features/sync-eu-agrifood/lib/runFertilizerSync";
 
 async function main() {
   const mode = process.argv.includes("--backfill") ? "backfill" : null;

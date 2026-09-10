@@ -2,7 +2,7 @@ import "server-only";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
-import type { TaxudWeekRow } from "../../types";
+import type { TaxudWeekRow } from "@/features/trade-data/types";
 
 /**
  * Reads every raw synced row for a product, converting the numeric-as-

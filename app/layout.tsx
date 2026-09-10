@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
-import "./globals.css";
-import { ThemeToggle } from "./ThemeToggle";
+import "@/app/globals.css";
+import { ThemeToggle } from "@/app/ThemeToggle";
 
 // Runs before first paint: a returning visitor who chose dark gets it with no
 // white flash. Light is the default, so the absence of a stored choice (or any

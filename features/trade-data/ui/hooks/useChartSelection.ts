@@ -2,8 +2,8 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useTransition } from "react";
-import type { ChartSelection } from "../../types";
-import { parseSelection, serializeSelection } from "../utils/chartSelectionParams";
+import type { ChartSelection } from "@/features/trade-data/types";
+import { parseSelection, serializeSelection } from "@/features/trade-data/lib/chartSelectionParams";
 
 type SetSelectionOptions = {
   /**

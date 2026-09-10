@@ -1,12 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { StackedSeries } from "../../../types";
+import type { StackedSeries } from "@/features/trade-data/types";
 
 let eventsState = {
   enabled: false,
   events: [] as { id: string; year: number; month: number; label: string }[],
 };
-vi.mock("../../hooks/useChartEvents", () => ({
+vi.mock("@/features/trade-data/ui/hooks/useChartEvents", () => ({
   useChartEvents: () => ({
     ...eventsState,
     setEnabled: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock("../../hooks/useChartEvents", () => ({
   }),
 }));
 
-import { StackedImportsChart } from "../StackedImportsChart";
+import { StackedImportsChart } from "@/features/trade-data/ui/components/StackedImportsChart";
 
 const seriesMeta = [
   { key: "Ammonia", name: "Ammonia", color: "#111" },

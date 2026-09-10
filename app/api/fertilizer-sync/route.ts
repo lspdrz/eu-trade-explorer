@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { runFertilizerSync } from "@/features/sync-eu-agrifood/services/runFertilizerSync";
+import { runFertilizerSync } from "@/features/sync-eu-agrifood/lib/runFertilizerSync";
 
 // NOT SCHEDULED. There was a `vercel.json` cron on this route; it was
 // removed because Vercel's free (Hobby) plan clamps every function to 60s,

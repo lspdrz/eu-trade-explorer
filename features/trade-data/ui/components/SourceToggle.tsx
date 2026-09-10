@@ -1,9 +1,9 @@
 "use client";
 
 import { Radio, RadioGroup } from "@headlessui/react";
-import type { TradeSource } from "../../types";
-import { useChartSelection } from "../hooks/useChartSelection";
-import { PIVOT_CLEARED } from "../utils/chartSelectionParams";
+import type { TradeSource } from "@/features/trade-data/types";
+import { useChartSelection } from "@/features/trade-data/ui/hooks/useChartSelection";
+import { PIVOT_CLEARED } from "@/features/trade-data/lib/chartSelectionParams";
 
 const OPTIONS: { value: TradeSource; label: string; hint: string }[] = [
   {

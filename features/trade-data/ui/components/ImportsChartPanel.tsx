@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { GroupedSeriesPoint } from "../../types";
-import { assignColorSlots } from "../utils/assignColorSlots";
-import { selectGroupedSeries } from "../utils/selectGroupedSeries";
-import { SERIES_COLORS } from "../utils/seriesColors";
-import { ChartEmptyState } from "./ChartEmptyState";
-import { ImportsBarChart } from "./ImportsBarChart";
-import { ImportsDataTable } from "./ImportsDataTable";
+import type { GroupedSeriesPoint } from "@/features/trade-data/types";
+import { assignColorSlots } from "@/features/trade-data/lib/assignColorSlots";
+import { selectGroupedSeries } from "@/features/trade-data/lib/selectGroupedSeries";
+import { SERIES_COLORS } from "@/features/trade-data/lib/seriesColors";
+import { ChartEmptyState } from "@/features/trade-data/ui/components/ChartEmptyState";
+import { ImportsBarChart } from "@/features/trade-data/ui/components/ImportsBarChart";
+import { ImportsDataTable } from "@/features/trade-data/ui/components/ImportsDataTable";
 
 /**
  * The chart area shared by both tabs: turns flat `rows` + the selected

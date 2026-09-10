@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "@/lib/db/client";
 import { rawComextImports } from "@/lib/db/schemas/rawComextImports";
-import { COMEXT_PARTNER_NAMES } from "../../constants/comextPartnerNames";
+import { COMEXT_PARTNER_NAMES } from "@/features/trade-data/constants/comextPartnerNames";
 
 /**
  * Every distinct partner in `raw_comext_imports`, named and name-sorted — the

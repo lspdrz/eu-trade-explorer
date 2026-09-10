@@ -2,7 +2,7 @@ import "server-only";
 import { like } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { rawComextImports } from "@/lib/db/schemas/rawComextImports";
-import type { ComextYearRow } from "../../types";
+import type { ComextYearRow } from "@/features/trade-data/types";
 
 /**
  * Every raw COMEXT import row under an HS heading — matched by CN8 prefix,

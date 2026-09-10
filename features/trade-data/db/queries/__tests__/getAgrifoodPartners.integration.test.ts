@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
 import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
-import { getAgrifoodPartners } from "../getAgrifoodPartners";
+import { getAgrifoodPartners } from "@/features/trade-data/db/queries/getAgrifoodPartners";
 
 const row = (partnerCode: string, partner: string) => ({
   sector: "Fertilisers",

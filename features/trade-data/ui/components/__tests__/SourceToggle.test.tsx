@@ -7,7 +7,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-import { SourceToggle } from "../SourceToggle";
+import { SourceToggle } from "@/features/trade-data/ui/components/SourceToggle";
 
 describe("SourceToggle", () => {
   it("renders both source options", () => {

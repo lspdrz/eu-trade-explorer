@@ -8,7 +8,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-import { ChartTabs } from "../ChartTabs";
+import { ChartTabs } from "@/features/trade-data/ui/components/ChartTabs";
 
 describe("ChartTabs", () => {
   it("renders both tab labels", () => {

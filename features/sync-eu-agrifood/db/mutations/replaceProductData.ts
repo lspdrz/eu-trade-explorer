@@ -1,9 +1,9 @@
 import "server-only";
 import { and, eq } from "drizzle-orm";
-import type { RawTaxudWeekRow } from "../../types";
+import type { RawTaxudWeekRow } from "@/features/sync-eu-agrifood/types";
 import { db } from "@/lib/db/client";
 import { rawTaxudWeeklyRows } from "@/lib/db/schemas/rawTaxudWeeklyRows";
-import { batchesOf } from "../../utils/batch";
+import { batchesOf } from "@/features/sync-eu-agrifood/utils/batch";
 
 const BATCH_SIZE = 500;
 

@@ -1,4 +1,4 @@
-import type { SelectedSeries } from "../../types";
+import type { SelectedSeries } from "@/features/trade-data/types";
 
 /**
  * The swatch list under a chart. Identity is never colour-alone — every

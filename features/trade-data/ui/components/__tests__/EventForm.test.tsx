@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { EventForm, draftValid, emptyDraft } from "../EventForm";
+import { EventForm, draftValid, emptyDraft } from "@/features/trade-data/ui/components/EventForm";
 
 describe("draftValid", () => {
   it("requires a non-empty trimmed label and an in-range month/year", () => {
