@@ -12,8 +12,4 @@ describe("comextProducts", () => {
   it("lists the products in display order, Ammonia first", () => {
     expect(COMEXT_PRODUCTS).toEqual(["Ammonia", "Nitrogenous fertilisers"]);
   });
-
-  it("includes 'Ammonia' so the shared DEFAULT_PRODUCT stays valid for this source", () => {
-    expect(COMEXT_PRODUCTS).toContain("Ammonia");
-  });
 });

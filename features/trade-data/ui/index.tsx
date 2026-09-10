@@ -27,7 +27,8 @@ function toURLSearchParams(params: SearchParams): URLSearchParams {
  * same parser the client uses), fetches only what the active view needs, and
  * renders the page: shared chrome (heading, source toggle, tabs) + the tab.
  *
- * - countries: one product's totals for every partner (client filters partners)
+ * - countries: each selected product's totals for every partner (client stacks
+ *   the products and filters the partners)
  * - products:  every product's totals for one partner (client filters products)
  */
 export async function FertilizerImports({
@@ -35,7 +36,7 @@ export async function FertilizerImports({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { source, view, product, partner } = parseSelection(
+  const { source, view, products, partner } = parseSelection(
     toURLSearchParams(await searchParams),
   );
 
@@ -50,9 +51,15 @@ export async function FertilizerImports({
       : getAgrifoodYearlyTonnesByPartner(p);
 
   // Each fetch no-ops for the inactive view, so only the active one hits the DB.
+  const selectedProducts = products.filter((p) => availableProducts.includes(p));
   const totalsByCountry =
-    view === "countries" && availableProducts.includes(product)
-      ? await totalsFor(product)
+    view === "countries" && selectedProducts.length > 0
+      ? await Promise.all(
+          selectedProducts.map(async (p) => ({
+            product: p,
+            totals: await totalsFor(p),
+          })),
+        )
       : [];
   const totalsByProduct =
     view === "products" && partner
@@ -69,7 +76,6 @@ export async function FertilizerImports({
       <FertilizerImportsCountryView
         availableProducts={availableProducts}
         availablePartners={availablePartners}
-        product={product}
         totalsByCountry={totalsByCountry}
       />
     ) : (

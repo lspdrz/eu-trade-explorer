@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ChartSelection, YearlyPartnerTotal } from "../../../types";
 import {
+  PIVOT_CLEARED,
   deriveBounds,
   deriveYearRange,
   parseSelection,
@@ -9,11 +10,10 @@ import {
 
 const parse = (q: string) => parseSelection(new URLSearchParams(q));
 
-/** A full, all-defaults ChartSelection. */
+/** A full, all-defaults ChartSelection. There is no default product. */
 const base: ChartSelection = {
   source: "comext",
   view: "countries",
-  product: "Ammonia",
   partnerCodes: [],
   partner: "",
   products: [],
@@ -36,12 +36,6 @@ describe("parseSelection", () => {
     expect(parse("view=nonsense").view).toBe("countries");
   });
 
-  it("product: kept verbatim (no validation), defaulted when absent", () => {
-    expect(parse("product=Urea").product).toBe("Urea");
-    expect(parse("product=Totally%20Made%20Up").product).toBe("Totally Made Up");
-    expect(parse("").product).toBe("Ammonia");
-  });
-
   it("countries: upper-cased, deduped, well-formed only, capped at 3", () => {
     expect(parse("countries=us,1,x,USA,eg,us,DZ,MA").partnerCodes).toEqual([
       "US",
@@ -56,12 +50,23 @@ describe("parseSelection", () => {
     expect(parse("").partner).toBe("");
   });
 
+  it("products: empty when absent, no default on either view", () => {
+    expect(parse("").products).toEqual([]);
+    expect(parse("view=products").products).toEqual([]);
+    expect(parse("products=Ammonia,Urea").products).toEqual(["Ammonia", "Urea"]);
+  });
+
   it("products: trimmed, deduped, capped at 3 (no validation)", () => {
     expect(parse("products=Ammonia,Ammonia,Urea,Nope,Extra").products).toEqual([
       "Ammonia",
       "Urea",
       "Nope",
     ]);
+  });
+
+  it("ignores a legacy ?product= param", () => {
+    expect(parse("product=Urea")).not.toHaveProperty("product");
+    expect(parse("product=Urea").products).toEqual([]);
   });
 
   it("years: the number the URL asked for, or undefined", () => {
@@ -95,6 +100,61 @@ describe("serializeSelection", () => {
     expect(params.get("to")).toBe("2022");
     expect(params.has("product")).toBe(false);
     expect(parseSelection(params)).toEqual(selection);
+  });
+
+  it("omits an empty products list, emits a non-empty one", () => {
+    expect(serializeSelection({ ...base, products: [] }).toString()).toBe("");
+    expect(
+      serializeSelection({ ...base, products: ["Ammonia", "Urea"] }).get("products"),
+    ).toBe("Ammonia,Urea");
+  });
+
+  it("a pivot patch serialises to just the pivot param", () => {
+    const dirty: ChartSelection = {
+      ...base,
+      source: "surveillance",
+      view: "products",
+      partnerCodes: ["EG"],
+      partner: "RU",
+      products: ["Ammonia", "Urea"],
+      fromYear: 2015,
+      toYear: 2020,
+    };
+    // tab switch keeps source, clears the rest
+    expect(
+      serializeSelection({ ...dirty, ...PIVOT_CLEARED, view: "countries" }).toString(),
+    ).toBe("source=surveillance");
+    // source switch keeps view, clears the rest
+    expect(
+      serializeSelection({ ...dirty, ...PIVOT_CLEARED, source: "comext" }).toString(),
+    ).toBe("view=products");
+  });
+
+  const dirty: ChartSelection = {
+    ...base,
+    source: "comext",
+    view: "products",
+    partner: "RU",
+    products: ["Ammonia"],
+    fromYear: 2018,
+  };
+
+  it("a source pivot retains the active tab and clears the rest", () => {
+    const after = parseSelection(
+      serializeSelection({ ...dirty, ...PIVOT_CLEARED, source: "surveillance" }),
+    );
+    expect(after.view).toBe("products"); // tab kept
+    expect(after.source).toBe("surveillance");
+    expect(after).toMatchObject({ partner: "", products: [], fromYear: undefined });
+  });
+
+  it("a tab pivot retains the source and clears the rest", () => {
+    const after = parseSelection(
+      serializeSelection({ ...dirty, ...PIVOT_CLEARED, view: "countries" }),
+    );
+    expect(after.source).toBe("comext"); // source kept
+    expect(after.view).toBe("countries");
+    expect(after).toMatchObject({ partner: "", products: [], fromYear: undefined });
   });
 });
 

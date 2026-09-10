@@ -4,15 +4,10 @@ import { useMemo, useState } from "react";
 import type { GroupedSeriesPoint } from "../../types";
 import { assignColorSlots } from "../utils/assignColorSlots";
 import { selectGroupedSeries } from "../utils/selectGroupedSeries";
+import { SERIES_COLORS } from "../utils/seriesColors";
 import { ChartEmptyState } from "./ChartEmptyState";
 import { ImportsBarChart } from "./ImportsBarChart";
 import { ImportsDataTable } from "./ImportsDataTable";
-
-const SERIES_COLORS = [
-  "var(--color-series-1)",
-  "var(--color-series-2)",
-  "var(--color-series-3)",
-];
 
 /**
  * The chart area shared by both tabs: turns flat `rows` + the selected
