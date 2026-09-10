@@ -5,6 +5,17 @@ export const MAX_EVENTS = 20;
 export const MAX_LABEL = 80;
 export const EMPTY_EVENTS: StoredEvents = { v: 1, enabled: false, events: [] };
 
+/** Short month names, indexed 0–11 (so `MONTH_LABELS[event.month - 1]`). */
+export const MONTH_LABELS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+] as const;
+
+/** "Mar 2022" for an event's month/year. */
+export function formatEventDate(year: number, month: number): string {
+  return `${MONTH_LABELS[month - 1]} ${year}`;
+}
+
 const MIN_YEAR = 1900;
 const MAX_YEAR = 2100;
 

@@ -1,12 +1,8 @@
 "use client";
 
+import { formatEventDate } from "../utils/chartEvents";
 import type { FlagPlacement } from "../utils/layoutEventFlags";
 import { FLAG_ROW_H } from "../utils/layoutEventFlags";
-
-const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
 
 /**
  * The event layer: a thin vertical rule per event and a dated flag label at
@@ -51,7 +47,7 @@ export function EventOverlay({
           style={{ left, top: row * FLAG_ROW_H }}
         >
           <span className="font-medium whitespace-nowrap tabular-nums">
-            {MONTHS[event.month - 1]} {event.year}
+            {formatEventDate(event.year, event.month)}
           </span>
           <span aria-hidden>&ndash;</span>
           <span className="truncate">{event.label}</span>
