@@ -63,6 +63,49 @@ export interface GroupedSeries {
 }
 
 /**
+ * A single (partner, product, year) observation for the stacked countries
+ * chart. The flat input to `selectStackedSeries`.
+ */
+export interface StackedSeriesPoint {
+  partnerCode: string;
+  product: string;
+  year: number;
+  tonnes: number;
+}
+
+/**
+ * One product's slice of a country's stacked bar. `y0` / `y1` are the
+ * running tonnes offsets within the stack (bottom and top of the segment).
+ */
+export interface StackedSegment {
+  product: string;
+  tonnes: number;
+  y0: number;
+  y1: number;
+}
+
+/**
+ * One country's stacked bar in one year — a segment per selected product in
+ * selection order, zero-filled. `total` is the stack height.
+ */
+export interface StackedCell {
+  year: number;
+  partnerCode: string;
+  total: number;
+  segments: StackedSegment[];
+}
+
+/**
+ * The dense grid the stacked countries chart draws: every (year, partner)
+ * cell over the selected inclusive year range, zero-filled.
+ */
+export interface StackedSeries {
+  years: number[];
+  partnerCodes: string[];
+  cells: StackedCell[];
+}
+
+/**
  * The two upstream datasets the chart can read. "comext" is Eurostat's
  * validated monthly statistics (raw_comext_imports); "surveillance" is the
  * near-real-time customs feed (raw_taxud_weekly_rows). See
