@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { GroupedSeriesPoint } from "../../types";
 import { assignColorSlots } from "../utils/assignColorSlots";
-import { type SeriesRow, selectGroupedSeries } from "../utils/selectGroupedSeries";
+import { selectGroupedSeries } from "../utils/selectGroupedSeries";
 import { ChartEmptyState } from "./ChartEmptyState";
 import { ImportsBarChart } from "./ImportsBarChart";
 import { ImportsDataTable } from "./ImportsDataTable";
@@ -32,7 +33,7 @@ export function ImportsChartPanel({
   toYear,
   partialYear,
 }: {
-  rows: SeriesRow[];
+  rows: GroupedSeriesPoint[];
   seriesKeys: string[];
   nameFor: (key: string) => string;
   seriesLabel: string;

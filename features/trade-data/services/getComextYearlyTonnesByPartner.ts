@@ -1,14 +1,12 @@
 import "server-only";
 import { COMEXT_PARTNER_NAMES } from "../constants/comextPartnerNames";
-import {
-  COMEXT_PRODUCT_HEADINGS,
-  type ComextProduct,
-} from "../constants/comextProducts";
-import {
-  getComextRowsByHeading,
-  type ComextYearRow,
-} from "../db/queries/getComextRowsByHeading";
-import type { YearlyPartnerTotal } from "../types";
+import { COMEXT_PRODUCT_HEADINGS } from "../constants/comextProducts";
+import { getComextRowsByHeading } from "../db/queries/getComextRowsByHeading";
+import type {
+  ComextProduct,
+  ComextYearRow,
+  YearlyPartnerTotal,
+} from "../types";
 
 const HUNDRED_KG_PER_TONNE = 10;
 

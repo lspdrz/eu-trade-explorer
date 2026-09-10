@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { YearlyPartnerTotal } from "../../../types";
+import type { ChartSelection, YearlyPartnerTotal } from "../../../types";
 import {
-  type ChartSelection,
   deriveBounds,
   deriveYearRange,
   parseSelection,

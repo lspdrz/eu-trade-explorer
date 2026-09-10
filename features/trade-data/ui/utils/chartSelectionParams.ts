@@ -1,4 +1,9 @@
-import type { ChartView, TradeSource, YearlyPartnerTotal } from "../../types";
+import type {
+  ChartSelection,
+  ChartView,
+  TradeSource,
+  YearlyPartnerTotal,
+} from "../../types";
 
 export const MAX_COUNTRIES = 3;
 export const MAX_PRODUCTS = 3;
@@ -7,26 +12,6 @@ export const DEFAULT_SOURCE: TradeSource = "comext";
 export const DEFAULT_VIEW: ChartView = "countries";
 
 const WELL_FORMED_CODE = /^[A-Z]{2}$/;
-
-/**
- * The chart's full selection, exactly as the URL expresses it. `fromYear` /
- * `toYear` are what the URL asked for (`undefined` when it said nothing) —
- * clamping to the data's actual span is `deriveYearRange`'s job, done where
- * the span is known.
- */
-export interface ChartSelection {
-  source: TradeSource;
-  view: ChartView;
-  // "Compare countries" tab
-  product: string;
-  partnerCodes: string[];
-  // "Compare products" tab
-  partner: string;
-  products: string[];
-  // shared
-  fromYear: number | undefined;
-  toYear: number | undefined;
-}
 
 function codeList(raw: string | null, max: number): string[] {
   const seen = new Set<string>();

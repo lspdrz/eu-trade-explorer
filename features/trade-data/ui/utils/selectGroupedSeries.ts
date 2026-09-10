@@ -1,12 +1,5 @@
 import type { GroupedSeries, GroupedSeriesPoint } from "../../types";
 
-/** One observation to plot: which series, which year, how many tonnes. */
-export interface SeriesRow {
-  seriesKey: string;
-  year: number;
-  tonnes: number;
-}
-
 /**
  * Shapes flat observations into the bar chart's dense grid: the selected
  * series, over the selected inclusive year range, zero-filled. Pure — no
@@ -15,7 +8,7 @@ export interface SeriesRow {
  * "missing data means a zero bar, not a gap" rule lives.
  */
 export function selectGroupedSeries(
-  rows: SeriesRow[],
+  rows: GroupedSeriesPoint[],
   selection: { seriesKeys: string[]; fromYear: number; toYear: number },
 ): GroupedSeries {
   const { seriesKeys, fromYear, toYear } = selection;

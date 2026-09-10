@@ -4,16 +4,9 @@ import { max } from "d3-array";
 import { format } from "d3-format";
 import { scaleBand, scaleLinear } from "d3-scale";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import type { GroupedSeries } from "../../types";
+import type { GroupedSeries, SelectedSeries } from "../../types";
 import { xAxisLabelStep } from "../utils/xAxisLabelStep";
 import { ChartTooltip } from "./ChartTooltip";
-
-/** A selected series (partner country or product) and its assigned colour. */
-export interface SelectedSeries {
-  key: string;
-  name: string;
-  color: string;
-}
 
 const MARGIN = { top: 16, right: 16, bottom: 40, left: 64 };
 const DEFAULT_WIDTH = 960;

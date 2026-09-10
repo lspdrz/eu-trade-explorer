@@ -1,6 +1,5 @@
 import { format } from "d3-format";
-import type { GroupedSeries } from "../../types";
-import type { SelectedSeries } from "./ImportsBarChart";
+import type { GroupedSeries, SelectedSeries } from "../../types";
 
 const formatInt = format(",");
 

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { SeriesRow } from "../selectGroupedSeries";
+import type { GroupedSeriesPoint } from "../../../types";
 import { selectGroupedSeries } from "../selectGroupedSeries";
 
-const r = (o: Partial<SeriesRow>): SeriesRow => ({
+const r = (o: Partial<GroupedSeriesPoint>): GroupedSeriesPoint => ({
   seriesKey: "US",
   year: 2020,
   tonnes: 0,

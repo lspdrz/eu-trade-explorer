@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ComextYearRow } from "../../db/queries/getComextRowsByHeading";
+import type { ComextYearRow } from "../../types";
 
 vi.mock("../../db/queries/getComextRowsByHeading", () => ({
   getComextRowsByHeading: vi.fn(),

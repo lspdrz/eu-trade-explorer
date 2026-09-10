@@ -40,9 +40,10 @@ export interface YearlyPartnerTotal {
 }
 
 /**
- * One bar in the grouped chart: a single series' imported tonnes for a single
- * year. A "series" is whatever the chart is comparing — a partner country, or
- * a product. `tonnes` is 0 when that series had no imports that year.
+ * A single (series, year) datum — a partner country's or a product's imported
+ * tonnes for one year. Used both as a flat input row to `selectGroupedSeries`
+ * and as a cell in the grid it returns (where `tonnes` is 0 for a series with
+ * no imports that year). A "series" is whatever the chart is comparing.
  */
 export interface GroupedSeriesPoint {
   seriesKey: string;
@@ -71,3 +72,50 @@ export type TradeSource = "comext" | "surveillance";
 
 /** Which comparison the chart is showing. */
 export type ChartView = "countries" | "products";
+
+/**
+ * The two products the COMEXT source offers (the surveillance source has its
+ * own 7-way list, read from the DB). `constants/comextProducts.ts` maps each
+ * to its HS heading and `satisfies` this, so the two can't drift.
+ */
+export type ComextProduct = "Ammonia" | "Nitrogenous fertilisers";
+
+/**
+ * The chart's full selection, exactly as the URL expresses it. `fromYear` /
+ * `toYear` are what the URL asked for (`undefined` when it said nothing) —
+ * clamping to the data's real span is `deriveYearRange`'s job. Owned by
+ * `ui/utils/chartSelectionParams.ts` (parse / serialize); the hook and the
+ * views consume it.
+ */
+export interface ChartSelection {
+  source: TradeSource;
+  view: ChartView;
+  // "Compare countries" tab
+  product: string;
+  partnerCodes: string[];
+  // "Compare products" tab
+  partner: string;
+  products: string[];
+  // shared
+  fromYear: number | undefined;
+  toYear: number | undefined;
+}
+
+/** A selected series (partner country or product) plus its assigned colour —
+ * what the legend, bars, and data table render from. */
+export interface SelectedSeries {
+  key: string;
+  name: string;
+  color: string;
+}
+
+/**
+ * One COMEXT import row trimmed to what yearly aggregation needs, with the
+ * numeric-as-string quantity converted to a real number (NULL → 0). Returned
+ * by `getComextRowsByHeading`, consumed by `getComextYearlyTonnesByPartner`.
+ */
+export interface ComextYearRow {
+  partnerCode: string;
+  period: string; // "YYYY-MM"
+  quantity100kg: number;
+}
