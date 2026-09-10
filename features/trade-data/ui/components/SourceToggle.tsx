@@ -2,6 +2,7 @@
 
 import { Radio, RadioGroup } from "@headlessui/react";
 import type { TradeSource } from "../../types";
+import { useChartSelection } from "../hooks/useChartSelection";
 
 const OPTIONS: { value: TradeSource; label: string; hint: string }[] = [
   {
@@ -17,29 +18,22 @@ const OPTIONS: { value: TradeSource; label: string; hint: string }[] = [
 ];
 
 /**
- * Segmented two-option data-source picker. Changing it triggers a server
- * refetch upstream (a whole new dataset), so `pending` dims the control
- * while that runs. Each option's recency/authority trade-off is a `title`
- * tooltip rather than always-on text, so the control is the same height as
- * its neighbours in the filter row.
+ * Segmented two-option data-source picker. Self-wired to `?source=` — the
+ * source is page-level, shared by both chart tabs, so it manages its own URL
+ * state rather than taking it from a parent. `isPending` dims it during the
+ * refetch. Each option's recency/authority trade-off is a `title` tooltip.
  */
-export function SourceToggle({
-  value,
-  onChange,
-  pending = false,
-}: {
-  value: TradeSource;
-  onChange: (source: TradeSource) => void;
-  pending?: boolean;
-}) {
+export function SourceToggle() {
+  const { selection, setSelection, isPending } = useChartSelection();
+
   return (
     <div className="flex flex-col gap-1">
       <span className="text-[0.8125rem] font-medium text-muted">Source</span>
       <RadioGroup
-        value={value}
-        onChange={onChange}
-        disabled={pending}
-        aria-busy={pending}
+        value={selection.source}
+        onChange={(source: TradeSource) => setSelection({ source })}
+        disabled={isPending}
+        aria-busy={isPending}
         className="flex rounded-md border border-border bg-surface p-0.5 text-sm data-disabled:opacity-50"
       >
         {OPTIONS.map((o) => (

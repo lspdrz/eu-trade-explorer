@@ -2,6 +2,7 @@
 
 import { Tab, TabGroup, TabList } from "@headlessui/react";
 import type { ChartView } from "../../types";
+import { useChartSelection } from "../hooks/useChartSelection";
 
 const VIEWS: ChartView[] = ["countries", "products"];
 const LABEL: Record<ChartView, string> = {
@@ -10,27 +11,21 @@ const LABEL: Record<ChartView, string> = {
 };
 
 /**
- * The two-tab strip above the chart. Controlled: `view` comes from the URL
- * selection, `onChange` navigates so the RSC refetches. `pending` dims it
- * during that round-trip.
+ * The two-tab strip. Self-wired to `?view=` — the active tab is page
+ * navigation, shared above both chart views, so it owns its own URL state.
+ * `isPending` dims it during the RSC refetch a switch triggers.
  */
-export function ChartTabs({
-  view,
-  onChange,
-  pending = false,
-}: {
-  view: ChartView;
-  onChange: (v: ChartView) => void;
-  pending?: boolean;
-}) {
+export function ChartTabs() {
+  const { selection, setSelection, isPending } = useChartSelection();
+
   return (
     <TabGroup
-      selectedIndex={VIEWS.indexOf(view)}
-      onChange={(i) => onChange(VIEWS[i])}
+      selectedIndex={VIEWS.indexOf(selection.view)}
+      onChange={(i) => setSelection({ view: VIEWS[i] })}
     >
       <TabList
         className="flex gap-6 border-b border-border data-disabled:opacity-50"
-        aria-busy={pending}
+        aria-busy={isPending}
       >
         {VIEWS.map((v) => (
           <Tab

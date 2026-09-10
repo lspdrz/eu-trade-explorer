@@ -1,24 +1,16 @@
 import { Suspense } from "react";
-import { FertilizerImports } from "@/features/trade-data/ui/components/FertilizerImports";
+import { FertilizerImports } from "@/features/trade-data/ui";
 
-// `await searchParams` already opts this route into dynamic rendering; the
-// explicit flag keeps the DB-backed view from ever being served from a
-// build-time snapshot even if the param access moves.
+// A `searchParams` access opts the route into dynamic rendering; the explicit
+// flag keeps the DB-backed view from ever being served from a build-time
+// snapshot. The promise is passed straight through and awaited inside the
+// Suspense boundary (Next's "push dynamic access down").
 export const dynamic = "force-dynamic";
 
-export default async function Home({ searchParams }: PageProps<"/">) {
-  const params = await searchParams;
-  // Each value is string | string[] (a param can repeat); take the single value.
-  const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
-
+export default function Home({ searchParams }: PageProps<"/">) {
   return (
     <Suspense fallback={<div className="p-6 text-muted">Loading…</div>}>
-      <FertilizerImports
-        source={one(params.source)}
-        view={one(params.view)}
-        product={one(params.product)}
-        partner={one(params.partner)}
-      />
+      <FertilizerImports searchParams={searchParams} />
     </Suspense>
   );
 }
