@@ -5,10 +5,13 @@ import { scaleBand, scaleLinear } from "d3-scale";
 import { useMemo, useState } from "react";
 import type { SelectedSeries, StackedSeries } from "../../types";
 import { formatInt, formatTonnes } from "../utils/chartFormat";
+import { selectEventFlags } from "../utils/selectEventFlags";
 import { xAxisLabelStep } from "../utils/xAxisLabelStep";
+import { useChartEvents } from "../hooks/useChartEvents";
 import { useMeasuredWidth } from "../hooks/useMeasuredWidth";
 import { ChartLegend } from "./ChartLegend";
 import { ChartTooltip } from "./ChartTooltip";
+import { EventOverlay } from "./EventOverlay";
 import { PartialYearHatch, usePatternId } from "./PartialYearHatch";
 
 const MARGIN = { top: 16, right: 16, bottom: 52, left: 64 };
@@ -40,6 +43,7 @@ export function StackedImportsChart({
 }) {
   const { ref: wrapRef, width } = useMeasuredWidth(widthProp);
   const hatchId = usePatternId("partial-hatch");
+  const { enabled: eventsEnabled, events } = useChartEvents();
   const [hovered, setHovered] = useState<
     { x: number; y: number; label: string } | undefined
   >();
@@ -50,13 +54,27 @@ export function StackedImportsChart({
   );
 
   const innerWidth = Math.max(0, width - MARGIN.left - MARGIN.right);
-  const innerHeight = Math.max(0, height - MARGIN.top - MARGIN.bottom);
 
   const x0 = scaleBand<number>()
     .domain(series.years)
     .range([0, innerWidth])
     .paddingInner(0.2)
     .paddingOuter(0.1);
+
+  // Event markers occupy a band above the plot; only the top margin depends on
+  // their row count, and the row layout is horizontal — no circularity.
+  const { placements: eventFlags, flagBandHeight } = selectEventFlags({
+    enabled: eventsEnabled,
+    events,
+    years: series.years,
+    x0,
+    bandwidth: x0.bandwidth(),
+    marginLeft: MARGIN.left,
+    width,
+  });
+  const marginTop = MARGIN.top + flagBandHeight;
+  const innerHeight = Math.max(0, height - marginTop - MARGIN.bottom);
+
   const x1 = scaleBand<string>()
     .domain(series.partnerCodes)
     .range([0, x0.bandwidth()])
@@ -84,7 +102,7 @@ export function StackedImportsChart({
         >
           <PartialYearHatch id={hatchId} />
 
-          <g transform={`translate(${MARGIN.left},${MARGIN.top})`}>
+          <g transform={`translate(${MARGIN.left},${marginTop})`}>
             {/* y gridlines + labels */}
             {yTicks.map((tick) => (
               <g key={tick} transform={`translate(0,${y(tick)})`}>
@@ -128,7 +146,7 @@ export function StackedImportsChart({
                     )} tonnes${isPartial ? " (partial year)" : ""}`;
                     const tip = {
                       x: MARGIN.left + barX + barW / 2,
-                      y: MARGIN.top + top,
+                      y: marginTop + top,
                       label,
                     };
                     return (
@@ -205,6 +223,12 @@ export function StackedImportsChart({
           </figcaption>
         )}
       </figure>
+
+      <EventOverlay
+        placements={eventFlags}
+        plotTop={marginTop}
+        plotHeight={innerHeight}
+      />
 
       <ChartLegend items={seriesMeta} />
 
