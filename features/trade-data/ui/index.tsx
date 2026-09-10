@@ -6,6 +6,7 @@ import { getComextPartners } from "../db/queries/getComextPartners";
 import { getComextYearlyTonnesByPartner } from "../services/getComextYearlyTonnesByPartner";
 import { getAgrifoodYearlyTonnesByPartner } from "../services/getAgrifoodYearlyTonnesByPartner";
 import { ChartTabs } from "./components/ChartTabs";
+import { EventsPanel } from "./components/EventsPanel";
 import { FertilizerImportsCountryView } from "./components/FertilizerImportsCountryView";
 import { FertilizerImportsProductsView } from "./components/FertilizerImportsProductsView";
 import { SourceToggle } from "./components/SourceToggle";
@@ -88,7 +89,7 @@ export async function FertilizerImports({
     );
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-10">
+    <main className="mx-auto max-w-6xl px-6 py-10">
       <header className="max-w-[34rem]">
         <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.01em]">
           Where the EU&rsquo;s fertilizer comes from
@@ -99,15 +100,18 @@ export async function FertilizerImports({
         </p>
       </header>
 
-      <div className="mt-8">
-        <SourceToggle />
+      <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_17rem] lg:items-start">
+        <div>
+          <div className="mb-6">
+            <SourceToggle />
+          </div>
+          <div className="mb-6">
+            <ChartTabs />
+          </div>
+          {tab}
+        </div>
+        <EventsPanel />
       </div>
-
-      <div className="mt-6">
-        <ChartTabs />
-      </div>
-
-      {tab}
     </main>
   );
 }
