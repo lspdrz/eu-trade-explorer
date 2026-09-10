@@ -1,19 +1,18 @@
 "use client";
 
 import { max } from "d3-array";
-import { format } from "d3-format";
 import { scaleBand, scaleLinear } from "d3-scale";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import type { GroupedSeries, SelectedSeries } from "../../types";
+import { formatInt, formatTonnes } from "../utils/chartFormat";
 import { xAxisLabelStep } from "../utils/xAxisLabelStep";
+import { useMeasuredWidth } from "../hooks/useMeasuredWidth";
+import { ChartLegend } from "./ChartLegend";
 import { ChartTooltip } from "./ChartTooltip";
+import { PartialYearHatch, usePatternId } from "./PartialYearHatch";
 
 const MARGIN = { top: 16, right: 16, bottom: 40, left: 64 };
-const DEFAULT_WIDTH = 960;
 const DEFAULT_HEIGHT = 420;
-
-const formatTonnes = (n: number): string => format("~s")(n).replace("G", "B");
-const formatInt = format(",");
 
 /**
  * Grouped bar chart of yearly import tonnes per series. Dimension-agnostic —
@@ -37,27 +36,11 @@ export function ImportsBarChart({
   width?: number;
   height?: number;
 }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  // useId() contains colons (`:r0:`), invalid in a `url(#…)` reference.
-  const hatchId = `partial-hatch-${useId().replace(/:/g, "")}`;
-  const [measuredWidth, setMeasuredWidth] = useState(widthProp ?? DEFAULT_WIDTH);
+  const { ref: wrapRef, width } = useMeasuredWidth(widthProp);
+  const hatchId = usePatternId("partial-hatch");
   const [hovered, setHovered] = useState<
     { x: number; y: number; label: string } | undefined
   >();
-
-  useEffect(() => {
-    if (widthProp !== undefined) return;
-    const el = wrapRef.current;
-    if (!el || typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver((entries) => {
-      const w = entries[0]?.contentRect.width;
-      if (w) setMeasuredWidth(w);
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [widthProp]);
-
-  const width = widthProp ?? measuredWidth;
 
   const colorByKey = useMemo(
     () => new Map(seriesMeta.map((s) => [s.key, s.color])),
@@ -101,18 +84,7 @@ export function ImportsBarChart({
           aria-label={ariaLabel}
           className="block max-w-full"
         >
-          <defs>
-            <pattern
-              id={hatchId}
-              patternUnits="userSpaceOnUse"
-              width={6}
-              height={6}
-              patternTransform="rotate(45)"
-            >
-              <rect width={6} height={6} fill="transparent" />
-              <line x1={0} y1={0} x2={0} y2={6} stroke="currentColor" strokeWidth={2} />
-            </pattern>
-          </defs>
+          <PartialYearHatch id={hatchId} />
 
           <g transform={`translate(${MARGIN.left},${MARGIN.top})`}>
             {/* y gridlines + labels */}
@@ -217,18 +189,7 @@ export function ImportsBarChart({
         )}
       </figure>
 
-      {/* legend */}
-      <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-sm">
-        {seriesMeta.map((s) => (
-          <li key={s.key} className="flex items-center gap-1.5">
-            <span
-              className="inline-block h-2.5 w-2.5 rounded-full"
-              style={{ backgroundColor: s.color }}
-            />
-            {s.name}
-          </li>
-        ))}
-      </ul>
+      <ChartLegend items={seriesMeta} />
 
       {hovered && (
         <ChartTooltip
