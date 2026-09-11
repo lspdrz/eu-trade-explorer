@@ -10,8 +10,10 @@ const LAST_YEAR = 2025;
 
 /** Same fixed x-axis as getRuTradeTimelineData.ts's YEARS — every series in
  *  this feature must align to it. Duplicated rather than imported: it's a
- *  few lines of pure logic, not worth a shared module for two callers. */
-export const YEARS: number[] = Array.from(
+ *  few lines of pure logic, not worth a shared module for two callers.
+ *  Not exported: a "use server" file may only export async functions —
+ *  exporting this plain array broke every call to fetchChapterSeries. */
+const YEARS: number[] = Array.from(
   { length: LAST_YEAR - FIRST_YEAR + 1 },
   (_, i) => FIRST_YEAR + i,
 );
