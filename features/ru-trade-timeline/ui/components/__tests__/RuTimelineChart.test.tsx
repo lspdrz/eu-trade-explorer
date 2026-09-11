@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { RuTimelineChart } from "@/features/ru-trade-timeline/ui/RuTimelineChart";
+import { RuTimelineChart } from "@/features/ru-trade-timeline/ui/components/RuTimelineChart";
 
 const years = [2020, 2021, 2022, 2023];
 const twoSeries = [

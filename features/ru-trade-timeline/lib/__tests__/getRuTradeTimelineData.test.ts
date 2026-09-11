@@ -9,8 +9,7 @@ vi.mock("@/features/ru-trade-timeline/db/queries/getComextRuYearlyTonnesByPrefix
 
 import { getComextRuYearlyTonnesByChapters } from "@/features/ru-trade-timeline/db/queries/getComextRuYearlyTonnesByChapters";
 import { getComextRuYearlyTonnesByPrefixes } from "@/features/ru-trade-timeline/db/queries/getComextRuYearlyTonnesByPrefixes";
-import { getRuTradeTimelineData } from "@/features/ru-trade-timeline/lib/getRuTradeTimelineData";
-import { YEARS } from "@/features/ru-trade-timeline/lib/years";
+import { getRuTradeTimelineData, YEARS } from "@/features/ru-trade-timeline/lib/getRuTradeTimelineData";
 import { DEFAULT_COMPARISON_CHAPTERS } from "@/features/ru-trade-timeline/constants/defaultComparisonChapters";
 
 describe("getRuTradeTimelineData", () => {

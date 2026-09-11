@@ -6,7 +6,7 @@ vi.mock("@/features/ru-trade-timeline/lib/fetchChapterSeries", () => ({
   fetchChapterSeries: vi.fn(),
 }));
 
-import { RuTimelineControls } from "@/features/ru-trade-timeline/ui/RuTimelineControls";
+import { RuTimelineControls } from "@/features/ru-trade-timeline/ui/components/RuTimelineControls";
 
 const initialData: RuTimelineData = {
   years: [2020, 2021, 2022, 2023],

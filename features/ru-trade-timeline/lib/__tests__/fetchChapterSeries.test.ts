@@ -5,8 +5,7 @@ vi.mock("@/features/ru-trade-timeline/db/queries/getComextRuYearlyTonnesByChapte
 }));
 
 import { getComextRuYearlyTonnesByChapters } from "@/features/ru-trade-timeline/db/queries/getComextRuYearlyTonnesByChapters";
-import { fetchChapterSeries } from "@/features/ru-trade-timeline/lib/fetchChapterSeries";
-import { YEARS } from "@/features/ru-trade-timeline/lib/years";
+import { fetchChapterSeries, YEARS } from "@/features/ru-trade-timeline/lib/fetchChapterSeries";
 
 describe("fetchChapterSeries", () => {
   it("queries the single chapter and returns one series aligned to YEARS", async () => {
@@ -33,5 +32,19 @@ describe("fetchChapterSeries", () => {
     vi.mocked(getComextRuYearlyTonnesByChapters).mockResolvedValue([]);
     const series = await fetchChapterSeries("00");
     expect(series.label).toBe("00");
+  });
+
+  it("does not blend another chapter's rows into the returned series", async () => {
+    // Simulates the query returning more than the requested chapter (it
+    // shouldn't in practice, but this function must not trust that blindly).
+    vi.mocked(getComextRuYearlyTonnesByChapters).mockResolvedValue([
+      { chapter: "72", year: 2020, quantity100kg: 5000 },
+      { chapter: "44", year: 2020, quantity100kg: 999_999 }, // different chapter
+    ]);
+
+    const series = await fetchChapterSeries("72");
+
+    expect(series.key).toBe("72");
+    expect(series.values[YEARS.indexOf(2020)]).toBe(500); // only 72's 5000/10 — not 44's row
   });
 });

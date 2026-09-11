@@ -13,7 +13,7 @@ export interface ComextRuObservation {
   valueEuros: number | null;
 }
 
-/** One series' yearly tonnes, aligned index-for-index with the shared YEARS range (features/ru-trade-timeline/lib/years.ts). */
+/** One series' yearly tonnes, aligned index-for-index with the shared YEARS range (see getRuTradeTimelineData.ts / fetchChapterSeries.ts). */
 export interface RuTimelineSeries {
   key: string;
   label: string;

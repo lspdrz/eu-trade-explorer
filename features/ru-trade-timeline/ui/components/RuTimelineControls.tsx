@@ -6,7 +6,7 @@ import { assignColorSlots } from "@/features/utils/assignColorSlots";
 import { HS_CHAPTER_NAMES } from "@/features/ru-trade-timeline/constants/hsChapterNames";
 import { EXCLUDED_CHAPTERS, DEFAULT_COMPARISON_CHAPTERS } from "@/features/ru-trade-timeline/constants/defaultComparisonChapters";
 import { fetchChapterSeries } from "@/features/ru-trade-timeline/lib/fetchChapterSeries";
-import { RuTimelineChart, type RuTimelineChartSeries } from "@/features/ru-trade-timeline/ui/RuTimelineChart";
+import { RuTimelineChart, type RuTimelineChartSeries } from "@/features/ru-trade-timeline/ui/components/RuTimelineChart";
 import type { RuTimelineData, RuTimelineSeries } from "@/features/ru-trade-timeline/types";
 
 const MAX_SELECTED = 7;

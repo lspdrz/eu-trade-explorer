@@ -1,5 +1,5 @@
 import { getRuTradeTimelineData } from "@/features/ru-trade-timeline/lib/getRuTradeTimelineData";
-import { RuTimelineControls } from "@/features/ru-trade-timeline/ui/RuTimelineControls";
+import { RuTimelineControls } from "@/features/ru-trade-timeline/ui/components/RuTimelineControls";
 
 /**
  * The feature's entry point. A plain (non-force-dynamic) Server Component —
