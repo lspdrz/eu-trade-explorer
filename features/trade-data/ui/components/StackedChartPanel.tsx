@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { SelectedSeries, StackedSeriesPoint } from "@/features/trade-data/types";
-import { assignColorSlots } from "@/features/trade-data/lib/assignColorSlots";
+import { assignColorSlots } from "@/features/utils/assignColorSlots";
 import { MAX_PRODUCTS } from "@/features/trade-data/lib/chartSelectionParams";
 import { selectStackedSeries } from "@/features/trade-data/lib/selectStackedSeries";
 import { SERIES_COLORS } from "@/features/trade-data/lib/seriesColors";

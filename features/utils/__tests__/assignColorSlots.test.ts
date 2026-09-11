@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assignColorSlots } from "@/features/trade-data/lib/assignColorSlots";
+import { assignColorSlots } from "@/features/utils/assignColorSlots";
 
 describe("assignColorSlots", () => {
   it("assigns slots 0,1,2 in order to fresh keys", () => {

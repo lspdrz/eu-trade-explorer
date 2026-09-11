@@ -10,7 +10,7 @@ import { xAxisLabelStep } from "@/features/trade-data/lib/xAxisLabelStep";
 import { useChartEvents } from "@/features/trade-data/ui/hooks/useChartEvents";
 import { useMeasuredWidth } from "@/features/hooks/useMeasuredWidth";
 import { ChartLegend } from "@/features/trade-data/ui/components/ChartLegend";
-import { ChartTooltip } from "@/features/trade-data/ui/components/ChartTooltip";
+import { ChartTooltip } from "@/features/components/ChartTooltip";
 import { EventOverlay } from "@/features/trade-data/ui/components/EventOverlay";
 import { PartialYearHatch, usePatternId } from "@/features/trade-data/ui/components/PartialYearHatch";
 
