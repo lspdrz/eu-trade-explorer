@@ -2,16 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const DEFAULT_WIDTH = 960;
-
 /**
  * The rendered width of a wrapper element, tracked with a ResizeObserver.
- * Pass an explicit `widthProp` to opt out (tests pass a fixed width). Attach
- * the returned `ref` to the element whose width should drive the chart.
+ * Pass an explicit `widthProp` to opt out (tests pass a fixed width) —
+ * until the observer fires once (or if ResizeObserver isn't available),
+ * `defaultWidth` is used instead. Attach the returned `ref` to the element
+ * whose width should drive the chart.
  */
-export function useMeasuredWidth(widthProp?: number, fallback = DEFAULT_WIDTH) {
+export function useMeasuredWidth(widthProp: number | undefined, defaultWidth: number) {
   const ref = useRef<HTMLDivElement>(null);
-  const [measured, setMeasured] = useState(widthProp ?? fallback);
+  const [measured, setMeasured] = useState(widthProp ?? defaultWidth);
 
   useEffect(() => {
     if (widthProp !== undefined) return;
