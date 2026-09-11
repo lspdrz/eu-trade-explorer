@@ -1,0 +1,7 @@
+{
+  "years": [2019, 2020, 2021, 2022, 2023],
+  "series": [
+    { "key": "fertiliser", "label": "Fertiliser (ammonia + nitrogenous, HS 2814/3102)", "values": [1800000, 1900000, 2100000, 2000000, 2300000] },
+    { "key": "rest", "label": "Everything else", "values": [9500000, 9000000, 9800000, 4200000, 3100000] }
+  ]
+}

@@ -25,12 +25,22 @@ export interface RuTimelineChartSeries {
  * `highlightKey` series against thinner muted comparison lines. On mount,
  * each line draws itself in left-to-right via the stroke-dasharray reveal
  * technique, landing on the finished chart; an optional vertical marker
- * (e.g. Feb 2022) fades in when the reveal reaches it. Runs once, entirely
- * via refs + useLayoutEffect (not React state) — same "imperative DOM
- * update, no re-render" idiom the globe uses for its own reduced-motion
- * check, and it runs before the browser paints, so there's no one-frame
- * flash of the undrawn line. `prefers-reduced-motion` skips the reveal
- * entirely — everything renders at its final state immediately.
+ * (e.g. Feb 2022) fades in when the reveal reaches it. Entirely via refs +
+ * useLayoutEffect (not React state) — same "imperative DOM update, no
+ * re-render" idiom the globe uses for its own reduced-motion check, and it
+ * runs before the browser paints, so there's no one-frame flash of the
+ * undrawn line. `prefers-reduced-motion` skips the reveal entirely —
+ * everything renders at its final state immediately.
+ *
+ * Deliberately has no "only once" ref guard: the effect's own dependency
+ * array is stable across the re-renders this component actually sees (a
+ * later width measurement doesn't change markerYear/markerMonth/yearMin/
+ * yearMax), so it naturally runs once in production — and staying
+ * re-run-safe is what makes it survive React Strict Mode's dev-only
+ * double-invoke (mount, cleanup, mount again). A one-shot guard here would
+ * pass in prod but silently break in dev: the first invocation's cleanup
+ * cancels the scheduled reveal, and a guarded second invocation would then
+ * no-op instead of rescheduling it, leaving every line permanently hidden.
  */
 export function RuTimelineChart({
   years,
@@ -74,12 +84,8 @@ export function RuTimelineChart({
 
   const pathRefs = useRef(new Map<string, SVGPathElement | null>());
   const markerRef = useRef<SVGGElement | null>(null);
-  const hasAnimated = useRef(false);
 
   useLayoutEffect(() => {
-    if (hasAnimated.current) return;
-    hasAnimated.current = true;
-
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
       if (markerRef.current) markerRef.current.style.opacity = "1";
