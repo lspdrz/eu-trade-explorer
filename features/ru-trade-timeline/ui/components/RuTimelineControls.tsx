@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { ProductMultiSelect } from "@/features/components/ProductMultiSelect";
 import { assignColorSlots } from "@/features/utils/assignColorSlots";
 import { HS_CHAPTER_NAMES } from "@/features/ru-trade-timeline/constants/hsChapterNames";
-import { EXCLUDED_CHAPTERS, DEFAULT_COMPARISON_CHAPTERS } from "@/features/ru-trade-timeline/constants/defaultComparisonChapters";
+import { EXCLUDED_CHAPTERS, DEFAULT_COMPARISON_CHAPTERS, TOP_COMPARISON_CHAPTERS } from "@/features/ru-trade-timeline/constants/defaultComparisonChapters";
 import { fetchChapterSeries } from "@/features/ru-trade-timeline/lib/fetchChapterSeries";
 import { RuTimelineChart, type RuTimelineChartSeries } from "@/features/ru-trade-timeline/ui/components/RuTimelineChart";
 import type { RuTimelineData, RuTimelineSeries } from "@/features/ru-trade-timeline/types";
@@ -41,6 +41,7 @@ const LABEL_BY_CODE = new Map(Object.entries(HS_CHAPTER_NAMES).map(([code, label
 // must not shrink when a default gets deselected — it stays pinned at the
 // top, checkmark just clears. A stable list is what makes that possible.
 const DEFAULT_COMPARISON_LABELS = DEFAULT_COMPARISON_CHAPTERS.map((c) => LABEL_BY_CODE.get(c) ?? c);
+const TOP_PRODUCTS_LABELS = TOP_COMPARISON_CHAPTERS.map((c) => LABEL_BY_CODE.get(c) ?? c);
 
 /**
  * Client wrapper: holds selection state, a session-lived cache of every
@@ -136,7 +137,7 @@ export function RuTimelineControls({ initialData }: { initialData: RuTimelineDat
       />
       <ProductMultiSelect
         products={PICKER_OPTIONS}
-        topProducts={DEFAULT_COMPARISON_LABELS}
+        topProducts={TOP_PRODUCTS_LABELS}
         value={selectedLabels}
         onChange={handleChange}
         max={MAX_SELECTED}

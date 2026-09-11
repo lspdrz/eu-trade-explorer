@@ -23,12 +23,12 @@ describe("getRuTradeTimelineData", () => {
     expect(getComextRuYearlyTonnesByChapters).toHaveBeenCalledWith(DEFAULT_COMPARISON_CHAPTERS);
   });
 
-  it("returns fertiliser first, then the 5 default chapters, aligned to YEARS", async () => {
+  it("returns fertiliser first, then the 4 default chapters, aligned to YEARS", async () => {
     vi.mocked(getComextRuYearlyTonnesByPrefixes).mockResolvedValue([
       { year: 2023, quantity100kg: 1000 },
     ]);
     vi.mocked(getComextRuYearlyTonnesByChapters).mockResolvedValue([
-      { chapter: "27", year: 2023, quantity100kg: 2000 },
+      { chapter: "44", year: 2023, quantity100kg: 2000 },
     ]);
 
     const data = await getRuTradeTimelineData();
@@ -40,7 +40,7 @@ describe("getRuTradeTimelineData", () => {
 
     const year2023Index = YEARS.indexOf(2023);
     expect(data.series[0].values[year2023Index]).toBe(100); // 1000/10
-    expect(data.series.find((s) => s.key === "27")!.values[year2023Index]).toBe(200); // 2000/10
+    expect(data.series.find((s) => s.key === "44")!.values[year2023Index]).toBe(200); // 2000/10
   });
 
   it("zero-fills a chapter with no rows in the query result", async () => {

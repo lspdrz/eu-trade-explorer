@@ -21,5 +21,9 @@ export const EXCLUDED_CHAPTERS = ["28", "31", "99"];
  * This is a fact about trade history, not a computation the app repeats —
  * re-derive by hand only if the backfilled data changes enough to
  * plausibly reorder it.
+ * 
+ * 27 is excluded from the default comparison chapters because it skews the
+ * chart due to its large data compared to the others
  */
-export const DEFAULT_COMPARISON_CHAPTERS = ["27", "44", "72", "26", "29"];
+export const DEFAULT_COMPARISON_CHAPTERS = ["44", "72", "26", "29"];
+export const TOP_COMPARISON_CHAPTERS = ["27", "44", "72", "26", "29"];
