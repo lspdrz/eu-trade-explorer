@@ -12,3 +12,14 @@ export interface ComextRuObservation {
   quantity100kg: number | null;
   valueEuros: number | null;
 }
+
+/**
+ * One raw RU import row trimmed to what yearly aggregation needs, with the
+ * numeric-as-string quantity converted to a real number (NULL -> 0).
+ * Returned by getAllComextRuRows, consumed by getRuYearlyTonnesByHeading.
+ */
+export interface RuYearRow {
+  cn8ProductCode: string;
+  period: string; // "YYYY-MM"
+  quantity100kg: number;
+}
