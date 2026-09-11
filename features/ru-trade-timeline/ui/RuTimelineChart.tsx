@@ -4,43 +4,70 @@ import { max } from "d3-array";
 import { format } from "d3-format";
 import { scaleLinear } from "d3-scale";
 import { line as d3Line } from "d3-shape";
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useMeasuredWidth } from "@/features/hooks/useMeasuredWidth";
+import { ChartTooltip } from "@/features/components/ChartTooltip";
 
 const MARGIN = { top: 16, right: 16, bottom: 32, left: 56 };
 const DEFAULT_HEIGHT = 360;
 const REVEAL_DURATION_MS = 2500;
+const FADE_DURATION_MS = 300;
+const MAX_DIRECT_LABELS = 4;
 
 /** Compact tonnes for axis ticks: 1.2M, 450k, 3.1B (d3 emits "G", we want "B"). */
 const formatTonnes = (n: number): string => format("~s")(n).replace("G", "B");
+const formatTonnesExact = format(",");
 
 export interface RuTimelineChartSeries {
   key: string;
   label: string;
   values: number[];
+  /** CSS color (a `var(--color-series-N)` reference), owned by the caller —
+   *  RuTimelineControls assigns this via assignColorSlots so a chapter
+   *  keeps its color while selected ("color follows the slot, not the
+   *  position"), the same pattern StackedChartPanel already uses. This
+   *  component never invents a color from array position. */
+  color: string;
+}
+
+/** Which series (by key) draw a label at their line's right end — fertiliser (if present)
+ *  plus the largest MAX_DIRECT_LABELS-1 others by final value, capped at MAX_DIRECT_LABELS total. */
+function selectDirectLabelKeys(series: RuTimelineChartSeries[], highlightKey: string): Set<string> {
+  const rest = series
+    .filter((s) => s.key !== highlightKey)
+    .slice()
+    .sort((a, b) => (b.values[b.values.length - 1] ?? 0) - (a.values[a.values.length - 1] ?? 0));
+  const hasHighlight = series.some((s) => s.key === highlightKey);
+  const budget = MAX_DIRECT_LABELS - (hasHighlight ? 1 : 0);
+  const keys = new Set(rest.slice(0, Math.max(0, budget)).map((s) => s.key));
+  if (hasHighlight) keys.add(highlightKey);
+  return keys;
 }
 
 /**
  * A line chart of yearly RU import tonnes per named series, one bold
- * `highlightKey` series against thinner muted comparison lines. On mount,
- * each line draws itself in left-to-right via the stroke-dasharray reveal
- * technique, landing on the finished chart; an optional vertical marker
- * (e.g. Feb 2022) fades in when the reveal reaches it. Entirely via refs +
- * useLayoutEffect (not React state) — same "imperative DOM update, no
- * re-render" idiom the globe uses for its own reduced-motion check, and it
- * runs before the browser paints, so there's no one-frame flash of the
- * undrawn line. `prefers-reduced-motion` skips the reveal entirely —
- * everything renders at its final state immediately.
+ * `highlightKey` series against thinner comparison lines — each series'
+ * `color` is owned entirely by the caller (RuTimelineControls, via
+ * assignColorSlots) so a chapter's color survives it being deselected and
+ * reselected; this component never computes a color itself. On mount,
+ * every visible line draws itself in left-to-right via the stroke-dasharray
+ * reveal technique; a `series` that changes later (the picker adding/
+ * removing a chapter) only fades the *new* keys in (~300ms) — existing
+ * lines are untouched, no replay. A hover crosshair shows every visible
+ * series' value at the nearest year; up to 4 series (the highlight + the
+ * largest others) get a direct label at their line's right end.
+ * `prefers-reduced-motion` skips both the initial reveal and the fade —
+ * everything renders at final state immediately.
  *
- * Deliberately has no "only once" ref guard: the effect's own dependency
- * array is stable across the re-renders this component actually sees (a
- * later width measurement doesn't change markerYear/markerMonth/yearMin/
- * yearMax), so it naturally runs once in production — and staying
- * re-run-safe is what makes it survive React Strict Mode's dev-only
- * double-invoke (mount, cleanup, mount again). A one-shot guard here would
- * pass in prod but silently break in dev: the first invocation's cleanup
- * cancels the scheduled reveal, and a guarded second invocation would then
- * no-op instead of rescheduling it, leaving every line permanently hidden.
+ * The animation effect deliberately has no "only once" ref guard for the
+ * *initial* reveal, and commits its "which keys have appeared" bookkeeping
+ * only inside the requestAnimationFrame callback that actually fires —
+ * never synchronously in the effect body. Both are required for this to
+ * survive React Strict Mode's dev-only double-invoke (mount, cleanup,
+ * mount again): a guard set synchronously would make the second
+ * (persisting) invocation see "already handled" and skip rescheduling the
+ * reveal the first invocation's cleanup just cancelled, leaving every line
+ * permanently hidden — a real bug hit earlier in this feature.
  */
 export function RuTimelineChart({
   years,
@@ -84,66 +111,115 @@ export function RuTimelineChart({
 
   const pathRefs = useRef(new Map<string, SVGPathElement | null>());
   const markerRef = useRef<SVGGElement | null>(null);
+  const knownKeysRef = useRef<Set<string>>(new Set());
 
   useLayoutEffect(() => {
+    const currentKeys = series.map((s) => s.key);
+    const isInitial = knownKeysRef.current.size === 0;
+    const newKeys = currentKeys.filter((k) => !knownKeysRef.current.has(k));
+    if (newKeys.length === 0) return;
+
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
-      if (markerRef.current) markerRef.current.style.opacity = "1";
+      knownKeysRef.current = new Set(currentKeys);
+      if (isInitial && markerRef.current) markerRef.current.style.opacity = "1";
       return;
     }
 
-    const paths = [...pathRefs.current.values()].filter(
-      (p): p is SVGPathElement => p !== null,
-    );
-    const lengths = paths.map((p) => p.getTotalLength());
-    paths.forEach((p, i) => {
-      p.style.strokeDasharray = `${lengths[i]}`;
-      p.style.strokeDashoffset = `${lengths[i]}`;
-    });
+    const newPaths = newKeys
+      .map((k) => pathRefs.current.get(k))
+      .filter((p): p is SVGPathElement => p !== null);
 
-    const raf = requestAnimationFrame(() => {
-      paths.forEach((p) => {
-        p.style.transition = `stroke-dashoffset ${REVEAL_DURATION_MS}ms ease-out`;
-        p.style.strokeDashoffset = "0";
-      });
-    });
-
+    let raf: number;
     let markerTimer: ReturnType<typeof setTimeout> | undefined;
-    if (markerYear !== undefined && yearMax > yearMin) {
-      const fraction = (markerYear + (markerMonth - 1) / 12 - yearMin) / (yearMax - yearMin);
-      markerTimer = setTimeout(
-        () => {
-          if (markerRef.current) {
-            markerRef.current.style.transition = "opacity 400ms ease-out";
-            markerRef.current.style.opacity = "1";
-          }
-        },
-        Math.max(0, Math.min(1, fraction)) * REVEAL_DURATION_MS,
-      );
+
+    if (isInitial) {
+      // Full stroke-dasharray draw-in for every initially-visible series.
+      const lengths = newPaths.map((p) => p.getTotalLength());
+      newPaths.forEach((p, i) => {
+        p.style.strokeDasharray = `${lengths[i]}`;
+        p.style.strokeDashoffset = `${lengths[i]}`;
+      });
+      raf = requestAnimationFrame(() => {
+        newPaths.forEach((p) => {
+          p.style.transition = `stroke-dashoffset ${REVEAL_DURATION_MS}ms ease-out`;
+          p.style.strokeDashoffset = "0";
+        });
+        knownKeysRef.current = new Set(currentKeys); // commit only once the reveal actually starts
+      });
+      if (markerYear !== undefined && yearMax > yearMin) {
+        const fraction = (markerYear + (markerMonth - 1) / 12 - yearMin) / (yearMax - yearMin);
+        markerTimer = setTimeout(
+          () => {
+            if (markerRef.current) {
+              markerRef.current.style.transition = "opacity 400ms ease-out";
+              markerRef.current.style.opacity = "1";
+            }
+          },
+          Math.max(0, Math.min(1, fraction)) * REVEAL_DURATION_MS,
+        );
+      }
+    } else {
+      // A later selection change: only the new keys get a quick fade.
+      newPaths.forEach((p) => {
+        p.style.opacity = "0";
+      });
+      raf = requestAnimationFrame(() => {
+        newPaths.forEach((p) => {
+          p.style.transition = `opacity ${FADE_DURATION_MS}ms ease-out`;
+          p.style.opacity = "1";
+        });
+        knownKeysRef.current = new Set(currentKeys);
+      });
     }
 
     return () => {
       cancelAnimationFrame(raf);
       if (markerTimer) clearTimeout(markerTimer);
     };
-  }, [markerYear, markerMonth, yearMin, yearMax]);
+  }, [series, markerYear, markerMonth, yearMin, yearMax]);
 
   const markerX =
     markerYear !== undefined ? xScale(markerYear + (markerMonth - 1) / 12) : undefined;
   const yTicks = yScale.ticks(5);
   const xTicks = xScale.ticks(Math.min(years.length, 8));
+  const directLabelKeys = selectDirectLabelKeys(series, highlightKey);
+
+  // --- hover crosshair ---
+  const [hoveredIndex, setHoveredIndex] = useState<number | undefined>(undefined);
+
+  function nearestYearIndex(mouseX: number): number {
+    let best = 0;
+    let bestDist = Infinity;
+    years.forEach((y, i) => {
+      const d = Math.abs(xScale(y) - mouseX);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    });
+    return best;
+  }
+
+  function handlePointerMove(e: React.PointerEvent<SVGRectElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHoveredIndex(nearestYearIndex(e.clientX - rect.left));
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<SVGRectElement>) {
+    if (e.key === "ArrowLeft") {
+      setHoveredIndex((i) => Math.max(0, (i ?? years.length) - 1));
+    } else if (e.key === "ArrowRight") {
+      setHoveredIndex((i) => Math.min(years.length - 1, (i ?? -1) + 1));
+    }
+  }
 
   return (
     <div ref={wrapRef} className="relative w-full overflow-x-clip">
-      <div className="mb-3 flex gap-4 text-sm">
+      <div className="mb-3 flex flex-wrap gap-4 text-sm">
         {series.map((s) => (
           <div key={s.key} className="flex items-center gap-1.5">
-            <span
-              className="inline-block h-0.5 w-4"
-              style={{
-                background: s.key === highlightKey ? "var(--color-series-1)" : "var(--color-muted)",
-              }}
-            />
+            <span className="inline-block h-0.5 w-4" style={{ background: s.color }} />
             <span className={s.key === highlightKey ? "font-semibold" : "text-muted"}>
               {s.label}
             </span>
@@ -197,10 +273,24 @@ export function RuTimelineChart({
                 }}
                 d={lineGen(s.values) ?? ""}
                 fill="none"
-                stroke={s.key === highlightKey ? "var(--color-series-1)" : "var(--color-muted)"}
+                stroke={s.color}
                 strokeWidth={s.key === highlightKey ? 2.5 : 1.5}
               />
             ))}
+
+            {series
+              .filter((s) => directLabelKeys.has(s.key))
+              .map((s) => (
+                <text
+                  key={`label-${s.key}`}
+                  x={innerWidth + 4}
+                  y={yScale(s.values[s.values.length - 1] ?? 0)}
+                  dy="0.32em"
+                  className="fill-muted text-[10px]"
+                >
+                  {s.label}
+                </text>
+              ))}
 
             {markerX !== undefined && (
               <g ref={markerRef} style={{ opacity: 0 }}>
@@ -219,8 +309,51 @@ export function RuTimelineChart({
                 )}
               </g>
             )}
+
+            {hoveredIndex !== undefined && (
+              <line
+                x1={xScale(years[hoveredIndex])}
+                x2={xScale(years[hoveredIndex])}
+                y1={0}
+                y2={innerHeight}
+                stroke="var(--color-muted)"
+                strokeWidth={1}
+              />
+            )}
+
+            <rect
+              x={0}
+              y={0}
+              width={innerWidth}
+              height={innerHeight}
+              fill="transparent"
+              tabIndex={0}
+              onPointerMove={handlePointerMove}
+              onPointerLeave={() => setHoveredIndex(undefined)}
+              onFocus={() => setHoveredIndex((i) => i ?? years.length - 1)}
+              onBlur={() => setHoveredIndex(undefined)}
+              onKeyDown={handleKeyDown}
+            />
           </g>
         </svg>
+        {hoveredIndex !== undefined && (
+          <ChartTooltip
+            x={MARGIN.left + xScale(years[hoveredIndex])}
+            y={MARGIN.top}
+            placement="below"
+          >
+            <div className="font-semibold">{years[hoveredIndex]}</div>
+            {series.map((s) => (
+              <div key={s.key} className="flex items-center gap-1.5 whitespace-nowrap">
+                <span className="inline-block h-0.5 w-3" style={{ background: s.color }} />
+                <span className="font-semibold tabular-nums">
+                  {formatTonnesExact(Math.round(s.values[hoveredIndex] ?? 0))} t
+                </span>
+                <span className="text-muted">{s.label}</span>
+              </div>
+            ))}
+          </ChartTooltip>
+        )}
       </figure>
     </div>
   );
