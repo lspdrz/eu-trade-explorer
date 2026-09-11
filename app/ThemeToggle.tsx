@@ -3,10 +3,11 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * Fixed top-right light/dark switch. The page defaults to light; this is the
- * only way to reach dark. The choice is stored in localStorage and applied
- * before paint by the inline script in layout.tsx — this component just
- * reflects and flips `data-theme` on <html>.
+ * Light/dark switch, rendered at the right end of the top nav (see
+ * app/Nav.tsx). The page defaults to light; this is the only way to reach
+ * dark. The choice is stored in localStorage and applied before paint by
+ * the inline script in layout.tsx — this component just reflects and flips
+ * `data-theme` on <html>.
  *
  * State is read straight off the DOM via useSyncExternalStore: the server
  * snapshot is always "light" (matching the default markup), the client
@@ -57,7 +58,7 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className="fixed top-4 right-4 z-50 flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-muted transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-none"
+      className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-muted transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-none"
     >
       {dark ? <MoonIcon /> : <SunIcon />}
     </button>
