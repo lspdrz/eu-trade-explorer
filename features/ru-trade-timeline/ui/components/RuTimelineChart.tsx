@@ -147,6 +147,27 @@ export function RuTimelineChart({
         });
         knownKeysRef.current = new Set(currentKeys); // commit only once the reveal actually starts
       });
+      // Once the reveal has actually finished, drop the dasharray/dashoffset/
+      // transition entirely rather than leaving them at "0 offset, length L".
+      // A later re-render (e.g. the chart resizing because the picker's own
+      // width changed) recomputes every path's `d` at the new scale, but
+      // never recomputes L — a stale dasharray sized for the old geometry,
+      // applied to a path of a different length, draws a repeating
+      // dash/gap pattern instead of a solid line, which looks exactly like
+      // the line stopping partway across. No dasharray at all means later
+      // `d` changes just render as a normal continuous stroke, unaffected.
+      // Deliberately NOT cancelled in this effect's cleanup (unlike raf/
+      // markerTimer below) — a later re-render (e.g. selecting one more
+      // chapter) must not skip this cleanup just because it happens to
+      // land within the same 2.5s window; mutating a path's style after
+      // this component unmounts is a harmless no-op.
+      setTimeout(() => {
+        newPaths.forEach((p) => {
+          p.style.strokeDasharray = "";
+          p.style.strokeDashoffset = "";
+          p.style.transition = "";
+        });
+      }, REVEAL_DURATION_MS);
       if (markerYear !== undefined && yearMax > yearMin) {
         const fraction = (markerYear + (markerMonth - 1) / 12 - yearMin) / (yearMax - yearMin);
         markerTimer = setTimeout(
