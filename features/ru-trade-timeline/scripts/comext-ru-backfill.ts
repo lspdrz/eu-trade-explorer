@@ -13,8 +13,8 @@
  * chunks are already done — progress otherwise lives in the database.
  *
  * Run:
- *   npx tsx --conditions=react-server --env-file=.env.local scripts/comext-ru-backfill.ts
- *   npx tsx --conditions=react-server --env-file=.env.local scripts/comext-ru-backfill.ts --fresh   # ignore the checkpoint
+ *   npx tsx --conditions=react-server --env-file=.env.local features/ru-trade-timeline/scripts/comext-ru-backfill.ts
+ *   npx tsx --conditions=react-server --env-file=.env.local features/ru-trade-timeline/scripts/comext-ru-backfill.ts --fresh   # ignore the checkpoint
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { contactComextAPI } from "@/lib/eurostat-comext/client";

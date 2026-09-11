@@ -1,9 +1,10 @@
 /**
  * ONE-OFF. Reads raw_comext_ru_imports (populated by
- * scripts/comext-ru-backfill.ts) and writes the small static JSON the
- * chart page imports directly — features/ru-trade-timeline/data/ru-trade-timeline.json.
- * Re-run only if the underlying table changes or GROUPS below changes; the
- * page never queries the database itself.
+ * features/ru-trade-timeline/scripts/comext-ru-backfill.ts) and writes the
+ * small static JSON the chart page imports directly —
+ * features/ru-trade-timeline/data/ru-trade-timeline.json. Re-run only if
+ * the underlying table changes or GROUPS below changes; the page never
+ * queries the database itself.
  *
  * GROUPS is the "what plays alongside fertiliser" choice, deferred during
  * design until the full raw series was available. This starts with the
@@ -12,7 +13,7 @@
  * this only reads the already-backfilled table).
  *
  * Run:
- *   npx tsx --conditions=react-server --env-file=.env.local scripts/build-ru-trade-timeline-json.ts
+ *   npx tsx --conditions=react-server --env-file=.env.local features/ru-trade-timeline/scripts/build-ru-trade-timeline-json.ts
  */
 import { writeFileSync } from "node:fs";
 import { getRuYearlyTonnesByHeading } from "@/features/ru-trade-timeline/lib/getRuYearlyTonnesByHeading";
