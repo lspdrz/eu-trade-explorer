@@ -1,22 +1,14 @@
-import timelineData from "@/features/ru-trade-timeline/data/ru-trade-timeline.json";
-import { RuTimelineChart } from "@/features/ru-trade-timeline/ui/RuTimelineChart";
+import { getRuTradeTimelineData } from "@/features/ru-trade-timeline/lib/getRuTradeTimelineData";
+import { RuTimelineControls } from "@/features/ru-trade-timeline/ui/RuTimelineControls";
 
 /**
- * The feature's entry point. Reads the checked-in static JSON via a plain
- * TypeScript import (resolveJsonModule is on) — no DB query, no fetch. This
- * is a fixed historical dataset (see the design doc), so a build-time
- * import is enough; regenerate the JSON (scripts/build-ru-trade-timeline-json.ts)
- * and redeploy if the underlying data or the comparison series change.
+ * The feature's entry point. A plain (non-force-dynamic) Server Component —
+ * Next statically renders it at `next build` time, so the base page load
+ * never queries Postgres per-visitor. Only RuTimelineControls's picker
+ * interaction (selecting a chapter beyond the 5 defaults here) touches the
+ * database at runtime, via its Server Action.
  */
-export function RuTradeTimeline() {
-  return (
-    <RuTimelineChart
-      years={timelineData.years}
-      series={timelineData.series}
-      highlightKey="fertiliser"
-      markerYear={2022}
-      markerMonth={2}
-      markerLabel="Russia invades Ukraine"
-    />
-  );
+export async function RuTradeTimeline() {
+  const initialData = await getRuTradeTimelineData();
+  return <RuTimelineControls initialData={initialData} />;
 }
