@@ -126,7 +126,7 @@ export function RuTimelineControls({ initialData }: { initialData: RuTimelineDat
   ];
 
   return (
-    <div className="flex gap-6">
+    <div className="flex gap-6 flex-wrap md:flex-nowrap">
       <RuTimelineChart
         years={initialData.years}
         series={visibleSeries}
