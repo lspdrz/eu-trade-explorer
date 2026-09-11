@@ -37,6 +37,11 @@ const PICKER_OPTIONS = Object.entries(HS_CHAPTER_NAMES)
 const CODE_BY_LABEL = new Map(Object.entries(HS_CHAPTER_NAMES).map(([code, label]) => [label, code]));
 const LABEL_BY_CODE = new Map(Object.entries(HS_CHAPTER_NAMES).map(([code, label]) => [code, label]));
 
+// Fixed, not derived from live selection: the picker's "topProducts" group
+// must not shrink when a default gets deselected — it stays pinned at the
+// top, checkmark just clears. A stable list is what makes that possible.
+const DEFAULT_COMPARISON_LABELS = DEFAULT_COMPARISON_CHAPTERS.map((c) => LABEL_BY_CODE.get(c) ?? c);
+
 /**
  * Client wrapper: holds selection state, a session-lived cache of every
  * chapter's series fetched so far (seeded with the build-time defaults —
@@ -131,6 +136,7 @@ export function RuTimelineControls({ initialData }: { initialData: RuTimelineDat
       />
       <ProductMultiSelect
         products={PICKER_OPTIONS}
+        topProducts={DEFAULT_COMPARISON_LABELS}
         value={selectedLabels}
         onChange={handleChange}
         max={MAX_SELECTED}
