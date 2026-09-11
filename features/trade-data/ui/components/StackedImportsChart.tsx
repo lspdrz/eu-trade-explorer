@@ -8,9 +8,9 @@ import { formatInt, formatTonnes } from "@/features/trade-data/lib/chartFormat";
 import { selectEventFlags } from "@/features/trade-data/lib/chart-events/selectEventFlags";
 import { xAxisLabelStep } from "@/features/trade-data/lib/xAxisLabelStep";
 import { useChartEvents } from "@/features/trade-data/ui/hooks/useChartEvents";
-import { useMeasuredWidth } from "@/features/trade-data/ui/hooks/useMeasuredWidth";
+import { useMeasuredWidth } from "@/features/hooks/useMeasuredWidth";
 import { ChartLegend } from "@/features/trade-data/ui/components/ChartLegend";
-import { ChartTooltip } from "@/features/trade-data/ui/components/ChartTooltip";
+import { ChartTooltip } from "@/features/components/ChartTooltip";
 import { EventOverlay } from "@/features/trade-data/ui/components/EventOverlay";
 import { PartialYearHatch, usePatternId } from "@/features/trade-data/ui/components/PartialYearHatch";
 
@@ -41,7 +41,7 @@ export function StackedImportsChart({
   width?: number;
   height?: number;
 }) {
-  const { ref: wrapRef, width } = useMeasuredWidth(widthProp);
+  const { ref: wrapRef, width } = useMeasuredWidth(widthProp, 960);
   const hatchId = usePatternId("partial-hatch");
   const { enabled: eventsEnabled, events } = useChartEvents();
   const [hovered, setHovered] = useState<

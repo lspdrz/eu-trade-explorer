@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { GroupedSeriesPoint } from "@/features/trade-data/types";
-import { assignColorSlots } from "@/features/trade-data/lib/assignColorSlots";
+import { assignColorSlots } from "@/features/utils/assignColorSlots";
 import { selectGroupedSeries } from "@/features/trade-data/lib/selectGroupedSeries";
 import { SERIES_COLORS } from "@/features/trade-data/lib/seriesColors";
 import { ChartEmptyState } from "@/features/trade-data/ui/components/ChartEmptyState";

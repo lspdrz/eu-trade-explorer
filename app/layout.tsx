@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
 import "@/app/globals.css";
-import { ThemeToggle } from "@/app/ThemeToggle";
+import { Nav } from "@/app/Nav";
 
 // Runs before first paint: a returning visitor who chose dark gets it with no
 // white flash. Light is the default, so the absence of a stored choice (or any
@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={plexSans.variable} suppressHydrationWarning>
       <body>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
-        <ThemeToggle />
+        <Nav />
         {children}
       </body>
     </html>

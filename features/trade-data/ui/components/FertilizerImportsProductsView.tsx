@@ -10,7 +10,7 @@ import {
 import { useChartSelection } from "@/features/trade-data/ui/hooks/useChartSelection";
 import { CountryCombobox } from "@/features/trade-data/ui/components/CountryCombobox";
 import { ImportsChartPanel } from "@/features/trade-data/ui/components/ImportsChartPanel";
-import { ProductMultiSelect } from "@/features/trade-data/ui/components/ProductMultiSelect";
+import { ProductMultiSelect } from "@/features/components/ProductMultiSelect";
 import { YearRangeSlider } from "@/features/trade-data/ui/components/YearRangeSlider";
 
 /**

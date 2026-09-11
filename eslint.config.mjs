@@ -39,7 +39,7 @@ const NO_UI = {
 };
 
 // Root-level folders under features/ that are shared, not features.
-const SHARED_ROOT_DIRS = ["constants", "db", "utils", "components"];
+const SHARED_ROOT_DIRS = ["constants", "db", "utils", "components", "hooks"];
 const FEATURE_DIRS = readdirSync("features", { withFileTypes: true })
   .filter((d) => d.isDirectory() && !SHARED_ROOT_DIRS.includes(d.name))
   .map((d) => d.name);

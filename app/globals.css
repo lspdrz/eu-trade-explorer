@@ -7,16 +7,25 @@
    top-level only, so it holds the light palette; the page defaults to light
    and ignores the OS `prefers-color-scheme`.
 
-   Colors are the dataviz skill's validated reference palette (blue / orange /
-   green-teal — the skill names slot 3 "aqua"). Verified with
-   scripts/validate_palette.js against the surfaces below:
-     - light (#f9f9f7): every hard gate PASSES. One WARN — series-3 sits at
-       2.67:1, under the 3:1 non-text threshold. This is documented in the
-       reference palette; the mitigation ("relief rule") is a visible data
-       table + always-on legend, both shipped by ImportsBarChart.
-     - dark  (#0d0d0d): every check PASSES, contrast included.
-   The three slots are the only ordering that clears CVD separation all-pairs
-   in both modes; a darker green fails that gate (ΔE ~3 vs orange). */
+   Colors are the dataviz skill's validated reference palette (all 8
+   categorical hues — slot order: blue, orange, aqua, yellow, magenta,
+   green, violet, red). Verified with scripts/validate_palette.js against
+   the surfaces below, for a LINE chart's adjacent-pairs case (stacks/bars/
+   lines use adjacent-pairs, not the stricter all-pairs test scatter/
+   bubble/small-multiples need):
+     - light (#fcfcfb surface): CVD ΔE 9.1 worst adjacent (≥8 target),
+       normal-vision ΔE 19.6 worst adjacent (≥15 floor) — PASS. 3 hues
+       (aqua/yellow/magenta) sit under 3:1 contrast — WARN, mitigated by
+       RuTimelineChart's hover tooltip + direct labels (the "relief rule");
+       series-3 alone (used by all-pairs charts below) was already
+       documented as this same WARN, mitigated there by ImportsBarChart's
+       visible data table + always-on legend.
+     - dark (#1a1a19 surface): CVD ΔE 8.4 worst adjacent, normal-vision
+       ΔE 19.3 worst adjacent — PASS. All 8 clear 3:1 contrast.
+   Slots 1-3 are also the only 3-slot ordering that clears CVD separation
+   ALL-PAIRS in both modes (ImportsBarChart/StackedImportsChart need that
+   stricter test, since any two bars can sit side by side) — don't use
+   slots 4-8 in an all-pairs chart context without re-validating. */
 @theme {
   --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
 
@@ -30,6 +39,11 @@
   --color-series-1: #2a78d6;
   --color-series-2: #eb6834;
   --color-series-3: #1baf7a;
+  --color-series-4: #eda100;
+  --color-series-5: #e87ba4;
+  --color-series-6: #008300;
+  --color-series-7: #4a3aa7;
+  --color-series-8: #e34948;
 }
 
 :root {
@@ -49,6 +63,11 @@
   --color-series-1: #3987e5;
   --color-series-2: #d95926;
   --color-series-3: #199e70;
+  --color-series-4: #c98500;
+  --color-series-5: #d55181;
+  --color-series-6: #008300;
+  --color-series-7: #9085e9;
+  --color-series-8: #e66767;
 }
 
 body {
