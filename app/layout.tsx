@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
 import "@/app/globals.css";
-import { Nav } from "@/app/Nav";
+import { Nav } from "@/app/_components/Nav";
 
 // Runs before first paint: a returning visitor who chose dark gets it with no
 // white flash. Light is the default, so the absence of a stored choice (or any
