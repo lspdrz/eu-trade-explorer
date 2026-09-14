@@ -29,4 +29,21 @@ describe("assignColorSlots", () => {
   it("respects the max argument", () => {
     expect(assignColorSlots(["Ammonia", "Urea"], {}, 2)).toEqual({ Ammonia: 0, Urea: 1 });
   });
+
+  it("never returns a slot outside [0, max) even when given more keys than max", () => {
+    // Callers are expected not to let this happen, but the function must
+    // still hand back a usable (in-range) color index rather than `max` —
+    // one past the last valid entry in whatever color array the slot
+    // indexes into — which would render as an undefined/missing color.
+    const result = assignColorSlots(["A", "B", "C"], {}, 2);
+    expect(result.A).toBe(0);
+    expect(result.B).toBe(1);
+    expect(result.C).toBeGreaterThanOrEqual(0);
+    expect(result.C).toBeLessThan(2);
+  });
+
+  it("recycles overflow keys round-robin instead of piling them all onto one slot", () => {
+    const result = assignColorSlots(["A", "B", "C", "D", "E"], {}, 2);
+    expect(result).toEqual({ A: 0, B: 1, C: 0, D: 1, E: 0 });
+  });
 });

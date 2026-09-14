@@ -20,10 +20,22 @@ export function assignColorSlots(
     }
   }
 
+  let recycleCursor = 0;
   for (const key of keys) {
     if (next[key] !== undefined) continue;
     let slot = 0;
-    while (used.has(slot) && slot < max) slot++;
+    while (slot < max && used.has(slot)) slot++;
+    if (slot >= max) {
+      // Every slot is already taken — more keys than `max`, which callers
+      // are expected not to let happen, but this must still return an
+      // in-range slot rather than `max` (one past the last valid index,
+      // pointing at nothing in a fixed-size color array). Recycle slots
+      // round-robin instead of piling every overflow key onto the same
+      // one, so collisions spread across all colors rather than
+      // concentrating on a single slot.
+      slot = recycleCursor % max;
+      recycleCursor++;
+    }
     next[key] = slot;
     used.add(slot);
   }
