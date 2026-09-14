@@ -4,11 +4,15 @@ import { max } from "d3-array";
 import { format } from "d3-format";
 import { scaleLinear } from "d3-scale";
 import { line as d3Line } from "d3-shape";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useMeasuredWidth } from "@/features/hooks/useMeasuredWidth";
 import { ChartTooltip } from "@/features/components/ChartTooltip";
 
-const MARGIN = { top: 16, right: 16, bottom: 32, left: 56 };
+// top: leaves genuine whitespace above the plotted data for the marker
+// label (see markerLabelY below) — it used to sit inside the plot area
+// itself, where a data line passing near the top could cross straight
+// through it.
+const MARGIN = { top: 32, right: 16, bottom: 32, left: 48 };
 // No explicit `height` prop: derive it from the measured width so the
 // chart grows taller (not just wider) as its container does, instead of
 // staying pinned at one fixed height regardless of screen size. Ratio
@@ -18,7 +22,33 @@ const MIN_HEIGHT = 280;
 const MAX_HEIGHT = 640;
 const REVEAL_DURATION_MS = 2500;
 const FADE_DURATION_MS = 300;
-const MAX_DIRECT_LABELS = 4;
+
+const HIGHLIGHT_DASH = "6 3";
+
+/** A small line swatch used both in the legend above the chart and inside
+ *  the hover tooltip — dashed for the highlight series so it matches the
+ *  line it identifies, instead of a plain solid-color bar either place.
+ *  Deliberately its own dash pattern rather than reusing HIGHLIGHT_DASH
+ *  verbatim: "6 3" starting at x=0 doesn't divide evenly into a 12-16px
+ *  swatch
+ * */
+function LegendSwatch({ color, dashed, width = 16 }: { color: string; dashed: boolean; width?: number }) {
+  const gap = 3;
+  const dashLength = (width - gap) / 2;
+  return (
+    <svg width={width} height="2" className="block shrink-0" aria-hidden="true">
+      <line
+        x1={0}
+        x2={width}
+        y1={1}
+        y2={1}
+        stroke={color}
+        strokeWidth={2}
+        strokeDasharray={dashed ? `${dashLength} ${gap}` : undefined}
+      />
+    </svg>
+  );
+}
 
 /** Compact tonnes for axis ticks: 1.2M, 450k, 3.1B (d3 emits "G", we want "B"). */
 const formatTonnes = (n: number): string => format("~s")(n).replace("G", "B");
@@ -28,26 +58,7 @@ export interface RuTimelineChartSeries {
   key: string;
   label: string;
   values: number[];
-  /** CSS color (a `var(--color-series-N)` reference), owned by the caller —
-   *  RuTimelineControls assigns this via assignColorSlots so a chapter
-   *  keeps its color while selected ("color follows the slot, not the
-   *  position"), the same pattern StackedChartPanel already uses. This
-   *  component never invents a color from array position. */
   color: string;
-}
-
-/** Which series (by key) draw a label at their line's right end — fertiliser (if present)
- *  plus the largest MAX_DIRECT_LABELS-1 others by final value, capped at MAX_DIRECT_LABELS total. */
-function selectDirectLabelKeys(series: RuTimelineChartSeries[], highlightKey: string): Set<string> {
-  const rest = series
-    .filter((s) => s.key !== highlightKey)
-    .slice()
-    .sort((a, b) => (b.values[b.values.length - 1] ?? 0) - (a.values[a.values.length - 1] ?? 0));
-  const hasHighlight = series.some((s) => s.key === highlightKey);
-  const budget = MAX_DIRECT_LABELS - (hasHighlight ? 1 : 0);
-  const keys = new Set(rest.slice(0, Math.max(0, budget)).map((s) => s.key));
-  if (hasHighlight) keys.add(highlightKey);
-  return keys;
 }
 
 /**
@@ -56,12 +67,18 @@ function selectDirectLabelKeys(series: RuTimelineChartSeries[], highlightKey: st
  * `color` is owned entirely by the caller (RuTimelineControls, via
  * assignColorSlots) so a chapter's color survives it being deselected and
  * reselected; this component never computes a color itself. On mount,
- * every visible line draws itself in left-to-right via the stroke-dasharray
- * reveal technique; a `series` that changes later (the picker adding/
+ * every visible line draws itself in left-to-right via a clip-path rect
+ * that grows from 0 to the chart's full width (not per-path stroke-
+ * dasharray/dashoffset — that would have to fight with HIGHLIGHT_DASH,
+ * the highlighted line's own permanent dash pattern); a `series` that
+ * changes later (the picker adding/
  * removing a chapter) only fades the *new* keys in (~300ms) — existing
  * lines are untouched, no replay. A hover crosshair shows every visible
- * series' value at the nearest year; up to 4 series (the highlight + the
- * largest others) get a direct label at their line's right end.
+ * series' value at the nearest year; the highlight line is dashed
+ * (HIGHLIGHT_DASH) rather than labelled in-chart — the legend above names
+ * every line, and up to 7 series can end up trailing off toward similar
+ * values (see comextRu data near 2023+), which made end-of-line labels
+ * collide with each other rather than reliably identify anything.
  * `prefers-reduced-motion` skips both the initial reveal and the fade —
  * everything renders at final state immediately.
  *
@@ -119,7 +136,12 @@ export function RuTimelineChart({
 
   const pathRefs = useRef(new Map<string, SVGPathElement | null>());
   const markerRef = useRef<SVGGElement | null>(null);
+  const clipRectRef = useRef<SVGRectElement | null>(null);
   const knownKeysRef = useRef<Set<string>>(new Set());
+  // Fragment id for the reveal clip-path — useId() includes colons, which
+  // are valid in an `id` attribute but not worth risking inside a `url(#…)`
+  // reference, so they're stripped.
+  const clipId = `ru-timeline-reveal-${useId().replace(/:/g, "")}`;
 
   useLayoutEffect(() => {
     const currentKeys = series.map((s) => s.key);
@@ -152,40 +174,25 @@ export function RuTimelineChart({
     let markerTimer: ReturnType<typeof setTimeout> | undefined;
 
     if (isInitial) {
-      // Full stroke-dasharray draw-in for every initially-visible series.
-      const lengths = newPaths.map((p) => p.getTotalLength());
-      newPaths.forEach((p, i) => {
-        p.style.strokeDasharray = `${lengths[i]}`;
-        p.style.strokeDashoffset = `${lengths[i]}`;
-      });
-      raf = requestAnimationFrame(() => {
-        newPaths.forEach((p) => {
-          p.style.transition = `stroke-dashoffset ${REVEAL_DURATION_MS}ms ease-out`;
-          p.style.strokeDashoffset = "0";
+      const rect = clipRectRef.current;
+      if (rect) {
+        rect.style.transform = "scaleX(0)";
+        raf = requestAnimationFrame(() => {
+          rect.style.transition = `transform ${REVEAL_DURATION_MS}ms ease-out`;
+          rect.style.transform = "scaleX(1)";
+          knownKeysRef.current = new Set(currentKeys); // commit only once the reveal actually starts
         });
-        knownKeysRef.current = new Set(currentKeys); // commit only once the reveal actually starts
-      });
-      // Once the reveal has actually finished, drop the dasharray/dashoffset/
-      // transition entirely rather than leaving them at "0 offset, length L".
-      // A later re-render (e.g. the chart resizing because the picker's own
-      // width changed) recomputes every path's `d` at the new scale, but
-      // never recomputes L — a stale dasharray sized for the old geometry,
-      // applied to a path of a different length, draws a repeating
-      // dash/gap pattern instead of a solid line, which looks exactly like
-      // the line stopping partway across. No dasharray at all means later
-      // `d` changes just render as a normal continuous stroke, unaffected.
-      // Deliberately NOT cancelled in this effect's cleanup (unlike raf/
-      // markerTimer below) — a later re-render (e.g. selecting one more
-      // chapter) must not skip this cleanup just because it happens to
-      // land within the same 2.5s window; mutating a path's style after
-      // this component unmounts is a harmless no-op.
-      setTimeout(() => {
-        newPaths.forEach((p) => {
-          p.style.strokeDasharray = "";
-          p.style.strokeDashoffset = "";
-          p.style.transition = "";
-        });
-      }, REVEAL_DURATION_MS);
+        // Once the reveal has actually finished, drop the inline
+        // transform/transition entirely so a later resize just renders the
+        // rect at its normal (always-correct, reactive) full width with no
+        // leftover scale applied.
+        setTimeout(() => {
+          rect.style.transform = "";
+          rect.style.transition = "";
+        }, REVEAL_DURATION_MS);
+      } else {
+        knownKeysRef.current = new Set(currentKeys);
+      }
       if (markerYear !== undefined && yearMax > yearMin) {
         const fraction = (markerYear + (markerMonth - 1) / 12 - yearMin) / (yearMax - yearMin);
         markerTimer = setTimeout(
@@ -220,9 +227,19 @@ export function RuTimelineChart({
 
   const markerX =
     markerYear !== undefined ? xScale(markerYear + (markerMonth - 1) / 12) : undefined;
+  // Flip the marker label to the left of its line when there isn't room to
+  // the right — no ref/measurement available at render time, so this is an
+  // estimate (~5.8px/char at text-[11px]) rather than the label's exact
+  // rendered width, but it only needs to be right at the boundary.
+  const markerLabelFitsRight =
+    markerX === undefined || !markerLabel || innerWidth - markerX >= markerLabel.length * 5.8 + 6;
+  // Sits above the plotted data entirely (negative = inside MARGIN.top's
+  // whitespace, above inner-y=0 where the tallest gridline/data lives) —
+  // it used to be at a fixed y *inside* the plot, where a data line
+  // passing near the top could cross straight through the text.
+  const markerLabelY = -16;
   const yTicks = yScale.ticks(5);
   const xTicks = xScale.ticks(Math.min(years.length, 8));
-  const directLabelKeys = selectDirectLabelKeys(series, highlightKey);
 
   // --- hover crosshair ---
   const [hoveredIndex, setHoveredIndex] = useState<number | undefined>(undefined);
@@ -255,16 +272,6 @@ export function RuTimelineChart({
 
   return (
     <div ref={wrapRef} className="relative w-full overflow-x-clip">
-      <div className="mb-3 flex flex-wrap gap-4 text-sm">
-        {series.map((s) => (
-          <div key={s.key} className="flex items-center gap-1.5">
-            <span className="inline-block h-0.5 w-4" style={{ background: s.color }} />
-            <span className={s.key === highlightKey ? "font-semibold" : "text-muted"}>
-              {s.label}
-            </span>
-          </div>
-        ))}
-      </div>
       <figure className="relative m-0">
         <svg
           viewBox={`0 0 ${width} ${height}`}
@@ -275,11 +282,29 @@ export function RuTimelineChart({
           aria-label={`Russian imports by year, ${yearMin}–${yearMax}`}
           className="block max-w-full"
         >
+          <defs>
+            <clipPath id={clipId}>
+              {/* Only clips horizontally — y/height are generous so no
+                  data line is ever clipped vertically, whatever the margins
+                  end up being. width/x are plain reactive JSX (always the
+                  current innerWidth, untouched by the reveal effect); the
+                  reveal only ever animates transform: scaleX, anchored at
+                  the left edge so it grows rightward from x=0. */}
+              <rect
+                ref={clipRectRef}
+                x={0}
+                y={-height}
+                width={innerWidth}
+                height={height * 3}
+                style={{ transformOrigin: "0 0" }}
+              />
+            </clipPath>
+          </defs>
           <g transform={`translate(${MARGIN.left},${MARGIN.top})`}>
             {yTicks.map((tick) => (
               <g key={tick} transform={`translate(0,${yScale(tick)})`}>
                 <line x1={0} x2={innerWidth} stroke="var(--color-border)" />
-                <text x={-8} dy="0.32em" textAnchor="end" className="fill-muted text-[11px] tabular-nums">
+                <text x={4 - MARGIN.left} dy="0.32em" textAnchor="start" className="fill-muted text-[11px] tabular-nums">
                   {formatTonnes(tick)}
                 </text>
               </g>
@@ -304,46 +329,40 @@ export function RuTimelineChart({
               strokeWidth={1.5}
             />
 
-            {series.map((s) => (
-              <path
-                key={s.key}
-                ref={(el) => {
-                  pathRefs.current.set(s.key, el);
-                }}
-                d={lineGen(s.values) ?? ""}
-                fill="none"
-                stroke={s.color}
-                style={{ visibility: hasMeasured ? "visible" : "hidden" }}
-                strokeWidth={s.key === highlightKey ? 2.5 : 1.5}
-              />
-            ))}
-
-            {series
-              .filter((s) => directLabelKeys.has(s.key))
-              .map((s) => (
-                <text
-                  key={`label-${s.key}`}
-                  x={innerWidth + 4}
-                  y={yScale(s.values[s.values.length - 1] ?? 0)}
-                  dy="0.32em"
-                  className="fill-muted text-[10px]"
-                >
-                  {s.label}
-                </text>
+            <g clipPath={`url(#${clipId})`}>
+              {series.map((s) => (
+                <path
+                  key={s.key}
+                  ref={(el) => {
+                    pathRefs.current.set(s.key, el);
+                  }}
+                  d={lineGen(s.values) ?? ""}
+                  fill="none"
+                  stroke={s.color}
+                  style={{ visibility: hasMeasured ? "visible" : "hidden" }}
+                  strokeWidth={s.key === highlightKey ? 2.5 : 1.5}
+                  strokeDasharray={s.key === highlightKey ? HIGHLIGHT_DASH : undefined}
+                />
               ))}
+            </g>
 
             {markerX !== undefined && (
               <g ref={markerRef} style={{ opacity: 0 }}>
                 <line
                   x1={markerX}
                   x2={markerX}
-                  y1={0}
+                  y1={markerLabelY}
                   y2={innerHeight}
                   stroke="var(--color-baseline)"
                   strokeDasharray="4 4"
                 />
                 {markerLabel && (
-                  <text x={markerX + 6} y={12} className="fill-muted text-[11px]">
+                  <text
+                    x={markerX + (markerLabelFitsRight ? 6 : -6)}
+                    y={markerLabelY}
+                    textAnchor={markerLabelFitsRight ? "start" : "end"}
+                    className="fill-muted text-[11px]"
+                  >
                     {markerLabel}
                   </text>
                 )}
@@ -387,7 +406,7 @@ export function RuTimelineChart({
             <div className="font-semibold">{years[hoveredIndex]}</div>
             {series.map((s) => (
               <div key={s.key} className="flex items-center gap-1.5 whitespace-nowrap">
-                <span className="inline-block h-0.5 w-3" style={{ background: s.color }} />
+                <LegendSwatch color={s.color} dashed={s.key === highlightKey} width={12} />
                 <span className="font-semibold tabular-nums">
                   {formatTonnesExact(Math.round(s.values[hoveredIndex] ?? 0))} t
                 </span>
@@ -397,6 +416,16 @@ export function RuTimelineChart({
           </ChartTooltip>
         )}
       </figure>
+      <div className="mt-3 flex flex-wrap gap-4 text-sm">
+        {series.map((s) => (
+          <div key={s.key} className="flex items-center gap-1.5">
+            <LegendSwatch color={s.color} dashed={s.key === highlightKey} />
+            <span className={s.key === highlightKey ? "font-semibold" : "text-muted"}>
+              {s.label}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

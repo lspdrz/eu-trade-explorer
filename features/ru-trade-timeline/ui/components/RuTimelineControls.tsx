@@ -126,17 +126,7 @@ export function RuTimelineControls({ initialData }: { initialData: RuTimelineDat
   ];
 
   return (
-    <div className="flex gap-6 flex-wrap md:flex-nowrap">
-      <div className="md:min-w-0 md:flex-1">
-        <RuTimelineChart
-          years={initialData.years}
-          series={visibleSeries}
-          highlightKey={HIGHLIGHT_KEY}
-          markerYear={2022}
-          markerMonth={2}
-          markerLabel="Russia invades Ukraine"
-        />
-      </div>
+    <div className="flex flex-col gap-6 md:flex-row-reverse">
       <div className="min-w-56 shrink-0">
         <ProductMultiSelect
           products={PICKER_OPTIONS}
@@ -145,6 +135,16 @@ export function RuTimelineControls({ initialData }: { initialData: RuTimelineDat
           onChange={handleChange}
           max={MAX_SELECTED}
           pending={isPending}
+        />
+      </div>
+      <div className="md:min-w-0 md:flex-1">
+        <RuTimelineChart
+          years={initialData.years}
+          series={visibleSeries}
+          highlightKey={HIGHLIGHT_KEY}
+          markerYear={2022}
+          markerMonth={2}
+          markerLabel="Russia invades Ukraine"
         />
       </div>
     </div>

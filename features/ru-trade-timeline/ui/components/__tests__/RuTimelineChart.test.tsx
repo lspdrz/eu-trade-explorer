@@ -32,6 +32,34 @@ describe("RuTimelineChart", () => {
     expect(html).toContain("Russia invades Ukraine");
   });
 
+  it("flips the marker label to the left when it's too close to the right edge to fit", () => {
+    const htmlAtEnd = renderToStaticMarkup(
+      <RuTimelineChart
+        years={years}
+        series={twoSeries}
+        highlightKey="fertiliser"
+        markerYear={years[years.length - 1]}
+        markerLabel="Russia invades Ukraine"
+        width={720}
+        height={360}
+      />,
+    );
+    expect(htmlAtEnd).toMatch(/text-anchor="end"[^>]*>Russia invades Ukraine/);
+
+    const htmlAtStart = renderToStaticMarkup(
+      <RuTimelineChart
+        years={years}
+        series={twoSeries}
+        highlightKey="fertiliser"
+        markerYear={years[0]}
+        markerLabel="Russia invades Ukraine"
+        width={720}
+        height={360}
+      />,
+    );
+    expect(htmlAtStart).not.toContain('text-anchor="end"');
+  });
+
   it("renders without a marker when markerYear is omitted", () => {
     const html = renderToStaticMarkup(
       <RuTimelineChart years={years} series={twoSeries} highlightKey="fertiliser" width={720} height={360} />,
@@ -54,21 +82,30 @@ describe("RuTimelineChart", () => {
     expect((html.match(/<path/g) ?? []).length).toBe(4);
   });
 
-  it("direct-labels at most 4 series", () => {
-    const fiveSeries = [
-      ...fourSeries,
-      { key: "26", label: "Ores, slag and ash", values: [10, 12, 9, 11], color: "var(--color-series-5)" },
-    ];
+  it("dashes only the highlight line, so it's identifiable without an end-of-line label", () => {
     const html = renderToStaticMarkup(
-      <RuTimelineChart years={years} series={fiveSeries} highlightKey="fertiliser" width={720} height={360} />,
+      <RuTimelineChart years={years} series={fourSeries} highlightKey="fertiliser" width={720} height={360} />,
     );
-    // Every series appears in the (comprehensive) legend regardless of
-    // direct-label status, so scope the assertion to just the on-chart
-    // direct-label <text> elements (class="fill-muted text-[10px]"),
-    // distinct from the legend and the axis-tick text classes.
-    const directLabels = [...html.matchAll(/text-\[10px\]">([^<]+)</g)].map((m) => m[1]);
-    // fertiliser (highlight) + the 3 largest by final value: 27, 44, 72 — not 26
-    expect(directLabels).toEqual(["Fertiliser", "Mineral fuels", "Wood", "Iron and steel"]);
+    const dashedPaths = (html.match(/<path[^>]*stroke-dasharray="6 3"[^>]*>/g) ?? []).length;
+    expect(dashedPaths).toBe(1);
+    // No end-of-line labels at all anymore — the legend above the chart
+    // (already asserted elsewhere) is the only place series are named.
+    expect(html).not.toContain("Mineral fuels</text>");
+  });
+
+  it("dashes the highlight series' legend swatch to match its line", () => {
+    const html = renderToStaticMarkup(
+      <RuTimelineChart years={years} series={fourSeries} highlightKey="fertiliser" width={720} height={360} />,
+    );
+    // The legend swatch uses its own symmetric dash pattern (two equal
+    // dashes centered around a fixed gap, sized to its own width) rather
+    // than the chart line's literal HIGHLIGHT_DASH, so just assert some
+    // dasharray is present on exactly one <line> (the marker's dashed
+    // vertical line uses "4 4", a fixed unrelated pattern).
+    const dashedLines = (html.match(/<line[^>]*stroke-dasharray="[^"]+"[^>]*>/g) ?? []).filter(
+      (l) => !l.includes('stroke-dasharray="4 4"'),
+    ).length;
+    expect(dashedLines).toBe(1);
   });
 
   it("renders without touching browser globals during server render", () => {
