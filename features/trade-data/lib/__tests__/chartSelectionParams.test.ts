@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { ChartSelection, YearlyPartnerTotal } from "@/features/trade-data/types";
 import {
+  DEFAULT_PARTNER,
+  DEFAULT_PARTNER_CODES,
+  DEFAULT_PRODUCTS,
   PIVOT_CLEARED,
   deriveBounds,
   deriveYearRange,
@@ -10,12 +13,12 @@ import {
 
 const parse = (q: string) => parseSelection(new URLSearchParams(q));
 
-/** A full, all-defaults ChartSelection. There is no default product. */
+/** A full, all-defaults ChartSelection: Ammonia + Russia on both tabs. */
 const base: ChartSelection = {
   view: "countries",
-  partnerCodes: [],
-  partner: "",
-  products: [],
+  partnerCodes: DEFAULT_PARTNER_CODES,
+  partner: DEFAULT_PARTNER,
+  products: DEFAULT_PRODUCTS,
   fromYear: undefined,
   toYear: undefined,
 };
@@ -30,7 +33,8 @@ describe("parseSelection", () => {
     expect(parse("view=nonsense").view).toBe("countries");
   });
 
-  it("countries: upper-cased, deduped, well-formed only, capped at 3", () => {
+  it("countries: defaults to Russia when absent, else upper-cased/deduped/well-formed/capped at 3", () => {
+    expect(parse("").partnerCodes).toEqual(["RU"]);
     expect(parse("countries=us,1,x,USA,eg,us,DZ,MA").partnerCodes).toEqual([
       "US",
       "EG",
@@ -38,16 +42,28 @@ describe("parseSelection", () => {
     ]);
   });
 
-  it("partner: a single well-formed code, else empty", () => {
-    expect(parse("partner=us").partner).toBe("US");
-    expect(parse("partner=USA").partner).toBe("");
-    expect(parse("").partner).toBe("");
+  it("countries: an explicit empty value stays empty, not defaulted", () => {
+    expect(parse("countries=").partnerCodes).toEqual([]);
   });
 
-  it("products: empty when absent, no default on either view", () => {
-    expect(parse("").products).toEqual([]);
-    expect(parse("view=products").products).toEqual([]);
-    expect(parse("products=Ammonia,Urea").products).toEqual(["Ammonia", "Urea"]);
+  it("partner: defaults to Russia when absent, else a single well-formed code or empty", () => {
+    expect(parse("").partner).toBe("RU");
+    expect(parse("partner=us").partner).toBe("US");
+    expect(parse("partner=USA").partner).toBe("");
+  });
+
+  it("partner: an explicit empty/invalid value stays empty, not defaulted", () => {
+    expect(parse("partner=").partner).toBe("");
+    expect(parse("partner=USA").partner).toBe("");
+  });
+
+  it("products: defaults to Ammonia when absent, on either tab", () => {
+    expect(parse("").products).toEqual(["Ammonia"]);
+    expect(parse("view=products").products).toEqual(["Ammonia"]);
+  });
+
+  it("products: an explicit empty value stays empty, not defaulted", () => {
+    expect(parse("products=").products).toEqual([]);
   });
 
   it("products: trimmed, deduped, capped at 3 (no validation)", () => {
@@ -60,7 +76,7 @@ describe("parseSelection", () => {
 
   it("ignores a legacy ?product= param", () => {
     expect(parse("product=Urea")).not.toHaveProperty("product");
-    expect(parse("product=Urea").products).toEqual([]);
+    expect(parse("product=Urea").products).toEqual(["Ammonia"]); // absent -> default
   });
 
   it("years: the number the URL asked for, or undefined", () => {
@@ -79,14 +95,14 @@ describe("serializeSelection", () => {
     const selection: ChartSelection = {
       ...base,
       view: "products",
-      partner: "RU",
+      partner: "EG",
       products: ["Ammonia", "Urea"],
       fromYear: 2018,
       toYear: 2022,
     };
     const params = serializeSelection(selection);
     expect(params.get("view")).toBe("products");
-    expect(params.get("partner")).toBe("RU");
+    expect(params.get("partner")).toBe("EG");
     expect(params.get("products")).toBe("Ammonia,Urea");
     expect(params.get("from")).toBe("2018");
     expect(params.get("to")).toBe("2022");
@@ -94,8 +110,15 @@ describe("serializeSelection", () => {
     expect(parseSelection(params)).toEqual(selection);
   });
 
-  it("omits an empty products list, emits a non-empty one", () => {
-    expect(serializeSelection({ ...base, products: [] }).toString()).toBe("");
+  it("an explicitly empty products list is emitted (differs from default), and round-trips", () => {
+    const cleared = { ...base, products: [] };
+    const params = serializeSelection(cleared);
+    expect(params.get("products")).toBe("");
+    expect(parseSelection(params).products).toEqual([]);
+  });
+
+  it("omits a products list matching the default, emits a different one", () => {
+    expect(serializeSelection({ ...base, products: ["Ammonia"] }).toString()).toBe("");
     expect(
       serializeSelection({ ...base, products: ["Ammonia", "Urea"] }).get("products"),
     ).toBe("Ammonia,Urea");
@@ -105,12 +128,12 @@ describe("serializeSelection", () => {
     const dirty: ChartSelection = {
       ...base,
       partnerCodes: ["EG"],
-      partner: "RU",
+      partner: "FR",
       products: ["Ammonia", "Urea"],
       fromYear: 2015,
       toYear: 2020,
     };
-    // tab switch clears everything else, leaving only the new tab
+    // tab switch resets everything else to its default, leaving only the new tab
     expect(
       serializeSelection({ ...dirty, ...PIVOT_CLEARED, view: "products" }).toString(),
     ).toBe("view=products");
@@ -119,17 +142,21 @@ describe("serializeSelection", () => {
   const dirty: ChartSelection = {
     ...base,
     view: "products",
-    partner: "RU",
-    products: ["Ammonia"],
+    partner: "FR",
+    products: ["Urea"],
     fromYear: 2018,
   };
 
-  it("a tab pivot clears the rest", () => {
+  it("a tab pivot resets product/partner/year to their defaults", () => {
     const after = parseSelection(
       serializeSelection({ ...dirty, ...PIVOT_CLEARED, view: "countries" }),
     );
     expect(after.view).toBe("countries");
-    expect(after).toMatchObject({ partner: "", products: [], fromYear: undefined });
+    expect(after).toMatchObject({
+      partner: DEFAULT_PARTNER,
+      products: DEFAULT_PRODUCTS,
+      fromYear: undefined,
+    });
   });
 });
 

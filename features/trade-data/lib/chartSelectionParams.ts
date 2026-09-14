@@ -8,16 +8,24 @@ export const MAX_COUNTRIES = 3;
 export const MAX_PRODUCTS = 3;
 export const DEFAULT_VIEW: ChartView = "countries";
 
+/** Fresh-visit defaults, shared by both tabs — Ammonia is the headline
+ *  product, Russia the headline partner. Only apply when the URL says
+ *  nothing at all about a field (see parseSelection's `params.has` checks);
+ *  a visitor who explicitly clears a picker down to nothing still sees
+ *  nothing, not a bounce back to these. */
+export const DEFAULT_PRODUCTS = ["Ammonia"];
+export const DEFAULT_PARTNER_CODES = ["RU"];
+export const DEFAULT_PARTNER = "RU";
+
 /**
- * The selection fields a "pivot" (a tab switch) wipes. Switching tabs is a
- * fresh start — no product / partner / year carried across. `view` itself
- * is set by the caller alongside this. There is no default product: an
- * empty `products` means the chart prompts for one.
+ * The selection fields a "pivot" (a tab switch) wipes, back to the same
+ * fresh-visit defaults above rather than empty — switching tabs is a new
+ * start, not a dead end. `view` itself is set by the caller alongside this.
  */
 export const PIVOT_CLEARED = {
-  products: [],
-  partnerCodes: [],
-  partner: "",
+  products: DEFAULT_PRODUCTS,
+  partnerCodes: DEFAULT_PARTNER_CODES,
+  partner: DEFAULT_PARTNER,
   fromYear: undefined,
   toYear: undefined,
 } satisfies Partial<ChartSelection>;
@@ -57,18 +65,26 @@ function year(raw: string | null): number | undefined {
 
 /**
  * Parse the URL into a ChartSelection. Never throws, needs no data bounds —
- * it only does structure (split, dedupe, cap, well-formed-code filter). No
- * defaulting beyond `view`: an unknown or absent product / partner isn't
- * "fixed" to a valid one — it's kept (or empty), and the chart simply
- * prompts or renders nothing (the spec's "the absence is shown, never
- * silent"). Runs identically server-side (to pick the fetch) and client-side.
+ * it only does structure (split, dedupe, cap, well-formed-code filter).
+ * `view` and an absent product/partner/countries default (see
+ * DEFAULT_PRODUCTS etc. above); anything actually present in the URL — even
+ * an explicitly empty value, e.g. `?products=` — is parsed as-is and never
+ * "fixed" to a valid or default one (the spec's "the absence is shown,
+ * never silent" still holds once a visitor has touched a field). Runs
+ * identically server-side (to pick the fetch) and client-side.
  */
 export function parseSelection(params: URLSearchParams): ChartSelection {
   return {
     view: params.get("view") === "products" ? "products" : "countries",
-    partnerCodes: codeList(params.get("countries"), MAX_COUNTRIES),
-    partner: (params.get("partner") ?? "").trim().toUpperCase().match(WELL_FORMED_CODE)?.[0] ?? "",
-    products: stringList(params.get("products"), MAX_PRODUCTS),
+    partnerCodes: params.has("countries")
+      ? codeList(params.get("countries"), MAX_COUNTRIES)
+      : DEFAULT_PARTNER_CODES,
+    partner: params.has("partner")
+      ? ((params.get("partner") ?? "").trim().toUpperCase().match(WELL_FORMED_CODE)?.[0] ?? "")
+      : DEFAULT_PARTNER,
+    products: params.has("products")
+      ? stringList(params.get("products"), MAX_PRODUCTS)
+      : DEFAULT_PRODUCTS,
     fromYear: year(params.get("from")),
     toYear: year(params.get("to")),
   };
@@ -77,16 +93,20 @@ export function parseSelection(params: URLSearchParams): ChartSelection {
 /**
  * The inverse of parseSelection. Params equal to their default are omitted,
  * so the canonical URL stays clean. `setSelection` serialises the whole
- * selection on every edit, so there's no per-param surgery to do.
+ * selection on every edit, so there's no per-param surgery to do. A field
+ * explicitly cleared to empty (differs from its default) still round-trips:
+ * it's serialised as an explicit empty value rather than omitted, so
+ * parseSelection's `params.has` check reads it back as "present" rather
+ * than falling through to the default.
  */
 export function serializeSelection(selection: ChartSelection): URLSearchParams {
   const params = new URLSearchParams();
 
   if (selection.view !== DEFAULT_VIEW) params.set("view", selection.view);
-  if (selection.partnerCodes.length > 0)
+  if (selection.partnerCodes.join(",") !== DEFAULT_PARTNER_CODES.join(","))
     params.set("countries", selection.partnerCodes.join(","));
-  if (selection.partner) params.set("partner", selection.partner);
-  if (selection.products.length > 0)
+  if (selection.partner !== DEFAULT_PARTNER) params.set("partner", selection.partner);
+  if (selection.products.join(",") !== DEFAULT_PRODUCTS.join(","))
     params.set("products", selection.products.join(","));
   if (selection.fromYear !== undefined) params.set("from", String(selection.fromYear));
   if (selection.toYear !== undefined) params.set("to", String(selection.toYear));

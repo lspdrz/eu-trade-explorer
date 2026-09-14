@@ -17,7 +17,7 @@ import { YearRangeSlider } from "@/features/trade-data/ui/components/YearRangeSl
  * "Compare countries" tab: up to 3 partner countries, up to 3 products, each
  * country's bar a stack of product segments (colour = product) with the
  * partner code under every bar. Reads the URL selection itself; the shared
- * chrome (heading, source toggle, tabs) is the RSC's.
+ * chrome (heading, tabs) is the RSC's.
  */
 export function FertilizerImportsCountryView({
   availableProducts,
