@@ -44,6 +44,7 @@ export function parseComextCsv(csv: string): ComextObservation[] {
     }
 
     const n = Number(f[iValue]);
+    if (!Number.isFinite(n)) continue;
     if (indicator === "QUANTITY_IN_100KG") obs.quantity100kg = n;
     else obs.valueEuros = n;
   }
