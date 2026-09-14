@@ -64,7 +64,7 @@ export function FertilizerImportsCountryView({
     // back to controls-then-chart at md+, where there's room to see both
     // without scrolling past one to reach the other.
     <div className="flex flex-col-reverse md:flex-col">
-      <div className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-4 border-b border-border pb-5">
+      <div className="flex flex-wrap items-end gap-x-8 gap-y-4 border-b border-border pb-5">
         <div className="min-w-[10rem] flex-1">
           <ProductMultiSelect
             products={availableProducts}

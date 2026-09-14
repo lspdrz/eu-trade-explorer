@@ -19,9 +19,9 @@ const plexSans = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "EU Fertilizer Imports",
+  title: "EU Fertiliser Imports",
   description:
-    "Where the EU's ammonia and nitrogen fertilizer comes from — customs import volumes by partner country.",
+    "Where the EU's ammonia and nitrogen fertiliser comes from — customs import volumes by partner country.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

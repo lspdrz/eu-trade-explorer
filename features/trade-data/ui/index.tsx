@@ -85,10 +85,10 @@ export async function FertilizerImports({
     <main className="mx-auto max-w-6xl px-6 py-10">
       <header className="max-w-[34rem]">
         <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.01em]">
-          Where the EU&rsquo;s fertilizer comes from
+          Where the EU&rsquo;s fertiliser comes from
         </h1>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
-          EU fertilizer import volumes, by partner country or by product,
+          EU fertiliser import volumes, by partner country or by product,
           across the years on record.
         </p>
       </header>

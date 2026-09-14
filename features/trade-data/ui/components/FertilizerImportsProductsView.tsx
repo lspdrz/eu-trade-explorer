@@ -52,68 +52,61 @@ export function FertilizerImportsProductsView({
     availablePartners.find((p) => p.code === partner)?.name ?? partner;
 
   return (
-    <>
-      <p className="mt-3 text-[0.9375rem] text-muted">
-        {partner
-          ? `Imports to the EU from ${partnerName}`
-          : "Choose a partner country to compare products."}
-      </p>
-      <div className="flex flex-col-reverse md:flex-col">
-        <div className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-4 border-b border-border pb-5">
-          <div className="min-w-[10rem] flex-1">
-            <CountryCombobox
-              partners={availablePartners}
-              value={partner ? [partner] : []}
-              onChange={(codes) => setSelection({ partner: codes[0] ?? "" })}
-              max={1}
-              label="Partner"
-            />
-          </div>
-          <div className="min-w-[10rem] flex-1">
-            <ProductMultiSelect
-              products={availableProducts}
-              value={selection.products}
-              onChange={(products) => setSelection({ products }, { reRunServer: false })}
-              max={MAX_PRODUCTS}
-              pending={isPending}
-            />
-          </div>
-          {years.length > 1 && (
-            <div className="min-w-[12rem] flex-1">
-              <YearRangeSlider
-                minYear={years[0]}
-                maxYear={years[years.length - 1]}
-                from={fromYear}
-                to={toYear}
-                onCommit={(from, to) =>
-                  setSelection({ fromYear: from, toYear: to }, { reRunServer: false })
-                }
-              />
-            </div>
-          )}
+    <div className="flex flex-col-reverse md:flex-col">
+      <div className="flex flex-wrap items-end gap-x-8 gap-y-4 border-b border-border pb-5">
+        <div className="min-w-[10rem] flex-1">
+          <CountryCombobox
+            partners={availablePartners}
+            value={partner ? [partner] : []}
+            onChange={(codes) => setSelection({ partner: codes[0] ?? "" })}
+            max={1}
+            label="Partner"
+          />
         </div>
-
-        <ImportsChartPanel
-          rows={rows}
-          seriesKeys={selection.products}
-          nameFor={(key) => key}
-          seriesLabel="Product"
-          colorMax={MAX_PRODUCTS}
-          ariaLabel={(names) =>
-            partner
-              ? `${partnerName}'s EU imports in tonnes per year for ${names}`
-              : `EU imports in tonnes per year for ${names}`
-          }
-          emptyMessage={
-            partner
-              ? "Choose one or more products to compare."
-              : "Choose a partner country to compare products."
-          }
-          fromYear={fromYear}
-          toYear={toYear}
-          partialYear={partialYear}
-        />
+        <div className="min-w-[10rem] flex-1">
+          <ProductMultiSelect
+            products={availableProducts}
+            value={selection.products}
+            onChange={(products) => setSelection({ products }, { reRunServer: false })}
+            max={MAX_PRODUCTS}
+            pending={isPending}
+          />
+        </div>
+        {years.length > 1 && (
+          <div className="min-w-[12rem] flex-1">
+            <YearRangeSlider
+              minYear={years[0]}
+              maxYear={years[years.length - 1]}
+              from={fromYear}
+              to={toYear}
+              onCommit={(from, to) =>
+                setSelection({ fromYear: from, toYear: to }, { reRunServer: false })
+              }
+            />
+          </div>
+        )}
       </div>
-    </>
+
+      <ImportsChartPanel
+        rows={rows}
+        seriesKeys={selection.products}
+        nameFor={(key) => key}
+        seriesLabel="Product"
+        colorMax={MAX_PRODUCTS}
+        ariaLabel={(names) =>
+          partner
+            ? `${partnerName}'s EU imports in tonnes per year for ${names}`
+            : `EU imports in tonnes per year for ${names}`
+        }
+        emptyMessage={
+          partner
+            ? "Choose one or more products to compare."
+            : "Choose a partner country to compare products."
+        }
+        fromYear={fromYear}
+        toYear={toYear}
+        partialYear={partialYear}
+      />
+    </div>
   );
 }

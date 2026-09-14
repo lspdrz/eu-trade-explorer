@@ -14,7 +14,7 @@ export function buildGlobeSummary(
 ): string {
   const active = new Set(activeCodes);
   const shown = totals.filter((t) => active.has(t.partnerCode));
-  const head = `Interactive globe of EU fertilizer imports. ${shown.length} origin countries.`;
+  const head = `Interactive globe of EU fertiliser imports. ${shown.length} origin countries.`;
   const largest = shown
     .slice(0, 3)
     .map((t) => `${t.partner}, ${millions(t.tonnes / 1_000_000)} million tonnes`)
