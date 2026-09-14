@@ -56,8 +56,9 @@ export function GlobeView({ totals }: { totals: PartnerImportTotal[] }) {
           Where the EU&rsquo;s fertiliser comes from
         </h1>
         <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
-          All-time EU import volumes of ammonia and nitrogen fertilisers, by
-          partner country. Drag the globe; add or remove origins on the right.
+          EU import volumes of ammonia and nitrogen fertilisers since 2010, by
+          partner country. Drag the globe; add or remove origins using the
+          country list.
         </p>
       </header>
 
