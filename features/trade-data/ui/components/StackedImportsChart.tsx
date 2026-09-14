@@ -140,7 +140,11 @@ export function StackedImportsChart({
                     if (seg.tonnes <= 0) return null;
                     const top = y(seg.y1);
                     const bottom = y(seg.y0);
-                    const segH = Math.max(0, bottom - top - SEGMENT_GAP);
+                    // Only open a gap against the segment below — the
+                    // bottom-most segment (y0 === 0) should reach the true
+                    // zero baseline, not stop short of it.
+                    const gap = seg.y0 > 0 ? SEGMENT_GAP : 0;
+                    const segH = Math.max(0, bottom - top - gap);
                     const label = `${countryName} · ${seg.product}, ${cell.year}: ${formatInt(
                       Math.round(seg.tonnes),
                     )} tonnes${isPartial ? " (partial year)" : ""}`;
