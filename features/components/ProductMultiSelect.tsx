@@ -60,7 +60,7 @@ export function ProductMultiSelect({
   }
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex min-w-0 flex-col gap-1">
       <span className="text-[0.8125rem] font-medium text-muted">Products</span>
       <Listbox
         multiple
@@ -69,14 +69,14 @@ export function ProductMultiSelect({
         disabled={pending}
       >
         <ListboxButton
-          className="min-w-56 rounded-md border border-border bg-surface px-3 py-2 text-left text-sm data-disabled:opacity-50"
+          className="min-w-0 w-full truncate rounded-md border border-border bg-surface px-3 py-2 text-left text-sm data-disabled:opacity-50 sm:w-auto sm:min-w-56"
           aria-busy={pending}
         >
           {label}
         </ListboxButton>
         <ListboxOptions
           anchor="bottom start"
-          className="z-20 mt-1 w-(--button-width) rounded-md border border-border bg-surface p-1 shadow-lg [--anchor-gap:4px]"
+          className="z-20 mt-1 w-64 rounded-md border border-border bg-surface p-1 shadow-lg [--anchor-gap:4px]"
         >
           {topProducts.map(renderOption)}
           {topProducts.length > 0 && restProducts.length > 0 && (

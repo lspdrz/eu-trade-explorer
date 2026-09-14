@@ -12,3 +12,18 @@ export function xAxisLabelStep(yearCount: number, innerWidth: number): number {
   const pxPerYear = innerWidth / yearCount;
   return Math.max(1, Math.ceil(MIN_LABEL_PX / pxPerYear));
 }
+
+/**
+ * Whether the year at index `i` should get an x-axis label. The last year
+ * (`lastIndex`) always does — but naively OR-ing that in on top of the
+ * `step` thinning (as `i % step === 0 || i === lastIndex`) can still
+ * collide: whichever step-selected index falls closest to `lastIndex` can
+ * land as little as 1 year-slot away from it, well under the spacing
+ * `step` was chosen to guarantee. This suppresses that one neighbor
+ * instead, so the forced last-year label always keeps its full spacing.
+ */
+export function shouldShowYearLabel(i: number, lastIndex: number, step: number): boolean {
+  if (i === lastIndex) return true;
+  if (i % step !== 0) return false;
+  return lastIndex - i >= step;
+}

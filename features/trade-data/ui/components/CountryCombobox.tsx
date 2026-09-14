@@ -34,7 +34,7 @@ export function CountryCombobox({
   const matches = filterCountries(partners, query).slice(0, 50);
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex min-w-0 flex-col gap-1">
       <label className="text-[0.8125rem] font-medium text-muted">
         {label}
         {max > 1 ? ` (${value.length}/${max})` : ""}
@@ -72,7 +72,7 @@ export function CountryCombobox({
         onClose={() => setQuery("")}
       >
         <ComboboxInput
-          className="min-w-56 rounded-md border border-border bg-surface px-3 py-2 text-sm"
+          className="min-w-0 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm sm:w-auto sm:min-w-56"
           placeholder={
             atMax
               ? max === 1
