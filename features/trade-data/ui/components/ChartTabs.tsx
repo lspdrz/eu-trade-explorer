@@ -33,7 +33,7 @@ export function ChartTabs() {
         {VIEWS.map((v) => (
           <Tab
             key={v}
-            className="-mb-px border-b-2 border-transparent pb-2 text-sm font-medium text-muted data-selected:border-foreground data-selected:text-foreground focus-visible:outline-none"
+            className="-mb-px cursor-pointer border-b-2 border-transparent pb-2 text-sm font-medium text-muted data-selected:border-foreground data-selected:text-foreground focus-visible:outline-none"
           >
             {LABEL[v]}
           </Tab>

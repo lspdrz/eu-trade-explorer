@@ -51,7 +51,7 @@ export function CountryCombobox({
               <button
                 type="button"
                 aria-label={`Remove ${nameByCode.get(code) ?? code}`}
-                className="text-muted hover:text-foreground"
+                className="cursor-pointer text-muted hover:text-foreground"
                 onClick={() => onChange(value.filter((c) => c !== code))}
               >
                 ×

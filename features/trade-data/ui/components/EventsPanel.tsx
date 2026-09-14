@@ -28,7 +28,7 @@ export function EventsPanel() {
           <Switch
             checked={enabled}
             onChange={setEnabled}
-            className="group inline-flex h-5 w-9 items-center rounded-full border border-border bg-surface transition data-checked:bg-foreground"
+            className="group inline-flex h-5 w-9 cursor-pointer items-center rounded-full border border-border bg-surface transition data-checked:bg-foreground"
           >
             <span className="sr-only">Show on chart</span>
             {/* the sliding knob — shifts right + recolours when checked */}
@@ -76,7 +76,7 @@ export function EventsPanel() {
                     type="button"
                     aria-label={`Edit ${event.label}`}
                     onClick={() => setEditingId(event.id)}
-                    className="px-1 text-muted hover:text-foreground"
+                    className="cursor-pointer px-1 text-muted hover:text-foreground"
                   >
                     &#9998;
                   </button>
@@ -84,7 +84,7 @@ export function EventsPanel() {
                     type="button"
                     aria-label={`Delete ${event.label}`}
                     onClick={() => removeEvent(event.id)}
-                    className="px-1 text-muted hover:text-foreground"
+                    className="cursor-pointer px-1 text-muted hover:text-foreground"
                   >
                     &times;
                   </button>
@@ -110,7 +110,7 @@ export function EventsPanel() {
           type="button"
           disabled={atCap}
           onClick={() => setAdding(true)}
-          className="mt-3 text-sm text-muted hover:text-foreground disabled:opacity-40"
+          className="mt-3 cursor-pointer text-sm text-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
         >
           {atCap ? "Remove one to add another" : "+ Add event"}
         </button>

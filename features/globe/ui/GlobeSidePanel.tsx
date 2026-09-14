@@ -72,7 +72,7 @@ export function GlobeSidePanel({
                   <button
                     type="button"
                     aria-label={`Remove ${t.partner}`}
-                    className="text-muted hover:text-foreground"
+                    className="cursor-pointer text-muted hover:text-foreground"
                     onClick={() => onToggle(t.partnerCode)}
                   >
                     ×
@@ -96,7 +96,7 @@ export function GlobeSidePanel({
           {!isDefault && (
             <button
               type="button"
-              className="mt-3 text-sm text-muted underline hover:text-foreground"
+              className="mt-3 cursor-pointer text-sm text-muted underline hover:text-foreground"
               onClick={onReset}
             >
               Reset to top {DEFAULT_TOP_N}

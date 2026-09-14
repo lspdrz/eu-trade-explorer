@@ -76,11 +76,11 @@ export function YearRangeSlider({
         </Slider.Track>
         <Slider.Thumb
           aria-label="From year"
-          className="block h-4 w-4 rounded-full border border-border bg-surface shadow focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-none"
+          className="block h-4 w-4 cursor-grab rounded-full border border-border bg-surface shadow focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-none active:cursor-grabbing"
         />
         <Slider.Thumb
           aria-label="To year"
-          className="block h-4 w-4 rounded-full border border-border bg-surface shadow focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-none"
+          className="block h-4 w-4 cursor-grab rounded-full border border-border bg-surface shadow focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-none active:cursor-grabbing"
         />
       </Slider.Root>
       <div className="flex w-full justify-between text-[11px] text-muted tabular-nums">

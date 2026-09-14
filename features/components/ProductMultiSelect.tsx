@@ -69,7 +69,7 @@ export function ProductMultiSelect({
         disabled={pending}
       >
         <ListboxButton
-          className="w-full min-w-0 truncate rounded-md border border-border bg-surface px-3 py-2 text-left text-sm data-disabled:opacity-50"
+          className="w-full min-w-0 cursor-pointer truncate rounded-md border border-border bg-surface px-3 py-2 text-left text-sm data-disabled:cursor-not-allowed data-disabled:opacity-50"
           aria-busy={pending}
         >
           {label}

@@ -80,7 +80,7 @@ export function EventForm({
         <button
           type="submit"
           disabled={!draftValid(draft)}
-          className="rounded-md bg-foreground px-3 py-1 text-sm text-background disabled:opacity-40"
+          className="cursor-pointer rounded-md bg-foreground px-3 py-1 text-sm text-background disabled:cursor-not-allowed disabled:opacity-40"
         >
           {submitLabel}
         </button>
@@ -88,7 +88,7 @@ export function EventForm({
           <button
             type="button"
             onClick={onCancel}
-            className="px-2 py-1 text-sm text-muted"
+            className="cursor-pointer px-2 py-1 text-sm text-muted"
           >
             Cancel
           </button>

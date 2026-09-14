@@ -435,7 +435,7 @@ export function ImportFlowGlobe({
             <button
               type="button"
               onClick={resetView}
-              className="text-sm text-muted underline hover:text-foreground"
+              className="cursor-pointer text-sm text-muted underline hover:text-foreground"
             >
               Reset view
             </button>
