@@ -22,7 +22,7 @@ describe("StackedChartPanel", () => {
     const html = renderToStaticMarkup(
       <StackedChartPanel {...base} partnerCodes={[]} products={["Ammonia"]} />,
     );
-    expect(html).toContain("Choose up to three partner countries");
+    expect(html).toContain("Choose up to two partner countries");
     expect(html).not.toContain("chart-bar");
   });
 

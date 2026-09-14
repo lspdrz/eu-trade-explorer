@@ -53,7 +53,7 @@ describe("FertilizerImportsCountryView", () => {
   it("shows the country empty state when no partner is selected", () => {
     selection = { ...selection, partnerCodes: [] };
     const html = renderToStaticMarkup(<FertilizerImportsCountryView {...props} />);
-    expect(html).toContain("Choose up to three partner countries");
+    expect(html).toContain("Choose up to two partner countries");
     expect(html).not.toContain("chart-bar");
   });
 });

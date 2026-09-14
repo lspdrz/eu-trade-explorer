@@ -137,7 +137,7 @@ export function RuTimelineControls({ initialData }: { initialData: RuTimelineDat
           markerLabel="Russia invades Ukraine"
         />
       </div>
-      <div className="shrink-0">
+      <div className="min-w-56 shrink-0">
         <ProductMultiSelect
           products={PICKER_OPTIONS}
           topProducts={TOP_PRODUCTS_LABELS}

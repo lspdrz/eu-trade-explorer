@@ -4,9 +4,15 @@ import type {
   YearlyPartnerTotal,
 } from "@/features/trade-data/types";
 
-export const MAX_COUNTRIES = 3;
+export const MAX_COUNTRIES = 2;
 export const MAX_PRODUCTS = 3;
 export const DEFAULT_VIEW: ChartView = "countries";
+
+/** On mobile, the widest year range that still leaves room for a per-bar
+ *  country-code label under every bar of a year-group without them
+ *  colliding — see StackedImportsChart's docstring. Passed to
+ *  deriveYearRange and YearRangeSlider's maxSpan only when useIsMobile(). */
+export const MAX_YEAR_SPAN_MOBILE = 7;
 
 /** Fresh-visit defaults, shared by both tabs — Ammonia is the headline
  *  product, Russia the headline partner. Only apply when the URL says
@@ -141,10 +147,17 @@ export function deriveBounds(yearlyTotals: YearlyPartnerTotal[]): {
  * Resolve the selection's `fromYear` / `toYear` against the years actually in
  * the data: default to the full span, clamp to it, swap if crossed. `years`
  * must be ascending (as `deriveBounds` returns it).
+ *
+ * `maxSpan`, when given, caps the resolved span (inclusive) to at most that
+ * many years — trimmed from the start, keeping `toYear` (the more recent,
+ * and the one actually requested when only `fromYear` was left to default)
+ * intact. Used on mobile, where a per-bar label under every bar only has
+ * room to coexist with its neighbors across a handful of years at once.
  */
 export function deriveYearRange(
   selection: Pick<ChartSelection, "fromYear" | "toYear">,
   years: number[],
+  maxSpan?: number,
 ): { fromYear: number; toYear: number } {
   if (years.length === 0) return { fromYear: 0, toYear: 0 };
   const min = years[0];
@@ -154,5 +167,8 @@ export function deriveYearRange(
   let fromYear = clamp(selection.fromYear ?? min);
   let toYear = clamp(selection.toYear ?? max);
   if (fromYear > toYear) [fromYear, toYear] = [toYear, fromYear];
+  if (maxSpan !== undefined && toYear - fromYear > maxSpan) {
+    fromYear = toYear - maxSpan;
+  }
   return { fromYear, toYear };
 }

@@ -33,12 +33,11 @@ describe("parseSelection", () => {
     expect(parse("view=nonsense").view).toBe("countries");
   });
 
-  it("countries: defaults to Russia when absent, else upper-cased/deduped/well-formed/capped at 3", () => {
+  it("countries: defaults to Russia when absent, else upper-cased/deduped/well-formed/capped at 2", () => {
     expect(parse("").partnerCodes).toEqual(["RU"]);
     expect(parse("countries=us,1,x,USA,eg,us,DZ,MA").partnerCodes).toEqual([
       "US",
       "EG",
-      "DZ",
     ]);
   });
 
@@ -205,6 +204,23 @@ describe("deriveYearRange", () => {
     expect(deriveYearRange({ fromYear: 2015, toYear: 2020 }, [])).toEqual({
       fromYear: 0,
       toYear: 0,
+    });
+  });
+
+  it("maxSpan trims an over-wide span from the start, keeping toYear", () => {
+    expect(
+      deriveYearRange({ fromYear: undefined, toYear: undefined }, years, 3),
+    ).toEqual({ fromYear: 2017, toYear: 2020 }); // full 2015-2020 span trimmed to 3
+    expect(deriveYearRange({ fromYear: 2015, toYear: 2018 }, years, 3)).toEqual({
+      fromYear: 2015,
+      toYear: 2018,
+    }); // already within maxSpan — untouched
+  });
+
+  it("maxSpan is a no-op when omitted or already satisfied", () => {
+    expect(deriveYearRange({ fromYear: 2016, toYear: 2018 }, years)).toEqual({
+      fromYear: 2016,
+      toYear: 2018,
     });
   });
 });

@@ -22,7 +22,10 @@ const SEGMENT_GAP = 2;
  * Stacked bar chart of yearly import tonnes: an x0 band per year, an x1 band
  * per partner country within it, each bar a stack of product segments.
  * Colour = product. A country code sits under every bar (always — even with
- * one product); the year label spans the whole year group below that.
+ * one product); the year label spans the whole year group below that. On
+ * mobile, the year range itself is capped (see FertilizerImportsCountryView's
+ * use of useIsMobile + deriveYearRange's maxSpan) so a whole year's worth of
+ * up-to-MAX_COUNTRIES bars keeps enough width for these labels to coexist.
  */
 export function StackedImportsChart({
   series,

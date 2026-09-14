@@ -72,7 +72,7 @@ export function CountryCombobox({
         onClose={() => setQuery("")}
       >
         <ComboboxInput
-          className="min-w-0 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm sm:w-auto sm:min-w-56"
+          className="w-full min-w-0 rounded-md border border-border bg-surface px-3 py-2 text-sm"
           placeholder={
             atMax
               ? max === 1

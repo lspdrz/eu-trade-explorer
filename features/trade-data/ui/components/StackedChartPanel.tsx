@@ -57,7 +57,7 @@ export function StackedChartPanel({
 
   const message =
     partnerCodes.length === 0
-      ? "Choose up to three partner countries to compare."
+      ? "Choose up to two partner countries to compare."
       : products.length === 0
         ? "Choose one or more products."
         : undefined;
