@@ -9,7 +9,13 @@ import { useMeasuredWidth } from "@/features/hooks/useMeasuredWidth";
 import { ChartTooltip } from "@/features/components/ChartTooltip";
 
 const MARGIN = { top: 16, right: 16, bottom: 32, left: 56 };
-const DEFAULT_HEIGHT = 360;
+// No explicit `height` prop: derive it from the measured width so the
+// chart grows taller (not just wider) as its container does, instead of
+// staying pinned at one fixed height regardless of screen size. Ratio
+// matches the old fixed DEFAULT_HEIGHT=360 at the old fallback width=720.
+const HEIGHT_RATIO = 0.5;
+const MIN_HEIGHT = 280;
+const MAX_HEIGHT = 640;
 const REVEAL_DURATION_MS = 2500;
 const FADE_DURATION_MS = 300;
 const MAX_DIRECT_LABELS = 4;
@@ -77,7 +83,7 @@ export function RuTimelineChart({
   markerMonth = 1,
   markerLabel,
   width: widthProp,
-  height = DEFAULT_HEIGHT,
+  height: heightProp,
 }: {
   years: number[];
   series: RuTimelineChartSeries[];
@@ -88,7 +94,9 @@ export function RuTimelineChart({
   width?: number;
   height?: number;
 }) {
-  const { ref: wrapRef, width } = useMeasuredWidth(widthProp, 720);
+  const { ref: wrapRef, width, hasMeasured } = useMeasuredWidth(widthProp, 720);
+  const height =
+    heightProp ?? Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, Math.round(width * HEIGHT_RATIO)));
   const innerWidth = Math.max(0, width - MARGIN.left - MARGIN.right);
   const innerHeight = Math.max(0, height - MARGIN.top - MARGIN.bottom);
 
@@ -118,6 +126,16 @@ export function RuTimelineChart({
     const isInitial = knownKeysRef.current.size === 0;
     const newKeys = currentKeys.filter((k) => !knownKeysRef.current.has(k));
     if (newKeys.length === 0) return;
+    // The very first render measures paths against useMeasuredWidth's
+    // fallback width (and the height derived from it), before the
+    // ResizeObserver has corrected it to the real container size. Starting
+    // the reveal against that placeholder geometry, only to have the real
+    // measurement land moments later and reflow every path's `d` — without
+    // this effect re-running to resize the in-flight dasharray/dashoffset
+    // to match — desyncs the animation from the new path shape. Wait for
+    // the real measurement so the reveal is only ever set up once, against
+    // final geometry.
+    if (isInitial && !hasMeasured) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
@@ -198,7 +216,7 @@ export function RuTimelineChart({
       cancelAnimationFrame(raf);
       if (markerTimer) clearTimeout(markerTimer);
     };
-  }, [series, markerYear, markerMonth, yearMin, yearMax]);
+  }, [series, markerYear, markerMonth, yearMin, yearMax, hasMeasured]);
 
   const markerX =
     markerYear !== undefined ? xScale(markerYear + (markerMonth - 1) / 12) : undefined;
@@ -247,7 +265,7 @@ export function RuTimelineChart({
           </div>
         ))}
       </div>
-      <figure className="m-0">
+      <figure className="relative m-0">
         <svg
           viewBox={`0 0 ${width} ${height}`}
           width="100%"
@@ -295,6 +313,7 @@ export function RuTimelineChart({
                 d={lineGen(s.values) ?? ""}
                 fill="none"
                 stroke={s.color}
+                style={{ visibility: hasMeasured ? "visible" : "hidden" }}
                 strokeWidth={s.key === highlightKey ? 2.5 : 1.5}
               />
             ))}
@@ -362,6 +381,8 @@ export function RuTimelineChart({
             x={MARGIN.left + xScale(years[hoveredIndex])}
             y={MARGIN.top}
             placement="below"
+            containerWidth={width}
+            hAlign="side"
           >
             <div className="font-semibold">{years[hoveredIndex]}</div>
             {series.map((s) => (

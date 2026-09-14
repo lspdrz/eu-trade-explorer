@@ -242,6 +242,7 @@ export function StackedImportsChart({
           y={hovered.y}
           label={hovered.label}
           placement={hovered.y < 48 ? "below" : "above"}
+          containerWidth={width}
         />
       )}
     </div>
