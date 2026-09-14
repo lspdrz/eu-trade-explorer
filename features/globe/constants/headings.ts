@@ -1,13 +1,12 @@
+import { COMEXT_FERTILISER_HEADINGS } from "@/features/constants/comextFertiliserHeadings";
+
 /**
- * The HS headings whose COMEXT rows count as "fertilizer" for the globe:
- * 2814 = ammonia, 3102 = mineral/chemical nitrogenous fertilisers. A CN8
- * code's first four digits ARE its HS heading, so the read query matches
- * by prefix (`cn8_product_code LIKE '2814%'`).
+ * The HS headings whose COMEXT rows count as "fertilizer" for the globe. A
+ * CN8 code's first four digits ARE its HS heading, so the read query
+ * matches by prefix (`cn8_product_code LIKE '2814%'`).
  *
- * Twin: `features/trade-data/constants/comextProducts.ts`
- * (`COMEXT_PRODUCT_HEADINGS`) hard-codes the same two. If the HS
- * classification of fertilizer ever shifts, update both — each feature
- * makes this editorial call independently (features don't import each
- * other).
+ * Sourced from features/constants/comextFertiliserHeadings.ts, the same
+ * list features/trade-data/constants/comextProducts.ts's
+ * COMEXT_PRODUCT_HEADINGS derives from — one editorial call, not two.
  */
-export const GLOBE_HS_HEADINGS = ["2814", "3102"] as const;
+export const GLOBE_HS_HEADINGS = COMEXT_FERTILISER_HEADINGS;
