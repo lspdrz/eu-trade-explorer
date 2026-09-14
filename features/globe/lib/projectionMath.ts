@@ -36,3 +36,15 @@ export function zoomBy(current: number, deltaY: number): number {
   const next = deltaY < 0 ? current * ZOOM_STEP : current / ZOOM_STEP;
   return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next));
 }
+
+/**
+ * Continuous zoom by a multiplicative factor — a two-finger pinch's current
+ * span divided by its span when the gesture started. Unlike `zoomBy`'s fixed
+ * per-notch step, `factor` is applied to `base` (the zoom captured once, at
+ * gesture start) rather than to a running current value on every move
+ * event, so many calls across one continuous pinch don't compound rounding
+ * drift. Clamped like `zoomBy`.
+ */
+export function zoomByFactor(base: number, factor: number): number {
+  return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, base * factor));
+}

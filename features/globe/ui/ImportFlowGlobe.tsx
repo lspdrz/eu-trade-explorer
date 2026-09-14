@@ -34,7 +34,7 @@ import {
   paintOcean,
   type Scene,
 } from "@/features/globe/lib/paintGlobe";
-import { type Rotation, rotationDelta, zoomBy } from "@/features/globe/lib/projectionMath";
+import { type Rotation, rotationDelta, zoomBy, zoomByFactor } from "@/features/globe/lib/projectionMath";
 import { readGlobeTokens } from "@/features/globe/lib/themeTokens";
 
 const GEO_URL = "/geo/countries-110m.json";
@@ -271,21 +271,61 @@ export function ImportFlowGlobe({
     document.addEventListener("visibilitychange", onVisibility);
 
     // --- interaction ---
+    // One active pointer rotates (drag); a second turns the gesture into a
+    // pinch-zoom instead — tracked by pointerId (not just "the last pointer
+    // that moved") since two touches fire independent, interleaved
+    // pointermove events. A mouse never has a second concurrent pointer, so
+    // this is a pure addition for touch: it doesn't change single-pointer
+    // (mouse or one-finger touch) behavior at all.
+    const pointers = new Map<number, { x: number; y: number }>();
     let dragStart: { x: number; y: number; rot: Rotation } | null = null;
     let moved = false;
+    let pinchStart: { distance: number; zoom: number } | null = null;
+    let wasPinching = false;
 
     const toLocal = (e: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
       return { x: e.clientX - rect.left, y: e.clientY - rect.top };
     };
+    // Shared by the hover lookup below (mouse only — see onUp) and onUp's
+    // own tap-position lookup (the only source of the code for a touch tap,
+    // which never populates hoveredRef in the first place).
+    const codeAt = (x: number, y: number): string | null => {
+      const lonlat = projection.invert?.([x, y]);
+      if (!lonlat || !Number.isFinite(lonlat[0])) return null;
+      for (const l of land) {
+        if (l.code && geoContains(l.feature, lonlat)) return l.code;
+      }
+      return null;
+    };
+    const pinchDistance = () => {
+      const [a, b] = [...pointers.values()];
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    };
 
     const onDown = (e: PointerEvent) => {
       canvas.setPointerCapture(e.pointerId);
-      moved = false;
-      dragStart = { ...toLocal(e), rot: { ...rotationRef.current } };
+      const p = toLocal(e);
+      pointers.set(e.pointerId, p);
+
+      if (pointers.size === 2) {
+        dragStart = null; // a second touch always cancels any single-finger drag
+        wasPinching = true;
+        pinchStart = { distance: pinchDistance(), zoom: zoomRef.current };
+      } else if (pointers.size === 1) {
+        moved = false;
+        dragStart = { ...p, rot: { ...rotationRef.current } };
+      }
     };
     const onMove = (e: PointerEvent) => {
       const { x, y } = toLocal(e);
+      if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x, y });
+
+      if (pointers.size === 2 && pinchStart) {
+        zoomRef.current = zoomByFactor(pinchStart.zoom, pinchDistance() / pinchStart.distance);
+        if (reducedRef.current) draw();
+        return;
+      }
       if (dragStart) {
         if (Math.hypot(x - dragStart.x, y - dragStart.y) > 3) moved = true;
         rotationRef.current = rotationDelta(
@@ -297,23 +337,32 @@ export function ImportFlowGlobe({
         if (reducedRef.current) draw();
         return;
       }
-      const lonlat = projection.invert?.([x, y]);
-      let code: string | null = null;
-      if (lonlat && Number.isFinite(lonlat[0])) {
-        for (const l of land) {
-          if (l.code && geoContains(l.feature, lonlat)) {
-            code = l.code;
-            break;
-          }
-        }
-      }
+      const code = codeAt(x, y);
       setHover(code ? { code, x, y } : undefined);
     };
     const onUp = (e: PointerEvent) => {
       canvas.releasePointerCapture(e.pointerId);
-      const wasClick = dragStart && !moved;
+      pointers.delete(e.pointerId);
+      pinchStart = null;
+
+      if (pointers.size === 1) {
+        // One finger lifted out of a pinch — resume rotating from the
+        // remaining finger's current position rather than jumping to
+        // wherever it started (that finger's own drag never had a start).
+        const [[, p]] = pointers;
+        dragStart = { ...p, rot: { ...rotationRef.current } };
+        moved = false;
+        return;
+      }
+      if (pointers.size > 0) return;
+
+      const wasClick = dragStart && !moved && !wasPinching;
       dragStart = null;
-      const code = hoveredRef.current?.code;
+      wasPinching = false;
+      // hoveredRef is mouse-only (see onMove) — a touch tap never hovers
+      // first, so it has to resolve its own country from where it lifted.
+      const { x, y } = toLocal(e);
+      const code = hoveredRef.current?.code ?? codeAt(x, y);
       if (wasClick && code) onToggle(code);
     };
     const onLeave = () => setHover(undefined);

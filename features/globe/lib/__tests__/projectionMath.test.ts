@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clampPhi, rotationDelta, zoomBy } from "@/features/globe/lib/projectionMath";
+import { clampPhi, rotationDelta, zoomBy, zoomByFactor } from "@/features/globe/lib/projectionMath";
 
 describe("clampPhi", () => {
   it("clamps to [-89, 89]", () => {
@@ -56,5 +56,28 @@ describe("zoomBy", () => {
 
   it("in and out by one notch is a round trip", () => {
     expect(zoomBy(zoomBy(3, -100), 100)).toBeCloseTo(3, 10);
+  });
+});
+
+describe("zoomByFactor", () => {
+  it("a span twice as wide as the pinch's start doubles the zoom", () => {
+    expect(zoomByFactor(2, 2)).toBe(4);
+  });
+
+  it("a span half as wide halves the zoom", () => {
+    expect(zoomByFactor(4, 0.5)).toBe(2);
+  });
+
+  it("applies factor to base, not compounding across repeated calls", () => {
+    // Simulates several pointermove ticks within one continuous pinch: the
+    // captured base zoom stays 2 throughout, only the live factor changes.
+    zoomByFactor(2, 1.1);
+    zoomByFactor(2, 1.3);
+    expect(zoomByFactor(2, 1.5)).toBe(3);
+  });
+
+  it("clamps to [1, 8]", () => {
+    expect(zoomByFactor(4, 10)).toBe(8);
+    expect(zoomByFactor(4, 0.01)).toBe(1);
   });
 });
