@@ -2,6 +2,7 @@
 
 import { getComextRuYearlyTonnesByChapters } from "@/features/ru-trade-timeline/db/queries/getComextRuYearlyTonnesByChapters";
 import { HS_CHAPTER_NAMES } from "@/features/ru-trade-timeline/constants/hsChapterNames";
+import { EXCLUDED_CHAPTERS } from "@/features/ru-trade-timeline/constants/defaultComparisonChapters";
 import type { RuTimelineSeries } from "@/features/ru-trade-timeline/types";
 
 const HUNDRED_KG_PER_TONNE = 10;
@@ -36,8 +37,18 @@ function toYearlyValues(rows: { year: number; quantity100kg: number }[]): number
  * function's own correctness doesn't silently depend on the query never
  * being asked for more than one chapter — a future change on either side
  * can't quietly start blending another chapter's tonnage into this series.
+ *
+ * Rejects EXCLUDED_CHAPTERS itself rather than trusting the picker to
+ * filter them out — this is a "use server" action, callable directly by
+ * anything that imports it, not just RuTimelineControls's picklist. 28 and
+ * 31 overlap with fertiliser's own headings, so serving either would let a
+ * caller plot fertiliser tonnage twice under two different series without
+ * any indication.
  */
 export async function fetchChapterSeries(chapter: string): Promise<RuTimelineSeries> {
+  if (EXCLUDED_CHAPTERS.includes(chapter)) {
+    throw new Error(`chapter ${chapter} is excluded (overlaps fertiliser or is non-category)`);
+  }
   const rows = await getComextRuYearlyTonnesByChapters([chapter]);
   const ownRows = rows.filter((r) => r.chapter === chapter);
   return {

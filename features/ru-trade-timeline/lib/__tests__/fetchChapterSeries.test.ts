@@ -51,4 +51,9 @@ describe("fetchChapterSeries", () => {
     expect(series.key).toBe("72");
     expect(series.values[YEARS.indexOf(2020)]).toBe(500); // only 72's 5000/10 — not 44's row
   });
+
+  it("rejects an excluded chapter without querying the database", async () => {
+    await expect(fetchChapterSeries("28")).rejects.toThrow(/excluded/);
+    expect(getComextRuYearlyTonnesByChapters).not.toHaveBeenCalled();
+  });
 });
