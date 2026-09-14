@@ -6,10 +6,7 @@ vi.mock("@/features/ru-trade-timeline/db/queries/getComextRuYearlyTonnesByChapte
 
 import { getComextRuYearlyTonnesByChapters } from "@/features/ru-trade-timeline/db/queries/getComextRuYearlyTonnesByChapters";
 import { fetchChapterSeries } from "@/features/ru-trade-timeline/lib/fetchChapterSeries";
-
-// Matches fetchChapterSeries.ts's own (unexported — a "use server" file may
-// only export async functions) YEARS range.
-const YEARS = Array.from({ length: 2025 - 2010 + 1 }, (_, i) => 2010 + i);
+import { YEARS } from "@/features/ru-trade-timeline/constants/years";
 
 describe("fetchChapterSeries", () => {
   it("queries the single chapter and returns one series aligned to YEARS", async () => {

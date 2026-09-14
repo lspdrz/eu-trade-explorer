@@ -3,21 +3,10 @@
 import { getComextRuYearlyTonnesByChapters } from "@/features/ru-trade-timeline/db/queries/getComextRuYearlyTonnesByChapters";
 import { HS_CHAPTER_NAMES } from "@/features/ru-trade-timeline/constants/hsChapterNames";
 import { EXCLUDED_CHAPTERS } from "@/features/ru-trade-timeline/constants/defaultComparisonChapters";
+import { YEARS } from "@/features/ru-trade-timeline/constants/years";
 import type { RuTimelineSeries } from "@/features/ru-trade-timeline/types";
 
 const HUNDRED_KG_PER_TONNE = 10;
-const FIRST_YEAR = 2010;
-const LAST_YEAR = 2025;
-
-/** Same fixed x-axis as getRuTradeTimelineData.ts's YEARS — every series in
- *  this feature must align to it. Duplicated rather than imported: it's a
- *  few lines of pure logic, not worth a shared module for two callers.
- *  Not exported: a "use server" file may only export async functions —
- *  exporting this plain array broke every call to fetchChapterSeries. */
-const YEARS: number[] = Array.from(
-  { length: LAST_YEAR - FIRST_YEAR + 1 },
-  (_, i) => FIRST_YEAR + i,
-);
 
 function toYearlyValues(rows: { year: number; quantity100kg: number }[]): number[] {
   const byYear = new Map(rows.map((r) => [r.year, r.quantity100kg / HUNDRED_KG_PER_TONNE]));

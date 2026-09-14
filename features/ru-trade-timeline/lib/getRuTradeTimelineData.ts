@@ -3,28 +3,13 @@ import { getComextRuYearlyTonnesByChapters } from "@/features/ru-trade-timeline/
 import { getComextRuYearlyTonnesByPrefixes } from "@/features/ru-trade-timeline/db/queries/getComextRuYearlyTonnesByPrefixes";
 import { DEFAULT_COMPARISON_CHAPTERS } from "@/features/ru-trade-timeline/constants/defaultComparisonChapters";
 import { HS_CHAPTER_NAMES } from "@/features/ru-trade-timeline/constants/hsChapterNames";
+import { YEARS } from "@/features/ru-trade-timeline/constants/years";
 import type { RuTimelineData } from "@/features/ru-trade-timeline/types";
 
 const FERTILISER_PREFIXES = ["2814", "3102"];
 const FERTILISER_LABEL = "Fertiliser (ammonia + nitrogenous, HS 2814/3102)";
 
 const HUNDRED_KG_PER_TONNE = 10;
-const FIRST_YEAR = 2010;
-const LAST_YEAR = 2025;
-
-/**
- * The fixed, shared x-axis every series in this feature aligns to. Fixed
- * (not derived per-query) because each series comes from an independent
- * SQL query that could span a different actual year range (e.g. a rarely-
- * traded chapter) — without a shared range, series wouldn't line up on one
- * chart. Caps at 2025 rather than the current year: the raw table's latest
- * rows are always a partial year (Eurostat publishes with a lag), which
- * would render as a misleading cliff-drop.
- */
-export const YEARS: number[] = Array.from(
-  { length: LAST_YEAR - FIRST_YEAR + 1 },
-  (_, i) => FIRST_YEAR + i,
-);
 
 /**
  * Converts a sparse (year, quantity100kg) result into a dense, tonnes-
