@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ThemeToggle } from "@/app/ThemeToggle";
+import { ThemeToggle } from "@/app/_components/ThemeToggle";
 
 const LINKS = [
   { href: "/", label: "Imports" },
