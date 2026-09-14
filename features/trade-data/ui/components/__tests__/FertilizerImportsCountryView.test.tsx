@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const setSelection = vi.fn();
 let selection = {
-  source: "comext" as const,
   view: "countries" as const,
   partnerCodes: ["EG"],
   partner: "",

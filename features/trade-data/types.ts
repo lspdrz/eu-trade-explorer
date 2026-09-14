@@ -1,31 +1,4 @@
 /**
- * A weekly trade row as read back from our own database, with the
- * numeric-as-string columns converted to real numbers for arithmetic
- * (see `getAgrifoodYearlyTonnesByPartner.ts`).
- */
-export interface TaxudWeekRow {
-  id: number;
-  sector: string;
-  marketingYear: string;
-  week: number;
-  memberStateCode: string;
-  memberStateName: string;
-  partnerCode: string;
-  partner: string;
-  product: string;
-  cn8ProductCode: string;
-  taric10ProductCode: string;
-  procedure: number;
-  preference: number;
-  euroValue: number;
-  unitValue: number;
-  kg: number;
-  kgEquivalent: number;
-  coefficient: number;
-  syncedAt: Date;
-}
-
-/**
  * EU-wide yearly total for a single partner country, aggregated across all
  * reporting member states and weeks of that marketing year. This is the
  * feature's own read-model shape — see `TaxudWeekRow` above for the
@@ -124,21 +97,12 @@ export interface StackedSeries {
   cells: StackedCell[];
 }
 
-/**
- * The two upstream datasets the chart can read. "comext" is Eurostat's
- * validated monthly statistics (raw_comext_imports); "surveillance" is the
- * near-real-time customs feed (raw_taxud_weekly_rows). See
- * architecture-decisions.md.
- */
-export type TradeSource = "comext" | "surveillance";
-
 /** Which comparison the chart is showing. */
 export type ChartView = "countries" | "products";
 
 /**
- * The two products the COMEXT source offers (the surveillance source has its
- * own 7-way list, read from the DB). `constants/comextProducts.ts` maps each
- * to its HS heading and `satisfies` this, so the two can't drift.
+ * The two products the COMEXT source offers. `constants/comextProducts.ts`
+ * maps each to its HS heading and `satisfies` this, so the two can't drift.
  */
 export type ComextProduct = "Ammonia" | "Nitrogenous fertilisers";
 
@@ -150,7 +114,6 @@ export type ComextProduct = "Ammonia" | "Nitrogenous fertilisers";
  * views consume it.
  */
 export interface ChartSelection {
-  source: TradeSource;
   view: ChartView;
   // "Compare countries" tab
   partnerCodes: string[];

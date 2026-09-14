@@ -1,15 +1,11 @@
 import "server-only";
 import { COMEXT_PRODUCTS } from "@/features/trade-data/constants/comextProducts";
-import { getAgrifoodPartners } from "@/features/trade-data/db/queries/getAgrifoodPartners";
-import { getAgrifoodProducts } from "@/features/trade-data/db/queries/getAgrifoodProducts";
 import { getComextPartners } from "@/features/trade-data/db/queries/getComextPartners";
 import { getComextYearlyTonnesByPartner } from "@/features/trade-data/lib/getComextYearlyTonnesByPartner";
-import { getAgrifoodYearlyTonnesByPartner } from "@/features/trade-data/lib/getAgrifoodYearlyTonnesByPartner";
 import { ChartTabs } from "@/features/trade-data/ui/components/ChartTabs";
 import { EventsPanel } from "@/features/trade-data/ui/components/EventsPanel";
 import { FertilizerImportsCountryView } from "@/features/trade-data/ui/components/FertilizerImportsCountryView";
 import { FertilizerImportsProductsView } from "@/features/trade-data/ui/components/FertilizerImportsProductsView";
-import { SourceToggle } from "@/features/trade-data/ui/components/SourceToggle";
 import { parseSelection } from "@/features/trade-data/lib/chartSelectionParams";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -26,7 +22,9 @@ function toURLSearchParams(params: SearchParams): URLSearchParams {
 /**
  * The feature's self-fetching entry point. Parses the URL once (bounds-free,
  * same parser the client uses), fetches only what the active view needs, and
- * renders the page: shared chrome (heading, source toggle, tabs) + the tab.
+ * renders the page: shared chrome (heading, tabs) + the tab. COMEXT (Eurostat's
+ * validated monthly statistics) is the only data source — see
+ * architecture-decisions.md.
  *
  * - countries: each selected product's totals for every partner (client stacks
  *   the products and filters the partners)
@@ -37,22 +35,12 @@ export async function FertilizerImports({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const { source, view, products, partner } = parseSelection(
+  const { view, products, partner } = parseSelection(
     toURLSearchParams(await searchParams),
   );
 
-  // Independent queries — run concurrently rather than one after another,
-  // since this route is force-dynamic (no caching) and pays their full
-  // latency on every request.
-  const [availableProducts, availablePartners] = await Promise.all([
-    source === "comext" ? Promise.resolve([...COMEXT_PRODUCTS]) : getAgrifoodProducts(),
-    source === "comext" ? getComextPartners() : getAgrifoodPartners(),
-  ]);
-
-  const totalsFor = (p: string) =>
-    source === "comext"
-      ? getComextYearlyTonnesByPartner(p)
-      : getAgrifoodYearlyTonnesByPartner(p);
+  const availableProducts: string[] = [...COMEXT_PRODUCTS];
+  const availablePartners = await getComextPartners();
 
   // Each fetch no-ops for the inactive view, so only the active one hits the DB.
   const selectedProducts = products.filter((p) => availableProducts.includes(p));
@@ -61,7 +49,7 @@ export async function FertilizerImports({
       ? await Promise.all(
           selectedProducts.map(async (p) => ({
             product: p,
-            totals: await totalsFor(p),
+            totals: await getComextYearlyTonnesByPartner(p),
           })),
         )
       : [];
@@ -70,7 +58,9 @@ export async function FertilizerImports({
       ? await Promise.all(
           availableProducts.map(async (p) => ({
             product: p,
-            totals: (await totalsFor(p)).filter((t) => t.partnerCode === partner),
+            totals: (await getComextYearlyTonnesByPartner(p)).filter(
+              (t) => t.partnerCode === partner,
+            ),
           })),
         )
       : [];
@@ -109,9 +99,6 @@ export async function FertilizerImports({
             the events panel off-screen. With it, the table scrolls inside
             its own overflow-x-auto instead. */}
         <div className="min-w-0">
-          <div className="mb-6">
-            <SourceToggle />
-          </div>
           <div className="mb-6">
             <ChartTabs />
           </div>

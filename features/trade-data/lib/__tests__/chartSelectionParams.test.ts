@@ -12,7 +12,6 @@ const parse = (q: string) => parseSelection(new URLSearchParams(q));
 
 /** A full, all-defaults ChartSelection. There is no default product. */
 const base: ChartSelection = {
-  source: "comext",
   view: "countries",
   partnerCodes: [],
   partner: "",
@@ -24,11 +23,6 @@ const base: ChartSelection = {
 describe("parseSelection", () => {
   it("all defaults when the URL is empty", () => {
     expect(parse("")).toEqual(base);
-  });
-
-  it("source: surveillance only on an exact match", () => {
-    expect(parse("source=surveillance").source).toBe("surveillance");
-    expect(parse("source=nonsense").source).toBe("comext");
   });
 
   it("view: products only on an exact match", () => {
@@ -84,7 +78,6 @@ describe("serializeSelection", () => {
   it("emits only non-defaults, and round-trips", () => {
     const selection: ChartSelection = {
       ...base,
-      source: "surveillance",
       view: "products",
       partner: "RU",
       products: ["Ammonia", "Urea"],
@@ -92,7 +85,6 @@ describe("serializeSelection", () => {
       toYear: 2022,
     };
     const params = serializeSelection(selection);
-    expect(params.get("source")).toBe("surveillance");
     expect(params.get("view")).toBe("products");
     expect(params.get("partner")).toBe("RU");
     expect(params.get("products")).toBe("Ammonia,Urea");
@@ -112,47 +104,30 @@ describe("serializeSelection", () => {
   it("a pivot patch serialises to just the pivot param", () => {
     const dirty: ChartSelection = {
       ...base,
-      source: "surveillance",
-      view: "products",
       partnerCodes: ["EG"],
       partner: "RU",
       products: ["Ammonia", "Urea"],
       fromYear: 2015,
       toYear: 2020,
     };
-    // tab switch keeps source, clears the rest
+    // tab switch clears everything else, leaving only the new tab
     expect(
-      serializeSelection({ ...dirty, ...PIVOT_CLEARED, view: "countries" }).toString(),
-    ).toBe("source=surveillance");
-    // source switch keeps view, clears the rest
-    expect(
-      serializeSelection({ ...dirty, ...PIVOT_CLEARED, source: "comext" }).toString(),
+      serializeSelection({ ...dirty, ...PIVOT_CLEARED, view: "products" }).toString(),
     ).toBe("view=products");
   });
 
   const dirty: ChartSelection = {
     ...base,
-    source: "comext",
     view: "products",
     partner: "RU",
     products: ["Ammonia"],
     fromYear: 2018,
   };
 
-  it("a source pivot retains the active tab and clears the rest", () => {
-    const after = parseSelection(
-      serializeSelection({ ...dirty, ...PIVOT_CLEARED, source: "surveillance" }),
-    );
-    expect(after.view).toBe("products"); // tab kept
-    expect(after.source).toBe("surveillance");
-    expect(after).toMatchObject({ partner: "", products: [], fromYear: undefined });
-  });
-
-  it("a tab pivot retains the source and clears the rest", () => {
+  it("a tab pivot clears the rest", () => {
     const after = parseSelection(
       serializeSelection({ ...dirty, ...PIVOT_CLEARED, view: "countries" }),
     );
-    expect(after.source).toBe("comext"); // source kept
     expect(after.view).toBe("countries");
     expect(after).toMatchObject({ partner: "", products: [], fromYear: undefined });
   });

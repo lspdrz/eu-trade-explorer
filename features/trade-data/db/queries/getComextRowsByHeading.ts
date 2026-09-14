@@ -6,9 +6,8 @@ import type { ComextYearRow } from "@/features/trade-data/types";
 
 /**
  * Every raw COMEXT import row under an HS heading — matched by CN8 prefix,
- * since a CN8 code's first four digits are its heading. No aggregation here;
- * that's getComextYearlyTonnesByPartner's job. Mirrors
- * getWeeklyRowsByProduct on the surveillance side.
+ * since a CN8 code's first four digits are its heading. No aggregation
+ * here; that's getComextYearlyTonnesByPartner's job.
  */
 export async function getComextRowsByHeading(
   heading: string,
