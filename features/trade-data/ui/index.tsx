@@ -41,10 +41,13 @@ export async function FertilizerImports({
     toURLSearchParams(await searchParams),
   );
 
-  const availableProducts =
-    source === "comext" ? [...COMEXT_PRODUCTS] : await getAgrifoodProducts();
-  const availablePartners =
-    source === "comext" ? await getComextPartners() : await getAgrifoodPartners();
+  // Independent queries — run concurrently rather than one after another,
+  // since this route is force-dynamic (no caching) and pays their full
+  // latency on every request.
+  const [availableProducts, availablePartners] = await Promise.all([
+    source === "comext" ? Promise.resolve([...COMEXT_PRODUCTS]) : getAgrifoodProducts(),
+    source === "comext" ? getComextPartners() : getAgrifoodPartners(),
+  ]);
 
   const totalsFor = (p: string) =>
     source === "comext"
