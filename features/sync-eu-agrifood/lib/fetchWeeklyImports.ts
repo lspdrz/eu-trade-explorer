@@ -57,13 +57,32 @@ export async function* fetchWeeklyImports(params: {
     numberAsString: true,
     reviver: reviveIntegerFields,
   });
-  response.body.pipeTo(writable).catch(() => {
-    // Errors already surface to the caller via the `readable` stream's
-    // `for await` loop below; this only exists to prevent an unhandled
-    // promise rejection for the same error.
+
+  // A source-stream failure (e.g. a mid-backfill connection reset) should
+  // reach the caller as a thrown error, not a silently truncated result.
+  // Piping an errored source into `writable` normally aborts it, which in
+  // turn errors `readable` — surfacing the failure through the `for await`
+  // below without any help from this catch. But that chain depends on
+  // stream-json's TransformStream propagating an aborted writable into an
+  // errored readable, which isn't guaranteed by the Streams spec for every
+  // implementation; if it ever doesn't, `readable` would just end cleanly
+  // with fewer rows than the source actually had. Recording the rejection
+  // here and re-throwing it once the loop below ends (rather than only
+  // suppressing it) means the caller finds out either way.
+  let pipeError: unknown;
+  const pipeDone = response.body.pipeTo(writable).catch((error) => {
+    pipeError = error;
   });
 
-  for await (const { value } of readable) {
-    yield value as RawTaxudWeekRow;
+  try {
+    for await (const { value } of readable) {
+      yield value as RawTaxudWeekRow;
+    }
+  } finally {
+    await pipeDone;
+  }
+
+  if (pipeError) {
+    throw pipeError instanceof Error ? pipeError : new Error(String(pipeError));
   }
 }

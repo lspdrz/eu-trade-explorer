@@ -204,4 +204,29 @@ describe("fetchWeeklyImports streaming", () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(cancelled).toBe(true);
   });
+
+  it("surfaces a mid-stream source failure to the caller instead of truncating silently", async () => {
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('[{"kg":"1","week":1},'));
+      },
+      async pull(controller) {
+        controller.error(new Error("simulated connection reset"));
+      },
+    });
+    vi.mocked(contactEUAPI).mockResolvedValue(new Response(body, { status: 200 }));
+
+    const rows: unknown[] = [];
+    await expect(async () => {
+      for await (const row of fetchWeeklyImports({ product: "Ammonia" })) {
+        rows.push(row);
+      }
+    }).rejects.toThrow();
+
+    // The row before the failure should still have been yielded — this
+    // isn't about losing already-delivered data, only about the caller
+    // finding out the stream ended early rather than assuming it was
+    // complete.
+    expect(rows).toEqual([{ kg: "1", week: 1 }]);
+  });
 });
