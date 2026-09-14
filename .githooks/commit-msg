@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Rejects commit messages whose subject doesn't start with an approved verb.
+# Mirrors .github/workflows/commit-lint.yml — keep both in sync.
+set -e
+
+commit_msg_file="$1"
+commit_source="$2"
+
+# Merge commit subjects are git-generated, not hand-written — skip those.
+if [ "$commit_source" = "merge" ]; then
+  exit 0
+fi
+
+verbs="Add|Cut|Fix|Bump|Make|Start|Stop|Refactor|Reformat|Optimize|Document"
+subject="$(head -n1 "$commit_msg_file")"
+
+if ! [[ "$subject" =~ ^($verbs)([[:space:]]|$) ]]; then
+  echo "error: commit subject must start with one of: Add, Cut, Fix, Bump, Make, Start, Stop, Refactor, Reformat, Optimize, Document" >&2
+  echo "       got: \"$subject\"" >&2
+  exit 1
+fi
