@@ -248,6 +248,13 @@ async function main(): Promise<void> {
   await runPool(remaining, CONCURRENCY, async (job) => {
     try {
       const observations = await fetchWithRetry(job);
+      if (observations.length === 0) {
+        done.add(jobKey(job));
+        completed++;
+        console.log(`[${completed}/${remaining.length}] ${jobKey(job)} — skipped (0 rows)`);
+        saveCheckpoint(done);
+        return;
+      }
       const { rowsWritten } = await replaceComextRuObservations({
         cn8ProductCodes: job.cn8Codes,
         observations,
