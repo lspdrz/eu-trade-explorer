@@ -2,6 +2,8 @@
 
 Interactive dashboards for EU customs trade data, focused on fertilizer imports.
 
+Live site: <https://eu-trade-explorer-iota.vercel.app/>
+
 ## Stack
 
 Next.js 16 · TypeScript · Drizzle ORM + Postgres (Neon in production) · Tailwind CSS · D3 · Vitest.
