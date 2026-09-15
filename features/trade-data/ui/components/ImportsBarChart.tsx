@@ -15,7 +15,7 @@ import { EventOverlay } from "@/features/trade-data/ui/components/EventOverlay";
 import { PartialYearHatch, usePatternId } from "@/features/trade-data/ui/components/PartialYearHatch";
 
 const MARGIN = { top: 16, right: 16, bottom: 40, left: 48 };
-const DEFAULT_HEIGHT = 420;
+const DEFAULT_HEIGHT = 460;
 
 /**
  * Grouped bar chart of yearly import tonnes per series. Dimension-agnostic —
