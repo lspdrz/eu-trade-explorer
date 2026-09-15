@@ -180,6 +180,12 @@ export function RuTimelineChart({
       const rect = clipRectRef.current;
       if (rect) {
         rect.style.transform = "scaleX(0)";
+        // Force a synchronous style flush so the browser actually commits
+        // scaleX(0) before the transition to scaleX(1) is scheduled below —
+        // without it, the browser can coalesce both writes into a single
+        // recalculation and jump straight to the end state, silently
+        // skipping the reveal.
+        rect.getBoundingClientRect();
         raf = requestAnimationFrame(() => {
           rect.style.transition = `transform ${REVEAL_DURATION_MS}ms ease-out`;
           rect.style.transform = "scaleX(1)";
@@ -213,6 +219,8 @@ export function RuTimelineChart({
       newPaths.forEach((p) => {
         p.style.opacity = "0";
       });
+      // Same forced-flush requirement as the initial reveal above.
+      newPaths[0]?.getBoundingClientRect();
       raf = requestAnimationFrame(() => {
         newPaths.forEach((p) => {
           p.style.transition = `opacity ${FADE_DURATION_MS}ms ease-out`;
