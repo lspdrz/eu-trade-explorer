@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import type { YearlyPartnerTotal } from "@/features/trade-data/types";
 import {
   MAX_PRODUCTS,
@@ -8,35 +7,28 @@ import {
   deriveYearRange,
 } from "@/features/trade-data/lib/chartSelectionParams";
 import { useChartSelection } from "@/features/trade-data/ui/hooks/useChartSelection";
-import { CountryCombobox } from "@/features/trade-data/ui/components/CountryCombobox";
 import { ImportsChartPanel } from "@/features/trade-data/ui/components/ImportsChartPanel";
-import { ProductMultiSelect } from "@/features/components/ProductMultiSelect";
-import { YearRangeSlider } from "@/features/trade-data/ui/components/YearRangeSlider";
 
 /**
- * "Compare products" tab: one partner country, up to three products, a bar
- * per product. Renders the partner caption + its own pickers and reads the
- * URL selection itself; the shared chrome is the RSC's.
+ * "Compare products" tab's chart: one partner country, up to three
+ * products, a bar per product. Renders the partner's chart only — the
+ * controls row lives in the sidebar (ProductsViewControls) and the
+ * shared chrome is the RSC's.
  */
 export function FertilizerImportsProductsView({
-  availableProducts,
   availablePartners,
   partner,
   totalsByProduct,
 }: {
-  availableProducts: string[];
   availablePartners: { code: string; name: string }[];
   /** Authoritative during a refetch ("" = none picked yet). */
   partner: string;
   totalsByProduct: { product: string; totals: YearlyPartnerTotal[] }[];
 }) {
-  const { selection, setSelection, isPending } = useChartSelection();
+  const { selection } = useChartSelection();
 
-  const allTotals = useMemo(
-    () => totalsByProduct.flatMap((t) => t.totals),
-    [totalsByProduct],
-  );
-  const { years } = useMemo(() => deriveBounds(allTotals), [allTotals]);
+  const allTotals = totalsByProduct.flatMap((t) => t.totals);
+  const { years } = deriveBounds(allTotals);
   const { fromYear, toYear } = deriveYearRange(selection, years);
   const partialYear = years.length ? years[years.length - 1] : undefined;
 
@@ -52,61 +44,25 @@ export function FertilizerImportsProductsView({
     availablePartners.find((p) => p.code === partner)?.name ?? partner;
 
   return (
-    <div className="flex flex-col-reverse md:flex-col">
-      <div className="flex flex-wrap items-end gap-x-8 gap-y-4 border-b border-border pb-5">
-        <div className="min-w-[10rem] flex-1">
-          <CountryCombobox
-            partners={availablePartners}
-            value={partner ? [partner] : []}
-            onChange={(codes) => setSelection({ partner: codes[0] ?? "" })}
-            max={1}
-            label="Partner"
-          />
-        </div>
-        <div className="min-w-[10rem] flex-1">
-          <ProductMultiSelect
-            products={availableProducts}
-            value={selection.products}
-            onChange={(products) => setSelection({ products }, { reRunServer: false })}
-            max={MAX_PRODUCTS}
-            pending={isPending}
-          />
-        </div>
-        {years.length > 1 && (
-          <div className="min-w-[12rem] flex-1">
-            <YearRangeSlider
-              minYear={years[0]}
-              maxYear={years[years.length - 1]}
-              from={fromYear}
-              to={toYear}
-              onCommit={(from, to) =>
-                setSelection({ fromYear: from, toYear: to }, { reRunServer: false })
-              }
-            />
-          </div>
-        )}
-      </div>
-
-      <ImportsChartPanel
-        rows={rows}
-        seriesKeys={selection.products}
-        nameFor={(key) => key}
-        seriesLabel="Product"
-        colorMax={MAX_PRODUCTS}
-        ariaLabel={(names) =>
-          partner
-            ? `${partnerName}'s EU imports in tonnes per year for ${names}`
-            : `EU imports in tonnes per year for ${names}`
-        }
-        emptyMessage={
-          partner
-            ? "Choose one or more products to compare."
-            : "Choose a partner country to compare products."
-        }
-        fromYear={fromYear}
-        toYear={toYear}
-        partialYear={partialYear}
-      />
-    </div>
+    <ImportsChartPanel
+      rows={rows}
+      seriesKeys={selection.products}
+      nameFor={(key) => key}
+      seriesLabel="Product"
+      colorMax={MAX_PRODUCTS}
+      ariaLabel={(names) =>
+        partner
+          ? `${partnerName}'s EU imports in tonnes per year for ${names}`
+          : `EU imports in tonnes per year for ${names}`
+      }
+      emptyMessage={
+        partner
+          ? "Choose one or more products to compare."
+          : "Choose a partner country to compare products."
+      }
+      fromYear={fromYear}
+      toYear={toYear}
+      partialYear={partialYear}
+    />
   );
 }

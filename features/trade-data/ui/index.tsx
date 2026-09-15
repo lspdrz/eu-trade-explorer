@@ -3,9 +3,11 @@ import { COMEXT_PRODUCTS } from "@/features/trade-data/constants/comextProducts"
 import { getComextPartners } from "@/features/trade-data/db/queries/getComextPartners";
 import { getComextYearlyTonnesByPartner } from "@/features/trade-data/lib/getComextYearlyTonnesByPartner";
 import { ChartTabs } from "@/features/trade-data/ui/components/ChartTabs";
+import { CountryViewControls } from "@/features/trade-data/ui/components/CountryViewControls";
 import { EventsPanel } from "@/features/trade-data/ui/components/EventsPanel";
 import { FertilizerImportsCountryView } from "@/features/trade-data/ui/components/FertilizerImportsCountryView";
 import { FertilizerImportsProductsView } from "@/features/trade-data/ui/components/FertilizerImportsProductsView";
+import { ProductsViewControls } from "@/features/trade-data/ui/components/ProductsViewControls";
 import { parseSelection } from "@/features/trade-data/lib/chartSelectionParams";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -22,7 +24,8 @@ function toURLSearchParams(params: SearchParams): URLSearchParams {
 /**
  * The feature's self-fetching entry point. Parses the URL once (bounds-free,
  * same parser the client uses), fetches only what the active view needs, and
- * renders the page: shared chrome (heading, tabs) + the tab. COMEXT (Eurostat's
+ * renders the page: the chart in the main column, and the tab switcher +
+ * that tab's controls + EventsPanel in the sidebar. COMEXT (Eurostat's
  * validated monthly statistics) is the only data source — see
  * architecture-decisions.md.
  *
@@ -65,15 +68,29 @@ export async function FertilizerImports({
         )
       : [];
 
-  const tab =
+  const chartView =
     view === "countries" ? (
       <FertilizerImportsCountryView
-        availableProducts={availableProducts}
         availablePartners={availablePartners}
         totalsByCountry={totalsByCountry}
       />
     ) : (
       <FertilizerImportsProductsView
+        availablePartners={availablePartners}
+        partner={partner}
+        totalsByProduct={totalsByProduct}
+      />
+    );
+
+  const controlsView =
+    view === "countries" ? (
+      <CountryViewControls
+        availableProducts={availableProducts}
+        availablePartners={availablePartners}
+        totalsByCountry={totalsByCountry}
+      />
+    ) : (
+      <ProductsViewControls
         availableProducts={availableProducts}
         availablePartners={availablePartners}
         partner={partner}
@@ -93,18 +110,20 @@ export async function FertilizerImports({
         </p>
       </header>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_17rem] lg:items-start">
+      {/* md:, not lg: — the sidebar (tabs, controls, events) sits beside
+          the chart from tablet width up, not just laptop-or-wider, so it
+          never has to steal a whole row's height from the chart column. */}
+      <div className="mt-8 grid gap-8 md:grid-cols-[1fr_17rem] md:items-start">
         {/* min-w-0: without it the 1fr track grows to the data table's
             intrinsic width (grid items default to min-width:auto), shoving
-            the events panel off-screen. With it, the table scrolls inside
-            its own overflow-x-auto instead. */}
-        <div className="min-w-0">
-          <div className="mb-6">
-            <ChartTabs />
-          </div>
-          {tab}
+            the sidebar off-screen. With it, the table scrolls inside its
+            own overflow-x-auto instead. */}
+        <div className="min-w-0">{chartView}</div>
+        <div className="flex flex-col gap-6">
+          <ChartTabs />
+          {controlsView}
+          <EventsPanel />
         </div>
-        <EventsPanel />
       </div>
     </main>
   );

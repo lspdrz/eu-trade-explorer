@@ -14,11 +14,13 @@ let selection = {
 vi.mock("@/features/trade-data/ui/hooks/useChartSelection", () => ({
   useChartSelection: () => ({ selection, setSelection, isPending: false }),
 }));
+vi.mock("@/features/hooks/useIsMobile", () => ({
+  useIsMobile: () => false,
+}));
 
 import { FertilizerImportsCountryView } from "@/features/trade-data/ui/components/FertilizerImportsCountryView";
 
 const props = {
-  availableProducts: ["Ammonia", "Nitrogenous fertilisers"],
   availablePartners: [
     { code: "EG", name: "Egypt" },
     { code: "MA", name: "Morocco" },
@@ -39,15 +41,11 @@ describe("FertilizerImportsCountryView", () => {
     selection = { ...selection, partnerCodes: ["EG"], products: ["Ammonia"] };
   });
 
-  it("renders the multi-select product picker, not the single-select listbox", () => {
-    const html = renderToStaticMarkup(<FertilizerImportsCountryView {...props} />);
-    expect(html).toContain("Products");
-  });
-
-  it("renders a stacked chart for the selection", () => {
+  it("renders a stacked chart for the selection, with no controls of its own", () => {
     const html = renderToStaticMarkup(<FertilizerImportsCountryView {...props} />);
     expect(html).toContain("by partner country");
     expect(html).toContain("chart-bar");
+    expect(html).not.toContain("Products");
   });
 
   it("shows the country empty state when no partner is selected", () => {
