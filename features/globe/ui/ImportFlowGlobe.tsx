@@ -439,7 +439,10 @@ export function ImportFlowGlobe({
       : undefined;
 
   return (
-    <div ref={wrapRef} className="min-w-0">
+    // relative: the button below anchors to this full column, not the
+    // narrower centered globe box, so it sits in the open margin beside
+    // the globe (right of the circle) rather than overlapping the canvas.
+    <div ref={wrapRef} className="relative min-w-0">
       {loadError ? (
         <div
           className="flex items-center justify-center rounded-lg border border-border text-sm text-muted"
@@ -457,15 +460,6 @@ export function ImportFlowGlobe({
             className="touch-none rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-series-1)]"
             style={{ width: size, height: size, cursor: "grab" }}
           />
-          <div className="mt-3">
-            <button
-              type="button"
-              onClick={resetView}
-              className="cursor-pointer text-sm text-muted underline hover:text-foreground"
-            >
-              Reset view
-            </button>
-          </div>
 
           {hovered && hoveredTonnes !== undefined && (
             <div
@@ -478,6 +472,16 @@ export function ImportFlowGlobe({
             </div>
           )}
         </div>
+      )}
+
+      {!loadError && (
+        <button
+          type="button"
+          onClick={resetView}
+          className="absolute top-0 right-0 z-10 cursor-pointer text-sm text-muted underline hover:text-foreground"
+        >
+          Reset view
+        </button>
       )}
     </div>
   );
