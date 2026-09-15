@@ -99,7 +99,7 @@ export async function FertilizerImports({
     );
 
   return (
-    <main className="mx-auto max-w-7xl px-3 pt-4 pb-4">
+    <main className="mx-auto max-w-7xl px-3 pt-4 pb-20 md:pb-4">
       {/* header lives inside the main column (not spanning full width above
           the grid) so its top edge lines up with the sidebar's first item —
           both start at the grid's own top, per items-start below. */}
