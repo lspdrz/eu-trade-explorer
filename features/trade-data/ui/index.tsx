@@ -99,7 +99,7 @@ export async function FertilizerImports({
     );
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
+    <main className="mx-auto max-w-7xl px-3 pt-4 pb-4">
       {/* header lives inside the main column (not spanning full width above
           the grid) so its top edge lines up with the sidebar's first item —
           both start at the grid's own top, per items-start below. */}
@@ -121,7 +121,7 @@ export async function FertilizerImports({
               across the years on record.
             </p>
           </header>
-          <div className="mt-8">{chartView}</div>
+          <div className="mt-3">{chartView}</div>
         </div>
         <div className="flex flex-col gap-6">
           <ChartTabs />
