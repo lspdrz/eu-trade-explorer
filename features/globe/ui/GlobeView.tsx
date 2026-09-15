@@ -50,7 +50,7 @@ export function GlobeView({ totals }: { totals: PartnerImportTotal[] }) {
   const onReset = useCallback(() => write([]), [write]);
 
   return (
-    <main className="mx-auto max-w-7xl px-3 pt-4 pb-20 md:pb-4">
+    <main className="mx-auto max-w-[90rem] px-6 pt-6 pb-20 md:pb-6">
       <header className="max-w-[34rem]">
         <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.01em]">
           Where the EU&rsquo;s fertiliser comes from
@@ -62,7 +62,7 @@ export function GlobeView({ totals }: { totals: PartnerImportTotal[] }) {
         </p>
       </header>
 
-      <div className="mt-3 grid gap-8 lg:grid-cols-[1fr_18rem] lg:items-start">
+      <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_18rem] lg:items-start">
         <ImportFlowGlobe
           totals={totals}
           activeCodes={activeCodes}
