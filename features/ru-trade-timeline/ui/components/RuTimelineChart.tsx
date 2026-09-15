@@ -28,6 +28,30 @@ const FADE_DURATION_MS = 300;
 
 const HIGHLIGHT_DASH = "6 3";
 
+// Session-scoped, not persistent: the reveal plays once per browser tab
+// (survives SPA navigation away and back, and a plain reload of that tab)
+// and plays again in a fresh tab or after the browser's closed — matching
+// "once per visit," not "once ever on this device." Wrapped in try/catch:
+// sessionStorage can throw (private browsing, disabled storage), in which
+// case the reveal just replays every time, a harmless degrade.
+const REVEAL_SESSION_KEY = "ru-timeline-reveal-shown";
+
+function hasPlayedRevealThisSession(): boolean {
+  try {
+    return sessionStorage.getItem(REVEAL_SESSION_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markRevealPlayedThisSession(): void {
+  try {
+    sessionStorage.setItem(REVEAL_SESSION_KEY, "1");
+  } catch {
+    // See the comment above REVEAL_SESSION_KEY.
+  }
+}
+
 /** A small line swatch used both in the legend above the chart and inside
  *  the hover tooltip — dashed for the highlight series so it matches the
  *  line it identifies, instead of a plain solid-color bar either place.
@@ -83,7 +107,11 @@ export interface RuTimelineChartSeries {
  * values (see comextRu data near 2023+), which made end-of-line labels
  * collide with each other rather than reliably identify anything.
  * `prefers-reduced-motion` skips both the initial reveal and the fade —
- * everything renders at final state immediately.
+ * everything renders at final state immediately. The initial reveal also
+ * only plays once per browser tab session (REVEAL_SESSION_KEY) — a later
+ * mount in the same tab (SPA navigation away and back, or a reload) renders
+ * fully drawn immediately instead of replaying it; a later chapter fade-in
+ * is unaffected either way, session flag or not.
  *
  * The animation effect deliberately has no "only once" ref guard for the
  * *initial* reveal, and commits its "which keys have appeared" bookkeeping
@@ -163,7 +191,10 @@ export function RuTimelineChart({
     if (isInitial && !hasMeasured) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
+    // Only gates the *initial* reveal — a later chapter picked from the
+    // control still gets its fade-in every time, session flag or not.
+    const skipInitialReveal = isInitial && hasPlayedRevealThisSession();
+    if (reduced || skipInitialReveal) {
       knownKeysRef.current = new Set(currentKeys);
       if (isInitial && markerRef.current) markerRef.current.style.opacity = "1";
       return;
@@ -190,6 +221,7 @@ export function RuTimelineChart({
           rect.style.transition = `transform ${REVEAL_DURATION_MS}ms ease-out`;
           rect.style.transform = "scaleX(1)";
           knownKeysRef.current = new Set(currentKeys); // commit only once the reveal actually starts
+          markRevealPlayedThisSession();
         });
         // Once the reveal has actually finished, drop the inline
         // transform/transition entirely so a later resize just renders the
