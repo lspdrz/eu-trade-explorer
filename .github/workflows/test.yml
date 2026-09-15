@@ -20,6 +20,7 @@ jobs:
       - run: npm run lint
 
   test:
+    name: integration and unit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
