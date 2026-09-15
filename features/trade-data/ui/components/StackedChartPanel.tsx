@@ -63,7 +63,7 @@ export function StackedChartPanel({
         : undefined;
 
   return (
-    <div className="mt-8">
+    <div>
       {message ? (
         <ChartEmptyState message={message} />
       ) : (

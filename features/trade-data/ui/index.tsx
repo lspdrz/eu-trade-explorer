@@ -100,25 +100,29 @@ export async function FertilizerImports({
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
-      <header className="max-w-[34rem]">
-        <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.01em]">
-          Where the EU&rsquo;s fertiliser comes from
-        </h1>
-        <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
-          EU fertiliser import volumes, by partner country or by product,
-          across the years on record.
-        </p>
-      </header>
-
+      {/* header lives inside the main column (not spanning full width above
+          the grid) so its top edge lines up with the sidebar's first item —
+          both start at the grid's own top, per items-start below. */}
       {/* md:, not lg: — the sidebar (tabs, controls, events) sits beside
           the chart from tablet width up, not just laptop-or-wider, so it
           never has to steal a whole row's height from the chart column. */}
-      <div className="mt-8 grid gap-8 md:grid-cols-[1fr_17rem] md:items-start">
+      <div className="grid gap-8 md:grid-cols-[1fr_17rem] md:items-start">
         {/* min-w-0: without it the 1fr track grows to the data table's
             intrinsic width (grid items default to min-width:auto), shoving
             the sidebar off-screen. With it, the table scrolls inside its
             own overflow-x-auto instead. */}
-        <div className="min-w-0">{chartView}</div>
+        <div className="min-w-0">
+          <header className="max-w-[34rem]">
+            <h1 className="text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.01em]">
+              Where the EU&rsquo;s fertiliser comes from
+            </h1>
+            <p className="mt-3 text-[0.9375rem] leading-relaxed text-muted">
+              EU fertiliser import volumes, by partner country or by product,
+              across the years on record.
+            </p>
+          </header>
+          <div className="mt-8">{chartView}</div>
+        </div>
         <div className="flex flex-col gap-6">
           <ChartTabs />
           {controlsView}

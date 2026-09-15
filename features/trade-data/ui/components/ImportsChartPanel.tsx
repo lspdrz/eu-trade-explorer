@@ -63,7 +63,7 @@ export function ImportsChartPanel({
   }));
 
   return (
-    <div className="mt-8">
+    <div>
       {seriesMeta.length === 0 ? (
         <ChartEmptyState message={emptyMessage} />
       ) : (
