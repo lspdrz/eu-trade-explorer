@@ -1,7 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Nav } from "@/app/_components/Nav";
 import { NAV_LINKS } from "@/app/_constants/navLinks";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/globe",
+}));
 
 describe("Nav", () => {
   it("renders exactly one link per NAV_LINKS entry", () => {
@@ -15,5 +19,14 @@ describe("Nav", () => {
       expect(html).toContain(`href="${href}"`);
       expect(html).toContain(label);
     }
+  });
+
+  it("marks only the link matching the current path as the active page", () => {
+    const html = renderToStaticMarkup(<Nav />);
+    const links = html.match(/<a [^>]*>/g) ?? [];
+    const activeLinks = links.filter((tag) => tag.includes('aria-current="page"'));
+
+    expect(activeLinks).toHaveLength(1);
+    expect(activeLinks[0]).toContain('href="/globe"');
   });
 });
