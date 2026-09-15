@@ -11,13 +11,13 @@ import type { FeatureCollection } from "geojson";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import {
-  GLOBE_MAX,
   GLOBE_MIN,
   INITIAL_ROTATION,
   PARTICLE_SPEED,
 } from "@/features/globe/constants/globeConfig";
 import { ISO3166_NUMERIC_TO_ALPHA2 } from "@/features/globe/constants/iso3166";
 import type { Land, PartnerImportTotal } from "@/features/globe/types";
+import { computeGlobeSize } from "@/features/globe/lib/globeSize";
 import { buildGlobeSummary } from "@/features/globe/lib/globeSummary";
 import { makeImportWidthScale } from "@/features/globe/lib/importWidthScale";
 import {
@@ -38,6 +38,10 @@ import { type Rotation, rotationDelta, zoomBy, zoomByFactor } from "@/features/g
 import { readGlobeTokens } from "@/features/globe/lib/themeTokens";
 
 const GEO_URL = "/geo/countries-110m.json";
+
+/** Space below the canvas: the gap + "Reset view" link (`mt-3` + line
+ *  height) plus the page's bottom padding (`py-10`). */
+const RESERVED_BELOW_GLOBE = 80;
 
 /** Compact tonnes at 3 significant figures — "69.7M", "400k". */
 const compact = (n: number) => format(".3s")(n).replace("G", "B");
@@ -136,16 +140,38 @@ export function ImportFlowGlobe({
     };
   }, []);
 
-  // --- 2. size to the wrapper ---
+  // --- 2. size to the wrapper's width and the viewport's remaining height ---
   useEffect(() => {
     const el = wrapRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
+
+    let width = 0;
+    const recompute = () => {
+      if (!width) return;
+      setSize(
+        Math.round(
+          computeGlobeSize({
+            width,
+            top: el.getBoundingClientRect().top,
+            viewportHeight: window.innerHeight,
+            reservedBelow: RESERVED_BELOW_GLOBE,
+          }),
+        ),
+      );
+    };
+
+    // A window resize can shrink the viewport's height without changing the
+    // wrapper's width, which wouldn't otherwise trigger the ResizeObserver.
     const ro = new ResizeObserver(([entry]) => {
-      const w = entry.contentRect.width;
-      if (w) setSize(Math.max(GLOBE_MIN, Math.min(GLOBE_MAX, Math.round(w))));
+      width = entry.contentRect.width;
+      recompute();
     });
     ro.observe(el);
-    return () => ro.disconnect();
+    window.addEventListener("resize", recompute);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", recompute);
+    };
   }, []);
 
   // --- 3. theme tokens: read now, and on data-theme change ---
@@ -413,6 +439,9 @@ export function ImportFlowGlobe({
       : undefined;
 
   return (
+    // relative: the button below anchors to this full column, not the
+    // narrower centered globe box, so it sits in the open margin beside
+    // the globe (right of the circle) rather than overlapping the canvas.
     <div ref={wrapRef} className="relative min-w-0">
       {loadError ? (
         <div
@@ -422,7 +451,7 @@ export function ImportFlowGlobe({
           Couldn&rsquo;t load the map.
         </div>
       ) : (
-        <>
+        <div className="relative mx-auto" style={{ width: size }}>
           <canvas
             ref={canvasRef}
             role="img"
@@ -431,27 +460,28 @@ export function ImportFlowGlobe({
             className="touch-none rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-series-1)]"
             style={{ width: size, height: size, cursor: "grab" }}
           />
-          <div className="mt-3" style={{ width: size }}>
-            <button
-              type="button"
-              onClick={resetView}
-              className="cursor-pointer text-sm text-muted underline hover:text-foreground"
+
+          {hovered && hoveredTonnes !== undefined && (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-md border border-border bg-surface px-2 py-1 text-xs whitespace-nowrap shadow-sm"
+              style={{ left: hovered.x, top: hovered.y - 8 }}
             >
-              Reset view
-            </button>
-          </div>
-        </>
+              {nameByCode.get(hovered.code)} — {compact(hoveredTonnes)} t · #
+              {rankByCode.get(hovered.code)} of {totals.length}
+            </div>
+          )}
+        </div>
       )}
 
-      {hovered && hoveredTonnes !== undefined && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-md border border-border bg-surface px-2 py-1 text-xs whitespace-nowrap shadow-sm"
-          style={{ left: hovered.x, top: hovered.y - 8 }}
+      {!loadError && (
+        <button
+          type="button"
+          onClick={resetView}
+          className="absolute top-0 right-0 z-10 cursor-pointer text-sm text-muted underline hover:text-foreground"
         >
-          {nameByCode.get(hovered.code)} — {compact(hoveredTonnes)} t · #
-          {rankByCode.get(hovered.code)} of {totals.length}
-        </div>
+          Reset view
+        </button>
       )}
     </div>
   );

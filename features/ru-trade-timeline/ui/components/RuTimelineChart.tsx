@@ -15,11 +15,14 @@ import { ChartTooltip } from "@/features/components/ChartTooltip";
 const MARGIN = { top: 32, right: 16, bottom: 32, left: 48 };
 // No explicit `height` prop: derive it from the measured width so the
 // chart grows taller (not just wider) as its container does, instead of
-// staying pinned at one fixed height regardless of screen size. Ratio
-// matches the old fixed DEFAULT_HEIGHT=360 at the old fallback width=720.
-const HEIGHT_RATIO = 0.5;
-const MIN_HEIGHT = 280;
-const MAX_HEIGHT = 640;
+// staying pinned at one fixed height regardless of screen size. A touch
+// below the original 0.5/280/640 (matching DEFAULT_HEIGHT=360 at width=720)
+// — trimmed for mobile without going as far back down as the 13" laptop
+// testing first suggested (that testing turned out to be at 110% browser
+// zoom, effectively a smaller viewport than a real 13" screen).
+const HEIGHT_RATIO = 0.45;
+const MIN_HEIGHT = 240;
+const MAX_HEIGHT = 600;
 const REVEAL_DURATION_MS = 2500;
 const FADE_DURATION_MS = 300;
 

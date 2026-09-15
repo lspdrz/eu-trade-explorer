@@ -14,6 +14,14 @@ export const DEFAULT_VIEW: ChartView = "countries";
  *  deriveYearRange and YearRangeSlider's maxSpan only when useIsMobile(). */
 export const MAX_YEAR_SPAN_MOBILE = 7;
 
+/**
+ * Viewport width, in px, below which the sidebar either hasn't appeared
+ * yet (phones) or has just claimed space from the chart column — both
+ * need MAX_YEAR_SPAN_MOBILE's leaner per-bar label spacing. Matches the
+ * breakpoint the sidebar's own two-column layout switches on.
+ */
+export const NARROW_CHART_BREAKPOINT = 1024;
+
 /** Fresh-visit defaults, shared by both tabs — Ammonia is the headline
  *  product, Russia the headline partner. Only apply when the URL says
  *  nothing at all about a field (see parseSelection's `params.has` checks);
