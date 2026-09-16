@@ -19,13 +19,10 @@ import { YearRangeSlider } from "@/features/trade-data/ui/components/YearRangeSl
 export function ProductsViewControls({
   availableProducts,
   availablePartners,
-  partner,
   totalsByProduct,
 }: {
   availableProducts: string[];
   availablePartners: { code: string; name: string }[];
-  /** Authoritative during a refetch ("" = none picked yet). */
-  partner: string;
   totalsByProduct: { product: string; totals: YearlyPartnerTotal[] }[];
 }) {
   const { selection, setSelection, isPending } = useChartSelection();
@@ -38,8 +35,10 @@ export function ProductsViewControls({
     <div className="flex flex-col gap-4 border-b border-border pb-6">
       <CountryCombobox
         partners={availablePartners}
-        value={partner ? [partner] : []}
-        onChange={(codes) => setSelection({ partner: codes[0] ?? "" })}
+        value={selection.partner ? [selection.partner] : []}
+        onChange={(codes) =>
+          setSelection({ partner: codes[0] ?? "" }, { reRunServer: false })
+        }
         max={1}
         label="Partner"
       />

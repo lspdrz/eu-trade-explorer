@@ -23,7 +23,6 @@ const props = {
     { code: "EG", name: "Egypt" },
     { code: "MA", name: "Morocco" },
   ],
-  partner: "EG",
   totalsByProduct: [
     {
       product: "Ammonia",
