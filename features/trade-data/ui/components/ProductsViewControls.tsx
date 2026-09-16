@@ -27,7 +27,9 @@ export function ProductsViewControls({
 }) {
   const { selection, setSelection, isPending } = useChartSelection();
 
-  const allTotals = totalsByProduct.flatMap((t) => t.totals);
+  const allTotals = totalsByProduct.flatMap((t) =>
+    t.totals.filter((total) => total.partnerCode === selection.partner),
+  );
   const { years } = deriveBounds(allTotals);
   const { fromYear, toYear } = deriveYearRange(selection, years);
 
