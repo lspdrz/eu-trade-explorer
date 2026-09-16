@@ -3,100 +3,33 @@ import { COMEXT_PRODUCTS } from "@/features/trade-data/constants/comextProducts"
 import { getComextPartners } from "@/features/trade-data/db/queries/getComextPartners";
 import { getComextYearlyTonnesByPartner } from "@/features/trade-data/lib/getComextYearlyTonnesByPartner";
 import { ChartTabs } from "@/features/trade-data/ui/components/ChartTabs";
-import { CountryViewControls } from "@/features/trade-data/ui/components/CountryViewControls";
 import { EventsPanel } from "@/features/trade-data/ui/components/EventsPanel";
-import { FertilizerImportsCountryView } from "@/features/trade-data/ui/components/FertilizerImportsCountryView";
-import { FertilizerImportsProductsView } from "@/features/trade-data/ui/components/FertilizerImportsProductsView";
-import { ProductsViewControls } from "@/features/trade-data/ui/components/ProductsViewControls";
-import { parseSelection } from "@/features/trade-data/lib/chartSelectionParams";
-
-type SearchParams = Record<string, string | string[] | undefined>;
-
-function toURLSearchParams(params: SearchParams): URLSearchParams {
-  const out = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (typeof value === "string") out.set(key, value);
-    else if (Array.isArray(value) && value[0] !== undefined) out.set(key, value[0]);
-  }
-  return out;
-}
+import { FertilizerImportsChart } from "@/features/trade-data/ui/components/FertilizerImportsChart";
+import { FertilizerImportsControls } from "@/features/trade-data/ui/components/FertilizerImportsControls";
 
 /**
- * The feature's self-fetching entry point. Parses the URL once (bounds-free,
- * same parser the client uses), fetches only what the active view needs, and
- * renders the page: the chart in the main column, and the tab switcher +
- * that tab's controls + EventsPanel in the sidebar. COMEXT (Eurostat's
+ * The feature's entry point. Statically rendered at `next build` time —
+ * every product's totals for every partner (~146 KB total, measured
+ * against the full dataset) are fetched once here, unconditionally, and
+ * handed to two client components (FertilizerImportsChart/Controls) that
+ * pick what to show from the URL (?view=, ?products=, ?partner=,
+ * ?countries=, ...) entirely in the browser via useChartSelection. The
+ * RSC never reads `searchParams` — doing so, for any reason, would opt
+ * this page back into per-request dynamic rendering. COMEXT (Eurostat's
  * validated monthly statistics) is the only data source — see
  * architecture-decisions.md.
- *
- * - countries: each selected product's totals for every partner (client stacks
- *   the products and filters the partners)
- * - products:  every product's totals for one partner (client filters products)
  */
-export async function FertilizerImports({
-  searchParams,
-}: {
-  searchParams: Promise<SearchParams>;
-}) {
-  const { view, products, partner } = parseSelection(
-    toURLSearchParams(await searchParams),
-  );
-
+export async function FertilizerImports() {
   const availableProducts: string[] = [...COMEXT_PRODUCTS];
-  const availablePartners = await getComextPartners();
-
-  // Each fetch no-ops for the inactive view, so only the active one hits the DB.
-  const selectedProducts = products.filter((p) => availableProducts.includes(p));
-  const totalsByCountry =
-    view === "countries" && selectedProducts.length > 0
-      ? await Promise.all(
-          selectedProducts.map(async (p) => ({
-            product: p,
-            totals: await getComextYearlyTonnesByPartner(p),
-          })),
-        )
-      : [];
-  const totalsByProduct =
-    view === "products" && partner
-      ? await Promise.all(
-          availableProducts.map(async (p) => ({
-            product: p,
-            totals: (await getComextYearlyTonnesByPartner(p)).filter(
-              (t) => t.partnerCode === partner,
-            ),
-          })),
-        )
-      : [];
-
-  const chartView =
-    view === "countries" ? (
-      <FertilizerImportsCountryView
-        availablePartners={availablePartners}
-        totalsByCountry={totalsByCountry}
-      />
-    ) : (
-      <FertilizerImportsProductsView
-        availablePartners={availablePartners}
-        partner={partner}
-        totalsByProduct={totalsByProduct}
-      />
-    );
-
-  const controlsView =
-    view === "countries" ? (
-      <CountryViewControls
-        availableProducts={availableProducts}
-        availablePartners={availablePartners}
-        totalsByCountry={totalsByCountry}
-      />
-    ) : (
-      <ProductsViewControls
-        availableProducts={availableProducts}
-        availablePartners={availablePartners}
-        partner={partner}
-        totalsByProduct={totalsByProduct}
-      />
-    );
+  const [availablePartners, allTotals] = await Promise.all([
+    getComextPartners(),
+    Promise.all(
+      availableProducts.map(async (product) => ({
+        product,
+        totals: await getComextYearlyTonnesByPartner(product),
+      })),
+    ),
+  ]);
 
   return (
     <main className="mx-auto max-w-[90rem] px-6 pt-6 pb-20 md:pb-6">
@@ -121,11 +54,20 @@ export async function FertilizerImports({
               across the years on record.
             </p>
           </header>
-          <div className="mt-6">{chartView}</div>
+          <div className="mt-6">
+            <FertilizerImportsChart
+              availablePartners={availablePartners}
+              allTotals={allTotals}
+            />
+          </div>
         </div>
         <div className="flex flex-col gap-6">
           <ChartTabs />
-          {controlsView}
+          <FertilizerImportsControls
+            availableProducts={availableProducts}
+            availablePartners={availablePartners}
+            allTotals={allTotals}
+          />
           <EventsPanel />
         </div>
       </div>

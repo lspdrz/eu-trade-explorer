@@ -1,16 +1,15 @@
 import { Suspense } from "react";
 import { FertilizerImports } from "@/features/trade-data/ui";
 
-// A `searchParams` access opts the route into dynamic rendering; the explicit
-// flag keeps the DB-backed view from ever being served from a build-time
-// snapshot. The promise is passed straight through and awaited inside the
-// Suspense boundary (Next's "push dynamic access down").
+// FertilizerImports no longer reads searchParams itself (it fetches
+// everything unconditionally and lets client components pick what to show),
+// but this flag stays on for now — removing it is a separate, later change.
 export const dynamic = "force-dynamic";
 
-export default function Home({ searchParams }: PageProps<"/">) {
+export default function Home() {
   return (
     <Suspense fallback={<div className="p-6 text-muted">Loading…</div>}>
-      <FertilizerImports searchParams={searchParams} />
+      <FertilizerImports />
     </Suspense>
   );
 }
