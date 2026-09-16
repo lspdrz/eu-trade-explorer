@@ -22,7 +22,6 @@ const props = {
     { code: "EG", name: "Egypt" },
     { code: "MA", name: "Morocco" },
   ],
-  partner: "EG",
   totalsByProduct: [
     {
       product: "Ammonia",
@@ -47,10 +46,29 @@ describe("FertilizerImportsProductsView", () => {
 
   it("shows the products empty state when no partner or product is selected", () => {
     selection = { ...selection, partner: "", products: [] };
-    const html = renderToStaticMarkup(
-      <FertilizerImportsProductsView {...props} partner="" />,
-    );
+    const html = renderToStaticMarkup(<FertilizerImportsProductsView {...props} />);
     expect(html).toContain("Choose a partner country to compare products");
     expect(html).not.toContain("chart-bar");
+  });
+
+  it("filters totalsByProduct to the selected partner itself, not relying on the caller to have already scoped it", () => {
+    selection = { ...selection, partner: "EG", products: ["Ammonia"] };
+    const html = renderToStaticMarkup(
+      <FertilizerImportsProductsView
+        availablePartners={props.availablePartners}
+        totalsByProduct={[
+          {
+            product: "Ammonia",
+            totals: [
+              { year: "2021", partnerCode: "EG", partner: "Egypt", tonnes: 100 },
+              { year: "2021", partnerCode: "MA", partner: "Morocco", tonnes: 900 },
+            ],
+          },
+        ]}
+      />,
+    );
+    // Correct (EG-only): "100". Buggy (summed across both partners): "1,000".
+    expect(html).toContain("100");
+    expect(html).not.toContain("1,000");
   });
 });

@@ -14,25 +14,34 @@ import { ImportsChartPanel } from "@/features/trade-data/ui/components/ImportsCh
  * products, a bar per product. Renders the partner's chart only — the
  * controls row lives in the sidebar (ProductsViewControls) and the
  * shared chrome is the RSC's.
+ *
+ * Filters `totalsByProduct` to `selection.partner` itself rather than
+ * trusting the caller to have already scoped it to one partner — the RSC
+ * fetches every partner's totals for every product unconditionally now
+ * (see ui/index.tsx), so this is the only place left that knows which
+ * partner is actually selected.
  */
 export function FertilizerImportsProductsView({
   availablePartners,
-  partner,
   totalsByProduct,
 }: {
   availablePartners: { code: string; name: string }[];
-  /** Authoritative during a refetch ("" = none picked yet). */
-  partner: string;
   totalsByProduct: { product: string; totals: YearlyPartnerTotal[] }[];
 }) {
   const { selection } = useChartSelection();
+  const partner = selection.partner;
 
-  const allTotals = totalsByProduct.flatMap((t) => t.totals);
+  const scoped = totalsByProduct.map(({ product, totals }) => ({
+    product,
+    totals: totals.filter((t) => t.partnerCode === partner),
+  }));
+
+  const allTotals = scoped.flatMap((t) => t.totals);
   const { years } = deriveBounds(allTotals);
   const { fromYear, toYear } = deriveYearRange(selection, years);
   const partialYear = years.length ? years[years.length - 1] : undefined;
 
-  const rows = totalsByProduct.flatMap(({ product, totals }) =>
+  const rows = scoped.flatMap(({ product, totals }) =>
     totals.map((t) => ({
       seriesKey: product,
       year: Number(t.year),
