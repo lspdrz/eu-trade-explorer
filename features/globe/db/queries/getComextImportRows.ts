@@ -2,7 +2,7 @@ import "server-only";
 import { like, or } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { rawComextImports } from "@/lib/db/schemas/rawComextImports";
-import { GLOBE_HS_HEADINGS } from "@/features/globe/constants/headings";
+import { COMEXT_FERTILISER_HEADINGS } from "@/features/constants/comextFertiliserHeadings";
 
 /**
  * Every `raw_comext_imports` row under either fertilizer HS heading,
@@ -23,7 +23,7 @@ export async function getComextImportRows(): Promise<
     .from(rawComextImports)
     .where(
       or(
-        ...GLOBE_HS_HEADINGS.map((h) =>
+        ...COMEXT_FERTILISER_HEADINGS.map((h) =>
           like(rawComextImports.cn8ProductCode, `${h}%`),
         ),
       ),
