@@ -33,18 +33,15 @@ export function StackedImportsChart({
   nameForCountry,
   ariaLabel,
   partialYear,
-  width: widthProp,
-  height = DEFAULT_HEIGHT,
 }: {
   series: StackedSeries;
   seriesMeta: SelectedSeries[];
   nameForCountry: (code: string) => string;
   ariaLabel: string;
   partialYear?: number;
-  width?: number;
-  height?: number;
 }) {
-  const { ref: wrapRef, width } = useMeasuredWidth(widthProp, 960);
+  const { ref: wrapRef, width } = useMeasuredWidth(960);
+  const height = DEFAULT_HEIGHT;
   const hatchId = usePatternId("partial-hatch");
   const { enabled: eventsEnabled, events } = useChartEvents();
   const [hovered, setHovered] = useState<

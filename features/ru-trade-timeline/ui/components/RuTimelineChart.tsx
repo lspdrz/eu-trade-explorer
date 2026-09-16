@@ -130,8 +130,6 @@ export function RuTimelineChart({
   markerYear,
   markerMonth = 1,
   markerLabel,
-  width: widthProp,
-  height: heightProp,
 }: {
   years: number[];
   series: RuTimelineChartSeries[];
@@ -139,12 +137,9 @@ export function RuTimelineChart({
   markerYear?: number;
   markerMonth?: number;
   markerLabel?: string;
-  width?: number;
-  height?: number;
 }) {
-  const { ref: wrapRef, width, hasMeasured } = useMeasuredWidth(widthProp, 720);
-  const height =
-    heightProp ?? Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, Math.round(width * HEIGHT_RATIO)));
+  const { ref: wrapRef, width, hasMeasured } = useMeasuredWidth(720);
+  const height = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, Math.round(width * HEIGHT_RATIO)));
   const innerWidth = Math.max(0, width - MARGIN.left - MARGIN.right);
   const innerHeight = Math.max(0, height - MARGIN.top - MARGIN.bottom);
 

@@ -29,17 +29,14 @@ export function ImportsBarChart({
   seriesMeta,
   ariaLabel,
   partialYear,
-  width: widthProp,
-  height = DEFAULT_HEIGHT,
 }: {
   series: GroupedSeries;
   seriesMeta: SelectedSeries[];
   ariaLabel: string;
   partialYear?: number;
-  width?: number;
-  height?: number;
 }) {
-  const { ref: wrapRef, width } = useMeasuredWidth(widthProp, 960);
+  const { ref: wrapRef, width } = useMeasuredWidth(960);
+  const height = DEFAULT_HEIGHT;
   const hatchId = usePatternId("partial-hatch");
   const { enabled: eventsEnabled, events } = useChartEvents();
   const [hovered, setHovered] = useState<

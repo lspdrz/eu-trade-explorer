@@ -46,7 +46,7 @@ beforeEach(() => {
 describe("ImportsBarChart", () => {
   it("renders one bar per (series, year)", () => {
     const html = renderToStaticMarkup(
-      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" width={800} />,
+      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" />,
     );
     expect(countBars(html)).toBe(6);
   });
@@ -57,7 +57,6 @@ describe("ImportsBarChart", () => {
         series={grid}
         seriesMeta={seriesMeta}
         ariaLabel="Russia&#x27;s EU imports in tonnes per year for Ammonia"
-        width={800}
       />,
     );
     expect(html).toContain('aria-label="Russia&#x27;s EU imports in tonnes per year for Ammonia"');
@@ -70,7 +69,6 @@ describe("ImportsBarChart", () => {
         seriesMeta={seriesMeta}
         ariaLabel="x"
         partialYear={2022}
-        width={800}
       />,
     );
     expect((html.match(/data-partial="true"/g) ?? []).length).toBe(2);
@@ -78,7 +76,7 @@ describe("ImportsBarChart", () => {
 
   it("renders a legend entry per series", () => {
     const html = renderToStaticMarkup(
-      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" width={800} />,
+      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" />,
     );
     expect(html).toContain("United States");
     expect(html).toContain("Egypt");
@@ -100,7 +98,6 @@ describe("ImportsBarChart", () => {
           { key: "Urea", name: "Urea", color: "#222" },
         ]}
         ariaLabel="x"
-        width={800}
       />,
     );
     expect(countBars(html)).toBe(2);
@@ -115,7 +112,7 @@ describe("ImportsBarChart event markers", () => {
       events: [{ id: "a", year: 2021, month: 6, label: "Test event" }],
     };
     const html = renderToStaticMarkup(
-      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" width={800} />,
+      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" />,
     );
     expect(html).toContain("data-event-flag");
     expect(html).toContain("data-event-rule");
@@ -128,7 +125,7 @@ describe("ImportsBarChart event markers", () => {
       events: [{ id: "a", year: 2021, month: 6, label: "Test event" }],
     };
     const html = renderToStaticMarkup(
-      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" width={800} />,
+      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" />,
     );
     expect(html).not.toContain("data-event-flag");
   });
@@ -139,7 +136,7 @@ describe("ImportsBarChart event markers", () => {
       events: [{ id: "a", year: 1999, month: 6, label: "Old" }],
     };
     const html = renderToStaticMarkup(
-      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" width={800} />,
+      <ImportsBarChart series={grid} seriesMeta={seriesMeta} ariaLabel="x" />,
     );
     expect(html).not.toContain("data-event-flag");
   });

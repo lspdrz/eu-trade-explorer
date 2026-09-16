@@ -1,5 +1,15 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+// RuTimelineChart's reveal animation and its rendered visibility both key
+// off hasMeasured — real callers never pass a fixed width/height (see
+// useMeasuredWidth's own docstring), so tests get deterministic, settled
+// geometry by mocking the hook directly rather than through a prop no real
+// caller uses.
+vi.mock("@/features/hooks/useMeasuredWidth", () => ({
+  useMeasuredWidth: () => ({ ref: { current: null }, width: 720, hasMeasured: true }),
+}));
+
 import { RuTimelineChart } from "@/features/ru-trade-timeline/ui/components/RuTimelineChart";
 
 const years = [2020, 2021, 2022, 2023];
@@ -23,8 +33,6 @@ describe("RuTimelineChart", () => {
         markerYear={2022}
         markerMonth={2}
         markerLabel="Russia invades Ukraine"
-        width={720}
-        height={360}
       />,
     );
     expect(html).toContain("<svg");
@@ -40,8 +48,6 @@ describe("RuTimelineChart", () => {
         highlightKey="fertiliser"
         markerYear={years[years.length - 1]}
         markerLabel="Russia invades Ukraine"
-        width={720}
-        height={360}
       />,
     );
     expect(htmlAtEnd).toMatch(/text-anchor="end"[^>]*>Russia invades Ukraine/);
@@ -53,8 +59,6 @@ describe("RuTimelineChart", () => {
         highlightKey="fertiliser"
         markerYear={years[0]}
         markerLabel="Russia invades Ukraine"
-        width={720}
-        height={360}
       />,
     );
     expect(htmlAtStart).not.toContain('text-anchor="end"');
@@ -62,14 +66,14 @@ describe("RuTimelineChart", () => {
 
   it("renders without a marker when markerYear is omitted", () => {
     const html = renderToStaticMarkup(
-      <RuTimelineChart years={years} series={twoSeries} highlightKey="fertiliser" width={720} height={360} />,
+      <RuTimelineChart years={years} series={twoSeries} highlightKey="fertiliser" />,
     );
     expect(html).not.toContain("Russia invades Ukraine");
   });
 
   it("renders both series labels in the legend", () => {
     const html = renderToStaticMarkup(
-      <RuTimelineChart years={years} series={twoSeries} highlightKey="fertiliser" width={720} height={360} />,
+      <RuTimelineChart years={years} series={twoSeries} highlightKey="fertiliser" />,
     );
     expect(html).toContain("Fertiliser");
     expect(html).toContain("Mineral fuels");
@@ -77,14 +81,14 @@ describe("RuTimelineChart", () => {
 
   it("renders one <path> per series when there are more than 2", () => {
     const html = renderToStaticMarkup(
-      <RuTimelineChart years={years} series={fourSeries} highlightKey="fertiliser" width={720} height={360} />,
+      <RuTimelineChart years={years} series={fourSeries} highlightKey="fertiliser" />,
     );
     expect((html.match(/<path/g) ?? []).length).toBe(4);
   });
 
   it("dashes only the highlight line, so it's identifiable without an end-of-line label", () => {
     const html = renderToStaticMarkup(
-      <RuTimelineChart years={years} series={fourSeries} highlightKey="fertiliser" width={720} height={360} />,
+      <RuTimelineChart years={years} series={fourSeries} highlightKey="fertiliser" />,
     );
     const dashedPaths = (html.match(/<path[^>]*stroke-dasharray="6 3"[^>]*>/g) ?? []).length;
     expect(dashedPaths).toBe(1);
@@ -95,7 +99,7 @@ describe("RuTimelineChart", () => {
 
   it("dashes the highlight series' legend swatch to match its line", () => {
     const html = renderToStaticMarkup(
-      <RuTimelineChart years={years} series={fourSeries} highlightKey="fertiliser" width={720} height={360} />,
+      <RuTimelineChart years={years} series={fourSeries} highlightKey="fertiliser" />,
     );
     // The legend swatch uses its own symmetric dash pattern (two equal
     // dashes centered around a fixed gap, sized to its own width) rather
@@ -111,7 +115,7 @@ describe("RuTimelineChart", () => {
   it("renders without touching browser globals during server render", () => {
     expect(() =>
       renderToStaticMarkup(
-        <RuTimelineChart years={years} series={fourSeries} highlightKey="fertiliser" width={720} height={360} />,
+        <RuTimelineChart years={years} series={fourSeries} highlightKey="fertiliser" />,
       ),
     ).not.toThrow();
   });
