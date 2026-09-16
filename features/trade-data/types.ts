@@ -135,12 +135,14 @@ export interface SelectedSeries {
 }
 
 /**
- * One COMEXT import row trimmed to what yearly aggregation needs, with the
- * numeric-as-string quantity converted to a real number (NULL → 0). Returned
- * by `getComextRowsByHeading`, consumed by `getComextYearlyTonnesByPartner`.
+ * One heading's EU-wide 100-kg total for a partner country in one year,
+ * summed in SQL across every CN8 code and month under the heading, with
+ * the numeric-as-string quantity converted to a real number (NULL → 0).
+ * Returned by `getComextYearlyTotalsByHeading`, consumed by
+ * `getComextYearlyTonnesByPartner`.
  */
-export interface ComextYearRow {
+export interface ComextYearlyTotal {
   partnerCode: string;
-  period: string; // "YYYY-MM"
+  year: string; // "YYYY"
   quantity100kg: number;
 }

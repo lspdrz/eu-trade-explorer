@@ -26,8 +26,8 @@ export const rawComextImports = pgTable("raw_comext_imports", {
   valueEuros: numeric("value_euros"),
   syncedAt: timestamp("synced_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
-  // `getComextRowsByHeading` matches by CN8 prefix (`cn8_product_code LIKE
-  // '2814%'`). `text_pattern_ops` is what lets a btree index serve a
+  // `getComextYearlyTotalsByHeading` matches by CN8 prefix (`cn8_product_code
+  // LIKE '2814%'`). `text_pattern_ops` is what lets a btree index serve a
   // prefix LIKE regardless of the database's collation.
   index("raw_comext_imports_cn8_prefix_idx").using(
     "btree",
