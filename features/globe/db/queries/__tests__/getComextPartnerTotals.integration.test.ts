@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { db } from "@/lib/db/client";
 import { rawComextImports } from "@/lib/db/schemas/rawComextImports";
-import { getComextImportRows } from "@/features/globe/db/queries/getComextImportRows";
+import { getComextPartnerTotals } from "@/features/globe/db/queries/getComextPartnerTotals";
 
 const row = (
   cn8ProductCode: string,
@@ -17,8 +17,8 @@ const row = (
   syncedAt: new Date(),
 });
 
-describe("getComextImportRows", () => {
-  it("returns rows under either fertilizer heading (2814, 3102) and nothing else", async () => {
+describe("getComextPartnerTotals", () => {
+  it("sums rows under either fertilizer heading (2814, 3102) per partner, and nothing else", async () => {
     await db.insert(rawComextImports).values([
       row("28141000", "RU", "10"), // 2814 — ammonia
       row("31021010", "EG", "20"), // 3102 — nitrogenous
@@ -27,7 +27,7 @@ describe("getComextImportRows", () => {
       row("31051000", "EG", "999"), // 3105 — not in scope
     ]);
 
-    const rows = await getComextImportRows();
+    const rows = await getComextPartnerTotals();
 
     expect(rows).toEqual(
       expect.arrayContaining([
@@ -39,22 +39,24 @@ describe("getComextImportRows", () => {
     expect(rows).toHaveLength(3);
   });
 
-  it("coerces a null quantity to 0", async () => {
+  it("sums a partner's rows across headings and periods into one total", async () => {
+    await db.insert(rawComextImports).values([
+      row("28141000", "RU", "10", "2015-06"),
+      row("31021010", "RU", "5", "2023-11"),
+    ]);
+    expect(await getComextPartnerTotals()).toEqual([
+      { partnerCode: "RU", quantity100kg: 15 },
+    ]);
+  });
+
+  it("coerces an all-null quantity group to 0", async () => {
     await db.insert(rawComextImports).values([row("28142000", "RU", null)]);
-    expect(await getComextImportRows()).toEqual([
+    expect(await getComextPartnerTotals()).toEqual([
       { partnerCode: "RU", quantity100kg: 0 },
     ]);
   });
 
-  it("does not filter by period — every year's rows come back", async () => {
-    await db.insert(rawComextImports).values([
-      row("28141000", "RU", "10", "2015-06"),
-      row("28141000", "RU", "10", "2023-11"),
-    ]);
-    expect(await getComextImportRows()).toHaveLength(2);
-  });
-
   it("returns [] when the table is empty", async () => {
-    expect(await getComextImportRows()).toEqual([]);
+    expect(await getComextPartnerTotals()).toEqual([]);
   });
 });
