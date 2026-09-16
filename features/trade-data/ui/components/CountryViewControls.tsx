@@ -43,7 +43,7 @@ export function CountryViewControls({
       <ProductMultiSelect
         products={availableProducts}
         value={selection.products}
-        onChange={(products) => setSelection({ products })}
+        onChange={(products) => setSelection({ products }, { reRunServer: false })}
         max={MAX_PRODUCTS}
         pending={isPending}
       />

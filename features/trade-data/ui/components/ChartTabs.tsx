@@ -24,7 +24,7 @@ export function ChartTabs() {
   return (
     <TabGroup
       selectedIndex={VIEWS.indexOf(selection.view)}
-      onChange={(i) => setSelection({ ...PIVOT_CLEARED, view: VIEWS[i] })}
+      onChange={(i) => setSelection({ ...PIVOT_CLEARED, view: VIEWS[i] }, { reRunServer: false })}
     >
       <TabList
         className="flex gap-6 border-b border-border data-disabled:opacity-50"
