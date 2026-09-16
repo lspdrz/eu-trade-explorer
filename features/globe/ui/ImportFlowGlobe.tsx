@@ -6,7 +6,6 @@ import {
   geoOrthographic,
   geoPath,
 } from "d3-geo";
-import { format } from "d3-format";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
 import type { GeometryCollection, Topology } from "topojson-specification";
@@ -17,6 +16,7 @@ import {
 } from "@/features/globe/constants/globeConfig";
 import { ISO3166_NUMERIC_TO_ALPHA2 } from "@/features/globe/constants/iso3166";
 import type { Land, PartnerImportTotal } from "@/features/globe/types";
+import { HoverTooltip } from "@/features/globe/ui/HoverTooltip";
 import { computeGlobeSize } from "@/features/globe/lib/globeSize";
 import { buildGlobeSummary } from "@/features/globe/lib/globeSummary";
 import { makeImportWidthScale } from "@/features/globe/lib/importWidthScale";
@@ -42,9 +42,6 @@ const GEO_URL = "/geo/countries-110m.json";
 /** Space below the canvas: the gap + "Reset view" link (`mt-3` + line
  *  height) plus the page's bottom padding (`py-10`). */
 const RESERVED_BELOW_GLOBE = 80;
-
-/** Compact tonnes at 3 significant figures — "69.7M", "400k". */
-const compact = (n: number) => format(".3s")(n).replace("G", "B");
 
 type Hover = { code: string; x: number; y: number };
 
@@ -94,6 +91,19 @@ export function ImportFlowGlobe({
   const nameByCode = useMemo(
     () => new Map(totals.map((t) => [t.partnerCode, t.partner])),
     [totals],
+  );
+  // Covers every country on the globe, not just ones with import data —
+  // nameByCode is COMEXT_PARTNER_NAMES-derived and only has entries for
+  // partners with at least one recorded row. Falls back to the 110m
+  // topology's own Natural Earth name for the "no data" tooltip case.
+  const landNameByCode = useMemo(
+    () =>
+      new Map(
+        (land ?? [])
+          .filter((l): l is Land & { code: string } => l.code !== null)
+          .map((l) => [l.code, l.feature.properties?.name as string | undefined]),
+      ),
+    [land],
   );
 
   const rotationRef = useRef<Rotation>({ ...INITIAL_ROTATION });
@@ -430,11 +440,6 @@ export function ImportFlowGlobe({
     // hovered is intentionally NOT a dep — the loop reads hoveredRef.
   }, [land, size, activeKey, activeCodes, totals, tonnesByCode, onToggle]);
 
-  const hoveredTonnes =
-    hovered && tonnesByCode.has(hovered.code)
-      ? tonnesByCode.get(hovered.code)!
-      : undefined;
-
   return (
     // relative: the button below anchors to this full column, not the
     // narrower centered globe box, so it sits in the open margin beside
@@ -458,15 +463,15 @@ export function ImportFlowGlobe({
             style={{ width: size, height: size, cursor: "grab" }}
           />
 
-          {hovered && hoveredTonnes !== undefined && (
-            <div
-              aria-hidden
-              className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-md border border-border bg-surface px-2 py-1 text-xs whitespace-nowrap shadow-sm"
-              style={{ left: hovered.x, top: hovered.y - 8 }}
-            >
-              {nameByCode.get(hovered.code)} — {compact(hoveredTonnes)} t · #
-              {rankByCode.get(hovered.code)} of {totals.length}
-            </div>
+          {hovered && (
+            <HoverTooltip
+              hovered={hovered}
+              landName={landNameByCode.get(hovered.code)}
+              tonnesByCode={tonnesByCode}
+              nameByCode={nameByCode}
+              rankByCode={rankByCode}
+              totalCount={totals.length}
+            />
           )}
         </div>
       )}
