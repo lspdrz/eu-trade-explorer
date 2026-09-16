@@ -11,11 +11,11 @@ if [ "$commit_source" = "merge" ]; then
   exit 0
 fi
 
-verbs="Add|Cut|Fix|Bump|Make|Start|Stop|Refactor|Reformat|Optimize|Document"
+verbs="Add|Remove|Fix|Bump|Make|Start|Stop|Refactor|Reformat|Optimize|Document"
 subject="$(head -n1 "$commit_msg_file")"
 
 if ! [[ "$subject" =~ ^($verbs)([[:space:]]|$) ]]; then
-  echo "error: commit subject must start with one of: Add, Cut, Fix, Bump, Make, Start, Stop, Refactor, Reformat, Optimize, Document" >&2
+  echo "error: commit subject must start with one of: Add, Remove, Fix, Bump, Make, Start, Stop, Refactor, Reformat, Optimize, Document" >&2
   echo "       got: \"$subject\"" >&2
   exit 1
 fi

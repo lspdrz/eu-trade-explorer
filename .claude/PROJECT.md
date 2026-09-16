@@ -64,7 +64,7 @@ just the fast one.
 
 - Work on a branch; `main` requires a PR and a passing `test` CI check
   (branch protection, no direct pushes).
-- Commit subjects must start with an approved verb — **Add, Cut, Fix,
+- Commit subjects must start with an approved verb — **Add, Remove, Fix,
   Bump, Make, Start, Stop, Refactor, Reformat, Optimize, Document** —
   enforced in CI and locally (`.githooks/commit-msg`, wired up by
   `npm install`).

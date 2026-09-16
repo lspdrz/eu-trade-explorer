@@ -11,17 +11,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Verb list: https://github.com/knowbl/git-commit-message
+      # Verb list adapted from https://github.com/knowbl/git-commit-message
       - name: Check commit subjects start with an approved verb
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          verbs="Add|Cut|Fix|Bump|Make|Start|Stop|Refactor|Reformat|Optimize|Document"
+          verbs="Add|Remove|Fix|Bump|Make|Start|Stop|Refactor|Reformat|Optimize|Document"
           fail=0
           while IFS= read -r subject; do
             if ! [[ "$subject" =~ ^($verbs)([[:space:]]|$) ]]; then
-              echo "::error::Commit subject must start with one of: Add, Cut, Fix, Bump, Make, Start, Stop, Refactor, Reformat, Optimize, Document — got: \"$subject\""
+              echo "::error::Commit subject must start with one of: Add, Remove, Fix, Bump, Make, Start, Stop, Refactor, Reformat, Optimize, Document — got: \"$subject\""
               fail=1
             fi
           done < <(git log --no-merges --format=%s "$BASE_SHA..$HEAD_SHA")
