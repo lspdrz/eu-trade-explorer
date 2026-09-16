@@ -7,9 +7,9 @@ import {
   geoPath,
 } from "d3-geo";
 import { format } from "d3-format";
-import type { FeatureCollection } from "geojson";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { feature } from "topojson-client";
+import type { GeometryCollection, Topology } from "topojson-specification";
 import {
   GLOBE_MIN,
   INITIAL_ROTATION,
@@ -118,12 +118,9 @@ export function ImportFlowGlobe({
       .then((r) =>
         r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
       )
-      .then((topo) => {
+      .then((topo: Topology<{ countries: GeometryCollection }>) => {
         if (cancelled) return;
-        const fc = feature(
-          topo,
-          topo.objects.countries,
-        ) as unknown as FeatureCollection;
+        const fc = feature(topo, topo.objects.countries);
         setLand(
           fc.features.map((f) => ({
             code: ISO3166_NUMERIC_TO_ALPHA2[String(f.id)] ?? null,
