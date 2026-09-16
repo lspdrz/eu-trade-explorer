@@ -1,14 +1,10 @@
 "use client";
 
-import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import { ISO3166_NUMERIC_TO_ALPHA2 } from "@/features/globe/constants/iso3166";
 import type { PartnerImportTotal } from "@/features/globe/types";
-import {
-  parseGlobeCountries,
-  serializeGlobeCountries,
-} from "@/features/globe/lib/globeParams";
 import { resolveActive, toggleCountry } from "@/features/globe/lib/resolveActive";
+import { useGlobeSelection } from "@/features/globe/ui/hooks/useGlobeSelection";
 import { GlobeSidePanel } from "@/features/globe/ui/GlobeSidePanel";
 import { ImportFlowGlobe } from "@/features/globe/ui/ImportFlowGlobe";
 
@@ -16,38 +12,18 @@ import { ImportFlowGlobe } from "@/features/globe/ui/ImportFlowGlobe";
 const MAPPED_CODES = new Set(Object.values(ISO3166_NUMERIC_TO_ALPHA2));
 
 export function GlobeView({ totals }: { totals: PartnerImportTotal[] }) {
-  const params = useSearchParams();
-  const pathname = usePathname();
+  const { requested, setRequested } = useGlobeSelection();
 
-  const requested = useMemo(
-    () => parseGlobeCountries(new URLSearchParams(params.toString())),
-    [params],
-  );
   const activeCodes = useMemo(
     () => resolveActive(totals, requested),
     [totals, requested],
   );
 
-  const write = useCallback(
-    (codes: string[]) => {
-      const qs = serializeGlobeCountries(codes).toString();
-      // history.replaceState integrates with Next's router (updates
-      // useSearchParams) without an RSC round-trip — the same trick
-      // trade-data's useChartSelection uses for in-memory edits.
-      window.history.replaceState(
-        null,
-        "",
-        qs ? `${pathname}?${qs}` : pathname,
-      );
-    },
-    [pathname],
-  );
-
   const onToggle = useCallback(
-    (code: string) => write(toggleCountry(activeCodes, code)),
-    [write, activeCodes],
+    (code: string) => setRequested(toggleCountry(activeCodes, code)),
+    [setRequested, activeCodes],
   );
-  const onReset = useCallback(() => write([]), [write]);
+  const onReset = useCallback(() => setRequested([]), [setRequested]);
 
   return (
     <main className="mx-auto max-w-[90rem] px-6 pt-6 pb-20 md:pb-6">
