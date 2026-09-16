@@ -4,27 +4,28 @@ import { useEffect, useRef, useState } from "react";
 
 /**
  * The rendered width of a wrapper element, tracked with a ResizeObserver.
- * Pass an explicit `widthProp` to opt out (tests pass a fixed width) —
- * until the observer fires once (or if ResizeObserver isn't available),
+ * Until the observer fires once (or if ResizeObserver isn't available),
  * `defaultWidth` is used instead. Attach the returned `ref` to the element
  * whose width should drive the chart.
  *
  * `hasMeasured` is false only for that brief fallback-width window: true
- * once the real width is known (or immediately, for an explicit
- * `widthProp` or no ResizeObserver support). A caller whose geometry
- * depends on a one-time measurement at mount (e.g. a draw-in animation
- * that measures path length) should gate that measurement on it — sizing
- * against the fallback and then silently resizing to the real width a
- * moment later can desync an in-flight animation from the geometry it was
- * measured against.
+ * once the real width is known (or immediately if there's no ResizeObserver
+ * support). A caller whose geometry depends on a one-time measurement at
+ * mount (e.g. a draw-in animation that measures path length) should gate
+ * that measurement on it — sizing against the fallback and then silently
+ * resizing to the real width a moment later can desync an in-flight
+ * animation from the geometry it was measured against.
+ *
+ * No prop-based escape hatch here for a fixed test width — a caller that
+ * needs one mocks this hook directly (`vi.mock`), since no real caller
+ * passes an explicit width in production.
  */
-export function useMeasuredWidth(widthProp: number | undefined, defaultWidth: number) {
+export function useMeasuredWidth(defaultWidth: number) {
   const ref = useRef<HTMLDivElement>(null);
-  const [measured, setMeasured] = useState(widthProp ?? defaultWidth);
-  const [hasMeasured, setHasMeasured] = useState(widthProp !== undefined);
+  const [measured, setMeasured] = useState(defaultWidth);
+  const [hasMeasured, setHasMeasured] = useState(false);
 
   useEffect(() => {
-    if (widthProp !== undefined) return;
     const el = ref.current;
     if (!el || typeof ResizeObserver === "undefined") {
       setHasMeasured(true);
@@ -37,7 +38,7 @@ export function useMeasuredWidth(widthProp: number | undefined, defaultWidth: nu
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [widthProp]);
+  }, []);
 
-  return { ref, width: widthProp ?? measured, hasMeasured };
+  return { ref, width: measured, hasMeasured };
 }

@@ -11,11 +11,7 @@ function subscribe(breakpointPx: number, onChange: () => void): () => void {
 /**
  * True when the viewport is narrower than `breakpointPx` (default 640,
  * Tailwind's `sm`). False during SSR and the initial client snapshot before
- * hydration settles — for behavior that depends on viewport width, not just
- * styling, which CSS media queries alone can't drive (e.g. capping a
- * slider's draggable range). Uses useSyncExternalStore, not a
- * useState+useEffect setState pair, to subscribe to matchMedia without
- * triggering a synchronous cascading re-render on mount.
+ * hydration settles.
  */
 export function useIsMobile(breakpointPx = 640): boolean {
   return useSyncExternalStore(

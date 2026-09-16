@@ -71,7 +71,6 @@ const base = {
   seriesMeta,
   nameForCountry: (c: string) => (c === "EG" ? "Egypt" : "Morocco"),
   ariaLabel: "EU imports for Ammonia, Urea, by partner country",
-  width: 800,
 };
 
 const bars = (html: string) =>
