@@ -1,11 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { PartnerImportTotal } from "@/features/globe/types";
 
-let search = "";
-vi.mock("next/navigation", () => ({
-  useSearchParams: () => new URLSearchParams(search),
-  usePathname: () => "/globe",
+let requested: string[] = [];
+const setRequested = vi.fn();
+vi.mock("@/features/globe/ui/hooks/useGlobeSelection", () => ({
+  useGlobeSelection: () => ({ requested, setRequested }),
 }));
 
 // Stub the canvas child — its effects/canvas aren't under test here.
@@ -23,19 +23,16 @@ const totals: PartnerImportTotal[] = [
   { partnerCode: "DZ", partner: "Algeria", tonnes: 80 },
 ];
 
-afterEach(() => {
-  search = "";
-});
-
 describe("GlobeView", () => {
-  it("with no ?countries=, shows the resolved top-N in both panes", () => {
+  it("with no requested countries, shows the resolved top-N in both panes", () => {
+    requested = [];
     const html = renderToStaticMarkup(<GlobeView totals={totals} />);
     expect(html).toContain("RU,EG,DZ"); // stubbed globe prints activeCodes
     expect(html).toContain("Showing 3 origins");
   });
 
-  it("reads ?countries= as the active set", () => {
-    search = "countries=EG,RU";
+  it("uses the requested set as the active set", () => {
+    requested = ["EG", "RU"];
     const html = renderToStaticMarkup(<GlobeView totals={totals} />);
     expect(html).toContain("EG,RU");
     expect(html).toContain("Showing 2 origins");
