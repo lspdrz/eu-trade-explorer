@@ -37,6 +37,31 @@ describe("replaceComextRuObservations", () => {
     expect(vals).toEqual([2, 99]);
   });
 
+  it("wipes a code's rows entirely when it's in cn8ProductCodes but absent from observations", async () => {
+    // Seed two codes from the same chunk.
+    await replaceComextRuObservations({
+      cn8ProductCodes: ["28141000", "28142000"],
+      observations: [
+        obs({ cn8ProductCode: "28141000", valueEuros: 1 }),
+        obs({ cn8ProductCode: "28142000", valueEuros: 2 }),
+      ],
+    });
+
+    // Re-run the same chunk, but this time only 28141000 came back —
+    // 28142000 genuinely reported nothing this run. cn8ProductCodes still
+    // names both, so 28142000's stale row must not survive: the table is
+    // a snapshot of the API's current answer, not an accumulating ledger.
+    await replaceComextRuObservations({
+      cn8ProductCodes: ["28141000", "28142000"],
+      observations: [obs({ cn8ProductCode: "28141000", valueEuros: 99 })],
+    });
+
+    const rows = await stored();
+    expect(rows.map((r) => r.cn8ProductCode)).toEqual(["28141000"]);
+    expect(rows.map((r) => r.cn8ProductCode)).not.toContain("28142000");
+    expect(Number(rows[0].valueEuros)).toBe(99);
+  });
+
   it("always writes partnerCode RU regardless of input", async () => {
     await replaceComextRuObservations({
       cn8ProductCodes: ["28141000"],
